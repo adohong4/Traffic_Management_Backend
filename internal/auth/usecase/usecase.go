@@ -11,3 +11,8 @@ type authUC struct {
 	authRepo auth.Repository
 	logger   logger.Logger
 }
+
+// Auth Usecase constructor
+func NewAuthUseCase(cfg *config.Config, authRepo auth.Repository, log logger.Logger) auth.UseCase {
+	return &authUC{cfg: cfg, authRepo: authRepo, logger: log}
+}

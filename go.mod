@@ -4,6 +4,7 @@ go 1.24.4
 
 require (
 	github.com/AleksK1NG/api-mc v0.0.0-20210222141237-4ffdf6a3d5cb // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
