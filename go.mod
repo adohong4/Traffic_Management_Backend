@@ -4,15 +4,23 @@ go 1.24.4
 
 require (
 	github.com/AleksK1NG/api-mc v0.0.0-20210222141237-4ffdf6a3d5cb // indirect
+	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.27.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/gorilla/css v1.0.1 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
 	github.com/labstack/echo/v4 v4.13.4 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
