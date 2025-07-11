@@ -69,4 +69,6 @@ const (
         WHERE active = true 
         ORDER BY COALESCE(NULLIF($1, ''), identity_no), role
         OFFSET $2 LIMIT $3`
+
+	findUserByIdentity = `SELECT * FROM users WHERE identity_no = $1`
 )

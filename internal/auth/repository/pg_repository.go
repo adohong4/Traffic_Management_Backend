@@ -65,11 +65,11 @@ func (r *authRepo) GetUserById(ctx context.Context, id uuid.UUID) (*models.User,
 	return user, nil
 }
 
-// Find users by IdentityNO
-func (r *authRepo) FindByIdentityNO(ctx context.Context, name *string, query *utils.PaginationQuery) (*models.UsersList, error) {
+// Find users by IdentityNO pagination
+func (r *authRepo) FindByIdentityNO(ctx context.Context, identity *string, query *utils.PaginationQuery) (*models.UsersList, error) {
 	var totalCount int
-	if err := r.db.GetContext(ctx, &totalCount, getTotalCount, name); err != nil {
-		return nil, errors.Wrap(err, "authRepo.FindByName.GetContext.totalCount")
+	if err := r.db.GetContext(ctx, &totalCount, getTotalCount, identity); err != nil {
+		return nil, errors.Wrap(err, "authRepo.FindByIdentityNO.GetContext.totalCount")
 	}
 
 	if totalCount == 0 {
@@ -83,9 +83,9 @@ func (r *authRepo) FindByIdentityNO(ctx context.Context, name *string, query *ut
 		}, nil
 	}
 
-	rows, err := r.db.QueryxContext(ctx, findUsers, name, query.GetOffset(), query.GetLimit())
+	rows, err := r.db.QueryxContext(ctx, findUsers, identity, query.GetOffset(), query.GetLimit())
 	if err != nil {
-		return nil, errors.Wrap(err, "authRepo.FindByName.QueryxContext")
+		return nil, errors.Wrap(err, "authRepo.FindByIdentityNO.QueryxContext")
 	}
 	defer rows.Close()
 
@@ -93,13 +93,13 @@ func (r *authRepo) FindByIdentityNO(ctx context.Context, name *string, query *ut
 	for rows.Next() {
 		var user models.User
 		if err = rows.StructScan(&user); err != nil {
-			return nil, errors.Wrap(err, "authRepo.FindByName.StructScan")
+			return nil, errors.Wrap(err, "authRepo.FindByIdentityNO.StructScan")
 		}
 		users = append(users, &user)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "authRepo.FindByName.rows.Err")
+		return nil, errors.Wrap(err, "authRepo.FindByIdentityNO.rows.Err")
 	}
 
 	return &models.UsersList{
@@ -146,4 +146,13 @@ func (r *authRepo) GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*mo
 		HasMore:    utils.GetHasMore(pq.GetPage(), totalCount, pq.GetSize()),
 		Users:      users,
 	}, nil
+}
+
+// Find user by identity
+func (r *authRepo) FindByIdentity(ctx context.Context, user *models.User) (*models.User, error) {
+	foundUser := &models.User{}
+	if err := r.db.QueryRowxContext(ctx, findUserByIdentity, user.IdentityNo).StructScan(foundUser); err != nil {
+		return nil, errors.Wrap(err, "authRepo.FindByIdentity.QueryRowxContext")
+	}
+	return foundUser, nil
 }
