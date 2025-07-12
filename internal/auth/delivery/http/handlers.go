@@ -3,12 +3,12 @@ package http
 import (
 	"net/http"
 
-	"github.com/AleksK1NG/api-mc/pkg/utils"
 	"github.com/adohong4/driving-license/config"
 	"github.com/adohong4/driving-license/internal/auth"
 	"github.com/adohong4/driving-license/internal/models"
 	"github.com/adohong4/driving-license/pkg/httpErrors"
 	"github.com/adohong4/driving-license/pkg/logger"
+	"github.com/adohong4/driving-license/pkg/utils"
 	"github.com/labstack/echo/v4"
 )
 
