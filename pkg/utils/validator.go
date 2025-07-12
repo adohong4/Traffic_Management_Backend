@@ -9,7 +9,7 @@ import (
 // Use a single instance of Validate, it caches struct info
 var validate *validator.Validate
 
-func int() {
+func init() {
 	validate = validator.New()
 }
 
