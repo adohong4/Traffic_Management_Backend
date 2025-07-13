@@ -68,7 +68,6 @@ func TestAuthRepo_Register(t *testing.T) {
 	})
 
 	t.Run("Register Error", func(t *testing.T) {
-		// Trường hợp lỗi: Kết nối cơ sở dữ liệu thất bại
 		user := &models.User{
 			Id:         uuid.New(),
 			IdentityNo: "123456789",
@@ -85,7 +84,7 @@ func TestAuthRepo_Register(t *testing.T) {
 		createdUser, err := authRepo.Register(context.Background(), user)
 		require.Error(t, err)
 		require.Nil(t, createdUser)
-		require.True(t, errors.Is(err, sql.ErrConnDone))
+		require.True(t, errors.Is(errors.Cause(err), sql.ErrConnDone)) // Sử dụng errors.Cause
 	})
 }
 
@@ -151,13 +150,13 @@ func TestAuthRepo_Update(t *testing.T) {
 
 		mock.ExpectQuery(updateUserQuery).WithArgs(
 			user.IdentityNo, user.Password, user.Active, user.Role,
-			user.CreatorId, user.ModifierId, user.Id, user.Version-1,
+			user.CreatorId, user.ModifierId, user.Id, user.Version,
 		).WillReturnError(sql.ErrNoRows)
 
 		updatedUser, err := authRepo.Update(context.Background(), user)
 		require.Error(t, err)
 		require.Nil(t, updatedUser)
-		require.True(t, errors.Is(err, sql.ErrNoRows))
+		require.True(t, errors.Is(errors.Cause(err), sql.ErrNoRows))
 	})
 }
 
