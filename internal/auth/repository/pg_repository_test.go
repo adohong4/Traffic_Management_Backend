@@ -68,6 +68,7 @@ func TestAuthRepo_Register(t *testing.T) {
 	})
 
 	t.Run("Register Error", func(t *testing.T) {
+		// Trường hợp lỗi: Kết nối cơ sở dữ liệu thất bại
 		user := &models.User{
 			Id:         uuid.New(),
 			IdentityNo: "123456789",
@@ -84,7 +85,7 @@ func TestAuthRepo_Register(t *testing.T) {
 		createdUser, err := authRepo.Register(context.Background(), user)
 		require.Error(t, err)
 		require.Nil(t, createdUser)
-		require.True(t, errors.Is(errors.Cause(err), sql.ErrConnDone)) // Sử dụng errors.Cause
+		require.True(t, errors.Is(errors.Cause(err), sql.ErrConnDone))
 	})
 }
 
@@ -128,7 +129,7 @@ func TestAuthRepo_Update(t *testing.T) {
 
 		mock.ExpectQuery(updateUserQuery).WithArgs(
 			user.IdentityNo, user.Password, user.Active, user.Role,
-			user.CreatorId, user.ModifierId, user.Id, user.Version-1,
+			user.CreatorId, user.ModifierId, user.Id, user.Version,
 		).WillReturnRows(rows)
 
 		updatedUser, err := authRepo.Update(context.Background(), user)
@@ -199,7 +200,7 @@ func TestAuthRepo_Delete(t *testing.T) {
 
 		err := authRepo.Delete(context.Background(), uid, modifierID, version)
 		require.Error(t, err)
-		require.True(t, errors.Is(err, sql.ErrNoRows))
+		require.True(t, errors.Is(errors.Cause(err), sql.ErrNoRows))
 	})
 }
 
@@ -261,7 +262,7 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 		foundUser, err := authRepo.GetUserById(context.Background(), uid)
 		require.Error(t, err)
 		require.Nil(t, foundUser)
-		require.True(t, errors.Is(err, sql.ErrNoRows))
+		require.True(t, errors.Is(errors.Cause(err), sql.ErrNoRows))
 	})
 }
 

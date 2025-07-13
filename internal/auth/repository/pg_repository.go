@@ -25,8 +25,10 @@ func NewAuthRepository(db *sqlx.DB) auth.Repository {
 
 func (r *authRepo) Register(ctx context.Context, user *models.User) (*models.User, error) {
 	u := &models.User{}
-	if err := r.db.QueryRowxContext(ctx, createUserQuery, &user.IdentityNo, &user.Password, &user.Active, &user.Role,
-		&user.Version, &user.CreatorId, &user.ModifierId, &user.CreatedAt, &user.UpdatedAt).StructScan(u); err != nil {
+	if err := r.db.QueryRowxContext(ctx, createUserQuery,
+		user.Id, user.IdentityNo, user.Password, user.Active, user.Role,
+		user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
+	).StructScan(u); err != nil {
 		return nil, errors.Wrap(err, "authRepo.Register.StructScan")
 	}
 	return u, nil
@@ -34,30 +36,30 @@ func (r *authRepo) Register(ctx context.Context, user *models.User) (*models.Use
 
 func (r *authRepo) Update(ctx context.Context, user *models.User) (*models.User, error) {
 	u := &models.User{}
-	if err := r.db.GetContext(ctx, u, updateUserQuery, &user.IdentityNo, &user.Password, &user.Active, &user.Role,
-		&user.Version, &user.CreatorId, &user.ModifierId, &user.CreatedAt, &user.UpdatedAt, &user.Id); err != nil {
-		return nil, errors.Wrap(err, "authRepo.Update.GetContext")
+	if err := r.db.QueryRowxContext(ctx, updateUserQuery,
+		user.IdentityNo, user.Password, user.Active, user.Role,
+		user.CreatorId, user.ModifierId, user.Id, user.Version,
+	).StructScan(u); err != nil {
+		return nil, errors.Wrap(err, "authRepo.Update.QueryRowxContext")
 	}
 	return u, nil
 }
 
 func (r *authRepo) Delete(ctx context.Context, id uuid.UUID, modifierId uuid.UUID, version int) error {
-
 	result, err := r.db.ExecContext(ctx, deleteUserQuery, modifierId, time.Now(), id, version)
 	if err != nil {
-		return errors.Wrap(err, "authRepo.Delete.RowsAffected")
+		return errors.Wrap(err, "authRepo.Delete.ExecContext")
 	}
-	rowAffected, err := result.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "authRepo.Delete.RowsAffected")
 	}
-	if rowAffected == 0 {
+	if rowsAffected == 0 {
 		return errors.Wrap(sql.ErrNoRows, "authRepo.Delete.rowsAffected")
 	}
 	return nil
 }
 
-// Get user by id
 func (r *authRepo) GetUserById(ctx context.Context, id uuid.UUID) (*models.User, error) {
 	user := &models.User{}
 	if err := r.db.QueryRowxContext(ctx, getUserQuery, id).StructScan(user); err != nil {
@@ -66,7 +68,6 @@ func (r *authRepo) GetUserById(ctx context.Context, id uuid.UUID) (*models.User,
 	return user, nil
 }
 
-// Find users by IdentityNO pagination
 func (r *authRepo) FindByIdentityNO(ctx context.Context, identity string, query *utils.PaginationQuery) (*models.UsersList, error) {
 	var totalCount int
 	if err := r.db.GetContext(ctx, &totalCount, getTotalCount, identity); err != nil {
@@ -77,44 +78,28 @@ func (r *authRepo) FindByIdentityNO(ctx context.Context, identity string, query 
 		return &models.UsersList{
 			TotalCount: totalCount,
 			TotalPages: utils.GetTotalPage(totalCount, query.GetSize()),
-			Page:       query.Page,
-			Size:       query.Size,
+			Page:       query.GetPage(),
+			Size:       query.GetSize(),
 			HasMore:    utils.GetHasMore(query.GetPage(), totalCount, query.GetSize()),
 			Users:      make([]*models.User, 0),
 		}, nil
 	}
 
-	rows, err := r.db.QueryxContext(ctx, findUsers, identity, query.GetOffset(), query.GetLimit())
-	if err != nil {
-		return nil, errors.Wrap(err, "authRepo.FindByIdentityNO.QueryxContext")
-	}
-	defer rows.Close()
-
-	var users = make([]*models.User, 0, query.GetSize())
-	for rows.Next() {
-		var user models.User
-		if err = rows.StructScan(&user); err != nil {
-			return nil, errors.Wrap(err, "authRepo.FindByIdentityNO.StructScan")
-		}
-		users = append(users, &user)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "authRepo.FindByIdentityNO.rows.Err")
+	var users []*models.User
+	if err := r.db.SelectContext(ctx, &users, findUsers, identity, query.GetOffset(), query.GetLimit()); err != nil {
+		return nil, errors.Wrap(err, "authRepo.FindByIdentityNO.SelectContext")
 	}
 
 	return &models.UsersList{
 		TotalCount: totalCount,
-		TotalPages: utils.GetTotalPage(totalCount, query.GetPage()),
+		TotalPages: utils.GetTotalPage(totalCount, query.GetSize()),
 		Page:       query.GetPage(),
 		Size:       query.GetSize(),
 		HasMore:    utils.GetHasMore(query.GetPage(), totalCount, query.GetSize()),
 		Users:      users,
 	}, nil
-
 }
 
-// Get user with pagination
 func (r *authRepo) GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*models.UsersList, error) {
 	var totalCount int
 	if err := r.db.GetContext(ctx, &totalCount, getTotal); err != nil {
@@ -132,10 +117,8 @@ func (r *authRepo) GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*mo
 		}, nil
 	}
 
-	var users = make([]*models.User, 0, pq.GetSize())
-	if err := r.db.SelectContext(
-		ctx, &users, getUsers, pq.GetOrderBy(), pq.GetOffset(), pq.GetLimit(),
-	); err != nil {
+	var users []*models.User
+	if err := r.db.SelectContext(ctx, &users, getUsers, pq.GetOrderBy(), pq.GetOffset(), pq.GetLimit()); err != nil {
 		return nil, errors.Wrap(err, "authRepo.GetUsers.SelectContext")
 	}
 
@@ -149,12 +132,11 @@ func (r *authRepo) GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*mo
 	}, nil
 }
 
-// Find user by identity
 func (r *authRepo) FindByIdentity(ctx context.Context, user *models.User) (*models.User, error) {
 	foundUser := &models.User{}
 	err := r.db.QueryRowxContext(ctx, findUserByIdentity, user.IdentityNo).StructScan(foundUser)
 	if err == sql.ErrNoRows {
-		return nil, nil // Không tìm thấy người dùng, trả về nil thay vì lỗi
+		return nil, nil
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "authRepo.FindByIdentity.QueryRowxContext")
