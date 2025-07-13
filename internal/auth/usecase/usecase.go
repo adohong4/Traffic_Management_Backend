@@ -74,8 +74,8 @@ func (u *authUC) Update(ctx context.Context, user *models.User) (*models.User, e
 }
 
 // delete user
-func (u *authUC) Delete(ctx context.Context, Id uuid.UUID) error {
-	if err := u.authRepo.Delete(ctx, Id); err != nil {
+func (u *authUC) Delete(ctx context.Context, Id uuid.UUID, modifierId uuid.UUID, version int) error {
+	if err := u.authRepo.Delete(ctx, Id, modifierId, version); err != nil {
 		return err
 	}
 
@@ -96,7 +96,7 @@ func (u *authUC) GetByID(ctx context.Context, Id uuid.UUID) (*models.User, error
 
 // Find users by identityNO
 func (u *authUC) FindByIdentity(ctx context.Context, identity string, query *utils.PaginationQuery) (*models.UsersList, error) {
-	return u.authRepo.FindByIdentityNO(ctx, &identity, query)
+	return u.authRepo.FindByIdentityNO(ctx, identity, query)
 }
 
 // Get users with pagination

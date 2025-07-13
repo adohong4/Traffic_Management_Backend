@@ -7,14 +7,13 @@ const (
             created_at, updated_at
 		) VALUES (
 			 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-		)RETURNING id`
+		)RETURNING id, identity_no, password, active, role, version, creator_id, modifier_id, created_at, updated_at`
 
 	updateUserQuery = `
 		UPDATE users 
 		SET
 			identity_no = COALESCE(NULLIF($1, ''), identity_no),
         	password = COALESCE(NULLIF($2, ''), password),
-        	public_address = COALESCE(NULLIF($3, ''), public_address),
         	active = COALESCE($4, active),
         	role = COALESCE(NULLIF($5, ''), role),
         	creator_id = COALESCE($6, creator_id),
@@ -38,7 +37,7 @@ const (
 		SELECT 
 			id, identity_no, password, active, role, version, creator_id, modifier_id, created_at, updated_at
 		FROM users
-		WHERE (id = $1 OR identity_no = $2) AND active = true`
+		WHERE id = $1 AND active = true`
 
 	// getTotalCount counts the total number of active users matching a search term
 	getTotalCount = `
@@ -70,5 +69,8 @@ const (
         ORDER BY COALESCE(NULLIF($1, ''), identity_no), role
         OFFSET $2 LIMIT $3`
 
-	findUserByIdentity = `SELECT * FROM users WHERE identity_no = $1`
+	findUserByIdentity = `
+    SELECT id, identity_no, password, active, role, version, creator_id, modifier_id, created_at, updated_at
+    FROM users
+    WHERE identity_no = $1 AND active = true`
 )

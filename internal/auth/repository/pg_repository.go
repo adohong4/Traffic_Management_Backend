@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/adohong4/driving-license/internal/auth"
 	"github.com/adohong4/driving-license/internal/models"
@@ -24,7 +25,7 @@ func NewAuthRepository(db *sqlx.DB) auth.Repository {
 
 func (r *authRepo) Register(ctx context.Context, user *models.User) (*models.User, error) {
 	u := &models.User{}
-	if err := r.db.QueryRowxContext(ctx, createUserQuery, &user.IdentityNo, &user.Password, &user.Active, &user.Active, &user.Role,
+	if err := r.db.QueryRowxContext(ctx, createUserQuery, &user.IdentityNo, &user.Password, &user.Active, &user.Role,
 		&user.Version, &user.CreatorId, &user.ModifierId, &user.CreatedAt, &user.UpdatedAt).StructScan(u); err != nil {
 		return nil, errors.Wrap(err, "authRepo.Register.StructScan")
 	}
@@ -33,16 +34,16 @@ func (r *authRepo) Register(ctx context.Context, user *models.User) (*models.Use
 
 func (r *authRepo) Update(ctx context.Context, user *models.User) (*models.User, error) {
 	u := &models.User{}
-	if err := r.db.GetContext(ctx, u, updateUserQuery, &user.IdentityNo, &user.Password, &user.Active, &user.Active, &user.Role,
+	if err := r.db.GetContext(ctx, u, updateUserQuery, &user.IdentityNo, &user.Password, &user.Active, &user.Role,
 		&user.Version, &user.CreatorId, &user.ModifierId, &user.CreatedAt, &user.UpdatedAt, &user.Id); err != nil {
 		return nil, errors.Wrap(err, "authRepo.Update.GetContext")
 	}
 	return u, nil
 }
 
-func (r *authRepo) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *authRepo) Delete(ctx context.Context, id uuid.UUID, modifierId uuid.UUID, version int) error {
 
-	result, err := r.db.ExecContext(ctx, deleteUserQuery, id)
+	result, err := r.db.ExecContext(ctx, deleteUserQuery, modifierId, time.Now(), id, version)
 	if err != nil {
 		return errors.Wrap(err, "authRepo.Delete.RowsAffected")
 	}
@@ -66,7 +67,7 @@ func (r *authRepo) GetUserById(ctx context.Context, id uuid.UUID) (*models.User,
 }
 
 // Find users by IdentityNO pagination
-func (r *authRepo) FindByIdentityNO(ctx context.Context, identity *string, query *utils.PaginationQuery) (*models.UsersList, error) {
+func (r *authRepo) FindByIdentityNO(ctx context.Context, identity string, query *utils.PaginationQuery) (*models.UsersList, error) {
 	var totalCount int
 	if err := r.db.GetContext(ctx, &totalCount, getTotalCount, identity); err != nil {
 		return nil, errors.Wrap(err, "authRepo.FindByIdentityNO.GetContext.totalCount")
@@ -151,7 +152,11 @@ func (r *authRepo) GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*mo
 // Find user by identity
 func (r *authRepo) FindByIdentity(ctx context.Context, user *models.User) (*models.User, error) {
 	foundUser := &models.User{}
-	if err := r.db.QueryRowxContext(ctx, findUserByIdentity, user.IdentityNo).StructScan(foundUser); err != nil {
+	err := r.db.QueryRowxContext(ctx, findUserByIdentity, user.IdentityNo).StructScan(foundUser)
+	if err == sql.ErrNoRows {
+		return nil, nil // Không tìm thấy người dùng, trả về nil thay vì lỗi
+	}
+	if err != nil {
 		return nil, errors.Wrap(err, "authRepo.FindByIdentity.QueryRowxContext")
 	}
 	return foundUser, nil

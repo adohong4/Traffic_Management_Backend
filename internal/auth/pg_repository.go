@@ -11,9 +11,9 @@ import (
 type Repository interface {
 	Register(ctx context.Context, user *models.User) (*models.User, error)
 	Update(ctx context.Context, user *models.User) (*models.User, error)
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, id uuid.UUID, modifierId uuid.UUID, version int) error
 	GetUserById(ctx context.Context, id uuid.UUID) (*models.User, error)
-	FindByIdentityNO(ctx context.Context, identity *string, query *utils.PaginationQuery) (*models.UsersList, error)
+	FindByIdentityNO(ctx context.Context, identity string, query *utils.PaginationQuery) (*models.UsersList, error)
 	GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*models.UsersList, error)
 	FindByIdentity(ctx context.Context, user *models.User) (*models.User, error)
 }
