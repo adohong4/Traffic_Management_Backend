@@ -9,7 +9,7 @@ server:
   WriteTimeout: 5
   SSL: false
   CtxDefaultTimeout: 12
-  CSRF: true
+  CSRF: false
   Debug: false
 
 logger:

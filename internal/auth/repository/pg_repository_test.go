@@ -45,7 +45,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 			Role:         &role,
 			Version:      1,
 			CreatorId:    &creatorID,
-			ModifierId:   modifierID,
+			ModifierId:   &modifierID,
 			CreatedAt:    time.Now(),
 			UpdatedAt:    time.Now(),
 		}
@@ -120,7 +120,7 @@ func TestAuthRepo_Update(t *testing.T) {
 			Role:         &role,
 			Version:      2,
 			CreatorId:    &creatorID,
-			ModifierId:   modifierID,
+			ModifierId:   &modifierID,
 			CreatedAt:    time.Now().Add(-time.Hour),
 			UpdatedAt:    time.Now(),
 		}
@@ -240,7 +240,7 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 			Role:         &role,
 			Version:      1,
 			CreatorId:    &creatorID,
-			ModifierId:   modifierID,
+			ModifierId:   &modifierID,
 			CreatedAt:    time.Now().Add(-time.Hour),
 			UpdatedAt:    time.Now(),
 		}
@@ -304,7 +304,7 @@ func TestAuthRepo_FindByIdentity(t *testing.T) {
 			Role:         &role,
 			Version:      1,
 			CreatorId:    &creatorID,
-			ModifierId:   modifierID,
+			ModifierId:   &modifierID,
 			CreatedAt:    time.Now().Add(-time.Hour),
 			UpdatedAt:    time.Now(),
 		}
@@ -369,7 +369,7 @@ func TestAuthRepo_GetUsers(t *testing.T) {
 			Role:         &role,
 			Version:      1,
 			CreatorId:    &creatorID,
-			ModifierId:   modifierID,
+			ModifierId:   &modifierID,
 			CreatedAt:    time.Now().Add(-time.Hour),
 			UpdatedAt:    time.Now(),
 		}
@@ -449,7 +449,7 @@ func TestAuthRepo_FindByIdentityNO(t *testing.T) {
 			Role:         &role,
 			Version:      1,
 			CreatorId:    &creatorID,
-			ModifierId:   modifierID,
+			ModifierId:   &modifierID,
 			CreatedAt:    time.Now().Add(-time.Hour),
 			UpdatedAt:    time.Now(),
 		}

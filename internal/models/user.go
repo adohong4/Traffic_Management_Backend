@@ -17,7 +17,7 @@ type User struct {
 	Role         *string    `json:"role,omitempty" db:"role" validate:"omitempty,lte=20"` // Vai trò (admin, user, etc.)
 	Version      int        `json:"version" db:"version"`                                 // Phiên bản, tự động tăng
 	CreatorId    *uuid.UUID `json:"creator_id" db:"creator_id"`                           // ID của người tạo
-	ModifierId   uuid.UUID  `json:"modifier_id" db:"modifier_id"`                         // ID của người sửa
+	ModifierId   *uuid.UUID `json:"modifier_id" db:"modifier_id"`                         // ID của người sửa
 	CreatedAt    time.Time  `json:"created_at" db:"created_at"`                           // Thời gian tạo
 	UpdatedAt    time.Time  `json:"updated_at" db:"updated_at"`                           // Thời gian cập nhật
 }

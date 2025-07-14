@@ -32,6 +32,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 
 	// CSRF middleware
 	if s.cfg.Server.CSRF {
+		//if false {
 		e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 			TokenLookup:    "header:X-CSRF-Token",
 			CookieName:     s.cfg.Cookie.Name,
@@ -47,7 +48,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	health := v1.Group("/health")
 	authGroup := v1.Group("/auth")
 
-	authHttp.MapAuthRoutes(authGroup, authHandlers, mw)
+	authHttp.MapAuthRoutes(authGroup, authHandlers, mw, s.cfg, authUC)
 
 	health.GET("", func(c echo.Context) error {
 		s.logger.Infof("Health check request id: %s", utils.GetRequestId(c))

@@ -40,7 +40,20 @@ func NewAuthHandlers(cfg *config.Config, authUC auth.UseCase, log logger.Logger)
 func (h *authHandlers) CreateUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := &models.User{}
-		if err := utils.ReadRequest(c, user); err != nil {
+		// Chỉ bind dữ liệu từ request
+		if err := c.Bind(user); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		// Chuẩn bị user (sinh Id, HashPassword, v.v.)
+		if err := user.PrepareCreate(); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		// Validate sau khi PrepareCreate
+		if err := utils.ValidateStruct(c.Request().Context(), user); err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
@@ -52,6 +65,7 @@ func (h *authHandlers) CreateUser() echo.HandlerFunc {
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
+		h.logger.Infof("User created successfully, ID: %s", userWithToken.User.Id)
 		return c.JSON(http.StatusOK, userWithToken)
 	}
 }
@@ -118,6 +132,7 @@ func (h *authHandlers) Update() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 		Id, err := uuid.Parse(c.Param("id"))
+
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
