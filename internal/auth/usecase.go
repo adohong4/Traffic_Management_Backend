@@ -9,7 +9,7 @@ import (
 )
 
 type UseCase interface {
-	Register(ctx context.Context, user *models.User) (*models.UserWithToken, error)
+	CreateUser(ctx context.Context, user *models.User) (*models.UserWithToken, error)
 	Update(ctx context.Context, user *models.User) (*models.User, error)
 	Delete(ctx context.Context, Id uuid.UUID, modifierId uuid.UUID, version int) error
 	GetByID(ctx context.Context, Id uuid.UUID) (*models.User, error)

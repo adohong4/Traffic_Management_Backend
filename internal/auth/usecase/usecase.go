@@ -31,7 +31,7 @@ func NewAuthUseCase(cfg *config.Config, authRepo auth.Repository, log logger.Log
 	return &authUC{cfg: cfg, authRepo: authRepo, logger: log}
 }
 
-func (u *authUC) Register(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
+func (u *authUC) CreateUser(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
 	existsUser, err := u.authRepo.FindByIdentity(ctx, user)
 	if existsUser != nil || err != nil {
 		return nil, httpErrors.NewRestErrorWithMessage(http.StatusBadRequest, httpErrors.ErrIdentityAlreadyExists, nil)
@@ -41,7 +41,7 @@ func (u *authUC) Register(ctx context.Context, user *models.User) (*models.UserW
 		return nil, httpErrors.NewBadRequestError(errors.Wrap(err, "authUC.Register.PrepareCreate"))
 	}
 
-	createdUser, err := u.authRepo.Register(ctx, user)
+	createdUser, err := u.authRepo.CreateUser(ctx, user)
 	if err != nil {
 		return nil, err
 	}

@@ -26,6 +26,36 @@ func NewAuthHandlers(cfg *config.Config, authUC auth.UseCase, log logger.Logger)
 	return &authHandlers{cfg: cfg, authUC: authUC, logger: log}
 }
 
+// CreateUser godoc
+// @Summary Create new user
+// @Description create user by admin
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param user body models.User true "User data"
+// @Success 200 {object} models.UserWithToken
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /auth/create [post]
+func (h *authHandlers) CreateUser() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		user := &models.User{}
+		if err := utils.ReadRequest(c, user); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		ctx := c.Request().Context()
+		userWithToken, err := h.authUC.CreateUser(ctx, user)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, userWithToken)
+	}
+}
+
 // Login godoc
 // @Summary Login new user
 // @Description login user

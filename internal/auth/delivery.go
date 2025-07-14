@@ -3,6 +3,7 @@ package auth
 import "github.com/labstack/echo/v4"
 
 type Handlers interface {
+	CreateUser() echo.HandlerFunc
 	Login() echo.HandlerFunc
 	Logout() echo.HandlerFunc
 	Update() echo.HandlerFunc

@@ -9,7 +9,7 @@ import (
 )
 
 type Repository interface {
-	Register(ctx context.Context, user *models.User) (*models.User, error)
+	CreateUser(ctx context.Context, user *models.User) (*models.User, error)
 	Update(ctx context.Context, user *models.User) (*models.User, error)
 	Delete(ctx context.Context, id uuid.UUID, modifierId uuid.UUID, version int) error
 	GetUserById(ctx context.Context, id uuid.UUID) (*models.User, error)

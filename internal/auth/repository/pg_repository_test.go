@@ -16,8 +16,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// TestAuthRepo_Register kiểm tra hàm Register
-func TestAuthRepo_Register(t *testing.T) {
+// TestAuthRepo_CreateUser kiểm tra hàm CreateUser
+func TestAuthRepo_CreateUser(t *testing.T) {
 	t.Parallel()
 
 	// Khởi tạo mock database
@@ -30,59 +30,62 @@ func TestAuthRepo_Register(t *testing.T) {
 
 	authRepo := NewAuthRepository(sqlxDB)
 
-	t.Run("Register Success", func(t *testing.T) {
+	t.Run("CreateUser Success", func(t *testing.T) {
 		// Trường hợp thành công: Tạo người dùng mới
 		role := "admin"
 		creatorID := uuid.New()
 		modifierID := uuid.New()
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 		user := &models.User{
-			Id:         uuid.New(),
-			IdentityNo: "123456789",
-			Password:   string(hashedPassword),
-			Active:     true,
-			Role:       &role,
-			Version:    1,
-			CreatorId:  &creatorID,
-			ModifierId: modifierID,
-			CreatedAt:  time.Now(),
-			UpdatedAt:  time.Now(),
+			Id:           uuid.New(),
+			IdentityNo:   "123456789",
+			Password:     "password123", // Mật khẩu gốc
+			HashPassword: string(hashedPassword),
+			Active:       true,
+			Role:         &role,
+			Version:      1,
+			CreatorId:    &creatorID,
+			ModifierId:   modifierID,
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
 		}
 
 		rows := sqlmock.NewRows([]string{
-			"id", "identity_no", "password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
+			"id", "identity_no", "password", "hash_password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
 		}).AddRow(
-			user.Id, user.IdentityNo, user.Password, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
+			user.Id, user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
 		)
 
 		mock.ExpectQuery(createUserQuery).WithArgs(
-			user.Id, user.IdentityNo, user.Password, user.Active, user.Role,
-			user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
+			user.Id, user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role,
+			user.Version, user.CreatorId, user.ModifierId, user.UpdatedAt,
 		).WillReturnRows(rows)
 
-		createdUser, err := authRepo.Register(context.Background(), user)
+		createdUser, err := authRepo.CreateUser(context.Background(), user)
 		require.NoError(t, err)
 		require.NotNil(t, createdUser)
 		require.Equal(t, user.Id, createdUser.Id)
 		require.Equal(t, user.IdentityNo, createdUser.IdentityNo)
+		require.Equal(t, user.HashPassword, createdUser.HashPassword)
 	})
 
-	t.Run("Register Error", func(t *testing.T) {
+	t.Run("CreateUser Error", func(t *testing.T) {
 		// Trường hợp lỗi: Kết nối cơ sở dữ liệu thất bại
 		user := &models.User{
-			Id:         uuid.New(),
-			IdentityNo: "123456789",
-			Password:   "password123",
-			Active:     true,
-			Version:    1,
+			Id:           uuid.New(),
+			IdentityNo:   "123456789",
+			Password:     "password123",
+			HashPassword: "hashed_password",
+			Active:       true,
+			Version:      1,
 		}
 
 		mock.ExpectQuery(createUserQuery).WithArgs(
-			user.Id, user.IdentityNo, user.Password, user.Active, user.Role,
+			user.Id, user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role,
 			user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
 		).WillReturnError(sql.ErrConnDone)
 
-		createdUser, err := authRepo.Register(context.Background(), user)
+		createdUser, err := authRepo.CreateUser(context.Background(), user)
 		require.Error(t, err)
 		require.Nil(t, createdUser)
 		require.True(t, errors.Is(errors.Cause(err), sql.ErrConnDone))
@@ -109,26 +112,27 @@ func TestAuthRepo_Update(t *testing.T) {
 		modifierID := uuid.New()
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("newpassword"), bcrypt.DefaultCost)
 		user := &models.User{
-			Id:         uuid.New(),
-			IdentityNo: "987654321",
-			Password:   string(hashedPassword),
-			Active:     true,
-			Role:       &role,
-			Version:    2,
-			CreatorId:  &creatorID,
-			ModifierId: modifierID,
-			CreatedAt:  time.Now().Add(-time.Hour),
-			UpdatedAt:  time.Now(),
+			Id:           uuid.New(),
+			IdentityNo:   "987654321",
+			Password:     "newpassword",
+			HashPassword: string(hashedPassword),
+			Active:       true,
+			Role:         &role,
+			Version:      2,
+			CreatorId:    &creatorID,
+			ModifierId:   modifierID,
+			CreatedAt:    time.Now().Add(-time.Hour),
+			UpdatedAt:    time.Now(),
 		}
 
 		rows := sqlmock.NewRows([]string{
-			"id", "identity_no", "password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
+			"id", "identity_no", "password", "hash_password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
 		}).AddRow(
-			user.Id, user.IdentityNo, user.Password, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
+			user.Id, user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
 		)
 
 		mock.ExpectQuery(updateUserQuery).WithArgs(
-			user.IdentityNo, user.Password, user.Active, user.Role,
+			user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role,
 			user.CreatorId, user.ModifierId, user.Id, user.Version,
 		).WillReturnRows(rows)
 
@@ -137,20 +141,22 @@ func TestAuthRepo_Update(t *testing.T) {
 		require.NotNil(t, updatedUser)
 		require.Equal(t, user.Id, updatedUser.Id)
 		require.Equal(t, user.IdentityNo, updatedUser.IdentityNo)
+		require.Equal(t, user.HashPassword, updatedUser.HashPassword)
 	})
 
 	t.Run("Update No Rows", func(t *testing.T) {
 		// Trường hợp lỗi: Không tìm thấy người dùng để cập nhật
 		user := &models.User{
-			Id:         uuid.New(),
-			IdentityNo: "987654321",
-			Password:   "newpassword",
-			Active:     true,
-			Version:    2,
+			Id:           uuid.New(),
+			IdentityNo:   "987654321",
+			Password:     "newpassword",
+			HashPassword: "hashed_password",
+			Active:       true,
+			Version:      2,
 		}
 
 		mock.ExpectQuery(updateUserQuery).WithArgs(
-			user.IdentityNo, user.Password, user.Active, user.Role,
+			user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role,
 			user.CreatorId, user.ModifierId, user.Id, user.Version,
 		).WillReturnError(sql.ErrNoRows)
 
@@ -226,22 +232,23 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 
 		user := &models.User{
-			Id:         uid,
-			IdentityNo: "123456789",
-			Password:   string(hashedPassword),
-			Active:     true,
-			Role:       &role,
-			Version:    1,
-			CreatorId:  &creatorID,
-			ModifierId: modifierID,
-			CreatedAt:  time.Now().Add(-time.Hour),
-			UpdatedAt:  time.Now(),
+			Id:           uid,
+			IdentityNo:   "123456789",
+			Password:     "password123",
+			HashPassword: string(hashedPassword),
+			Active:       true,
+			Role:         &role,
+			Version:      1,
+			CreatorId:    &creatorID,
+			ModifierId:   modifierID,
+			CreatedAt:    time.Now().Add(-time.Hour),
+			UpdatedAt:    time.Now(),
 		}
 
 		rows := sqlmock.NewRows([]string{
-			"id", "identity_no", "password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
+			"id", "identity_no", "password", "hash_password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
 		}).AddRow(
-			user.Id, user.IdentityNo, user.Password, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
+			user.Id, user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
 		)
 
 		mock.ExpectQuery(getUserQuery).WithArgs(uid).WillReturnRows(rows)
@@ -251,6 +258,7 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 		require.NotNil(t, foundUser)
 		require.Equal(t, user.Id, foundUser.Id)
 		require.Equal(t, user.IdentityNo, foundUser.IdentityNo)
+		require.Equal(t, user.HashPassword, foundUser.HashPassword)
 	})
 
 	t.Run("GetUserById Not Found", func(t *testing.T) {
@@ -288,22 +296,23 @@ func TestAuthRepo_FindByIdentity(t *testing.T) {
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 
 		user := &models.User{
-			Id:         uid,
-			IdentityNo: "123456789",
-			Password:   string(hashedPassword),
-			Active:     true,
-			Role:       &role,
-			Version:    1,
-			CreatorId:  &creatorID,
-			ModifierId: modifierID,
-			CreatedAt:  time.Now().Add(-time.Hour),
-			UpdatedAt:  time.Now(),
+			Id:           uid,
+			IdentityNo:   "123456789",
+			Password:     "password123",
+			HashPassword: string(hashedPassword),
+			Active:       true,
+			Role:         &role,
+			Version:      1,
+			CreatorId:    &creatorID,
+			ModifierId:   modifierID,
+			CreatedAt:    time.Now().Add(-time.Hour),
+			UpdatedAt:    time.Now(),
 		}
 
 		rows := sqlmock.NewRows([]string{
-			"id", "identity_no", "password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
+			"id", "identity_no", "password", "hash_password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
 		}).AddRow(
-			user.Id, user.IdentityNo, user.Password, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
+			user.Id, user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
 		)
 
 		mock.ExpectQuery(findUserByIdentity).WithArgs(user.IdentityNo).WillReturnRows(rows)
@@ -313,6 +322,7 @@ func TestAuthRepo_FindByIdentity(t *testing.T) {
 		require.NotNil(t, foundUser)
 		require.Equal(t, user.Id, foundUser.Id)
 		require.Equal(t, user.IdentityNo, foundUser.IdentityNo)
+		require.Equal(t, user.HashPassword, foundUser.HashPassword)
 	})
 
 	t.Run("FindByIdentity Not Found", func(t *testing.T) {
@@ -351,23 +361,24 @@ func TestAuthRepo_GetUsers(t *testing.T) {
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 
 		user := &models.User{
-			Id:         uid,
-			IdentityNo: "123456789",
-			Password:   string(hashedPassword),
-			Active:     true,
-			Role:       &role,
-			Version:    1,
-			CreatorId:  &creatorID,
-			ModifierId: modifierID,
-			CreatedAt:  time.Now().Add(-time.Hour),
-			UpdatedAt:  time.Now(),
+			Id:           uid,
+			IdentityNo:   "123456789",
+			Password:     "password123",
+			HashPassword: string(hashedPassword),
+			Active:       true,
+			Role:         &role,
+			Version:      1,
+			CreatorId:    &creatorID,
+			ModifierId:   modifierID,
+			CreatedAt:    time.Now().Add(-time.Hour),
+			UpdatedAt:    time.Now(),
 		}
 
 		totalCountRows := sqlmock.NewRows([]string{"count"}).AddRow(1)
 		rows := sqlmock.NewRows([]string{
-			"id", "identity_no", "password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
+			"id", "identity_no", "password", "hash_password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
 		}).AddRow(
-			user.Id, user.IdentityNo, user.Password, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
+			user.Id, user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
 		)
 
 		pq := &utils.PaginationQuery{
@@ -385,6 +396,7 @@ func TestAuthRepo_GetUsers(t *testing.T) {
 		require.Equal(t, 1, usersList.TotalCount)
 		require.Len(t, usersList.Users, 1)
 		require.Equal(t, user.Id, usersList.Users[0].Id)
+		require.Equal(t, user.HashPassword, usersList.Users[0].HashPassword)
 	})
 
 	t.Run("GetUsers Empty", func(t *testing.T) {
@@ -429,23 +441,24 @@ func TestAuthRepo_FindByIdentityNO(t *testing.T) {
 		identity := "123456789"
 
 		user := &models.User{
-			Id:         uid,
-			IdentityNo: identity,
-			Password:   string(hashedPassword),
-			Active:     true,
-			Role:       &role,
-			Version:    1,
-			CreatorId:  &creatorID,
-			ModifierId: modifierID,
-			CreatedAt:  time.Now().Add(-time.Hour),
-			UpdatedAt:  time.Now(),
+			Id:           uid,
+			IdentityNo:   identity,
+			Password:     "password123",
+			HashPassword: string(hashedPassword),
+			Active:       true,
+			Role:         &role,
+			Version:      1,
+			CreatorId:    &creatorID,
+			ModifierId:   modifierID,
+			CreatedAt:    time.Now().Add(-time.Hour),
+			UpdatedAt:    time.Now(),
 		}
 
 		totalCountRows := sqlmock.NewRows([]string{"count"}).AddRow(1)
 		rows := sqlmock.NewRows([]string{
-			"id", "identity_no", "password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
+			"id", "identity_no", "password", "hash_password", "active", "role", "version", "creator_id", "modifier_id", "created_at", "updated_at",
 		}).AddRow(
-			user.Id, user.IdentityNo, user.Password, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
+			user.Id, user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role, user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
 		)
 
 		pq := &utils.PaginationQuery{
@@ -463,6 +476,7 @@ func TestAuthRepo_FindByIdentityNO(t *testing.T) {
 		require.Equal(t, 1, usersList.TotalCount)
 		require.Len(t, usersList.Users, 1)
 		require.Equal(t, user.Id, usersList.Users[0].Id)
+		require.Equal(t, user.HashPassword, usersList.Users[0].HashPassword)
 	})
 
 	t.Run("FindByIdentityNO Empty", func(t *testing.T) {
