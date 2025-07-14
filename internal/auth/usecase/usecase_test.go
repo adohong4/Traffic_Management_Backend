@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 
 	"github.com/adohong4/driving-license/config"
@@ -46,7 +45,7 @@ func TestAuthUC_CreateUser(t *testing.T) {
 	ctx := context.Background()
 
 	// Mock FindByIdentity to return no existing user
-	mockAuthRepo.EXPECT().FindByIdentity(ctx, gomock.Eq(user)).Return(nil, sql.ErrNoRows)
+	mockAuthRepo.EXPECT().FindByIdentity(ctx, gomock.Eq(user)).Return(nil, nil)
 	// Mock CreateUser to return the created user
 	mockAuthRepo.EXPECT().CreateUser(ctx, gomock.Eq(user)).Return(user, nil)
 
@@ -287,12 +286,18 @@ func TestAuthUC_Login(t *testing.T) {
 	require.NoError(t, err)
 
 	mockUser := &models.User{
-		IdentityNo: user.IdentityNo,
-		Password:   string(hashPassword),
+		Id:           uuid.New(),
+		IdentityNo:   user.IdentityNo,
+		HashPassword: string(hashPassword),
+		Active:       true,
 	}
 
 	// Mock FindByIdentity to return the mock user
-	mockAuthRepo.EXPECT().FindByIdentity(ctx, gomock.Eq(user)).Return(mockUser, nil)
+	mockAuthRepo.EXPECT().FindByIdentity(ctx, gomock.Any()).Return(mockUser, nil).Do(func(ctx context.Context, u *models.User) {
+		t.Logf("FindByIdentity input: IdentityNO=%s, Password=%s", u.IdentityNo, u.Password)
+		require.Equal(t, user.IdentityNo, u.IdentityNo)
+		require.Equal(t, "password123", u.Password)
+	})
 
 	userWithToken, err := authUC.Login(ctx, user)
 	require.NoError(t, err)

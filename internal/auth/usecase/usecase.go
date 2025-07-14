@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 
@@ -33,8 +34,11 @@ func NewAuthUseCase(cfg *config.Config, authRepo auth.Repository, log logger.Log
 
 func (u *authUC) CreateUser(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
 	existsUser, err := u.authRepo.FindByIdentity(ctx, user)
-	if existsUser != nil || err != nil {
+	if existsUser != nil {
 		return nil, httpErrors.NewRestErrorWithMessage(http.StatusBadRequest, httpErrors.ErrIdentityAlreadyExists, nil)
+	}
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, errors.Wrap(err, "authUC.CreateUser.FindByIdentity")
 	}
 
 	if err = user.PrepareCreate(); err != nil {
