@@ -39,7 +39,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 		user := &models.User{
 			Id:           uuid.New(),
 			IdentityNo:   "123456789",
-			Password:     "password123", // Mật khẩu gốc
+			Password:     "password123",
 			HashPassword: string(hashedPassword),
 			Active:       true,
 			Role:         &role,
@@ -58,7 +58,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 
 		mock.ExpectQuery(createUserQuery).WithArgs(
 			user.Id, user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role,
-			user.Version, user.CreatorId, user.ModifierId, user.UpdatedAt,
+			user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
 		).WillReturnRows(rows)
 
 		createdUser, err := authRepo.CreateUser(context.Background(), user)
