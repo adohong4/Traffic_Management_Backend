@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/adohong4/driving-license/internal/models"
 	vehiclelicense "github.com/adohong4/driving-license/internal/vehicle_registration"
@@ -26,7 +27,7 @@ func (r *vehicleDocRepo) CreateVehicleDoc(ctx context.Context, veDoc *models.Veh
 	if err := r.db.QueryRowxContext(ctx, createLicenseQuery,
 		veDoc.ID, veDoc.OwnerID, veDoc.Brand, veDoc.TypeVehicle, veDoc.VehiclePlateNo, veDoc.ColorPlate, veDoc.ChassisNo, veDoc.EngineNo, veDoc.ColorVehicle,
 		veDoc.OwnerName, veDoc.Seats, veDoc.IssueDate, veDoc.ExpiryDate, veDoc.Issuer,
-		veDoc.Status, veDoc.Version, veDoc.CreatorId, veDoc.ModifierId, veDoc.CreatedAt, veDoc.UpdatedAt, veDoc.Active,
+		veDoc.Status, veDoc.Version, veDoc.CreatorId, veDoc.ModifierId, veDoc.CreatedAt, veDoc.UpdatedAt,
 	).StructScan(v); err != nil {
 		return nil, errors.Wrap(err, "vehicleDocRepo.CreateVehicleDoc.StructScan")
 	}
@@ -48,7 +49,7 @@ func (r *vehicleDocRepo) UpdateVehicleDoc(ctx context.Context, veDoc *models.Veh
 func (r *vehicleDocRepo) DeleteVehicleDoc(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error) {
 	v := &models.VehicleRegistration{}
 	if err := r.db.QueryRowxContext(ctx, deleteLicenseQuery,
-		veDoc.Active, veDoc.Version, veDoc.ModifierId, veDoc.UpdatedAt,
+		veDoc.ModifierId, veDoc.UpdatedAt, veDoc.ID,
 	).StructScan(v); err != nil {
 		return nil, errors.Wrap(err, "VehicleDocRepo.DeleteVehicle.StructScan")
 	}
@@ -107,7 +108,7 @@ func (r *vehicleDocRepo) GetVehicleByID(ctx context.Context, vehicleID uuid.UUID
 	return v, nil
 }
 
-func (r *vehicleDocRepo) FindByVehiclePlateNO(ctx context.Context, vePlaNO string, query *utils.PaginationQuery) (*models.VehicleRegistrationList, error) {
+func (r *vehicleDocRepo) SearchByVehiclePlateNO(ctx context.Context, vePlaNO string, query *utils.PaginationQuery) (*models.VehicleRegistrationList, error) {
 	var totalCount int
 	if err := r.db.GetContext(ctx, &totalCount, findByVehiclePlateNOCount, vePlaNO); err != nil {
 		return nil, errors.Wrap(err, "VehicleDocRepo.FindByVehiclePlateNOCount.GetContext")
@@ -125,7 +126,7 @@ func (r *vehicleDocRepo) FindByVehiclePlateNO(ctx context.Context, vePlaNO strin
 	}
 
 	var NewVehicleDocs = make([]*models.VehicleRegistration, 0, query.GetSize())
-	rows, err := r.db.QueryxContext(ctx, findByVehiclePlateNO, query.GetOffset(), query.GetLimit())
+	rows, err := r.db.QueryxContext(ctx, searchByVehiclePlateNO, vePlaNO, query.GetOffset(), query.GetLimit())
 	if err != nil {
 		return nil, errors.Wrap(err, "NewVehicleDocs.FindByVehiclePlateNOCount.QueryxContext")
 	}
@@ -151,4 +152,16 @@ func (r *vehicleDocRepo) FindByVehiclePlateNO(ctx context.Context, vePlaNO strin
 		HasMore:         utils.GetHasMore(query.GetPage(), totalCount, query.GetSize()),
 		VehicleDocument: NewVehicleDocs,
 	}, nil
+}
+
+func (r *vehicleDocRepo) FindVehiclePlateNO(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error) {
+	foundVehicleReq := &models.VehicleRegistration{}
+	err := r.db.QueryRowxContext(ctx, findVehiclePlateNO, veDoc.VehiclePlateNo).StructScan(foundVehicleReq)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.findVehiclePlateNO.QueryRowxContext")
+	}
+	return foundVehicleReq, nil
 }

@@ -2,22 +2,22 @@ package repository
 
 const (
 	createLicenseQuery = `
-	INSERT INTO vehicle_documents (
+	INSERT INTO vehicle_registration (
 		id, owner_id, brand, type_vehicle, vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,
-		owner_name, document_type, document_no, issue_date, expiry_date, issuer, status, 
+		owner_name,seats, issue_date, expiry_date, issuer, status, 
 		version, creator_id, modifier_id, created_at, updated_at
 	)VALUES(
-		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $13, $14, $15, $16, $17, $18, $19, $20, $21
+		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
 	)RETURNING 
 		id, owner_id, brand, type_vehicle vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,
-		owner_name, document_type, document_no, issue_date, expiry_date, issuer, 
+		owner_name, issue_date, expiry_date, issuer, 
 		status, version, creator_id, modifier_id, created_at, updated_at
 	`
 
 	updateLicenseQuery = `
-    UPDATE vehicle_documents
+    UPDATE vehicle_registration
     SET
-        owner_id = COALESCE(NULLIF($1, ''), owner_id),
+        owner_id = COALESCE($1, owner_id),
         brand = COALESCE(NULLIF($2, ''), brand),
         type_vehicle = COALESCE(NULLIF($3, ''), type_vehicle),
         vehicle_no = COALESCE(NULLIF($4, ''), vehicle_no),
@@ -40,10 +40,10 @@ const (
 `
 
 	deleteLicenseQuery = `
-	UPDATE vehicle_documents
+	UPDATE vehicle_registration
 	SET
-		active = false
-		version = version + 1
+		active = false,
+		version = version + 1,
 		modifier_id = $1,
 		updated_at = $2
 	WHERE id = $3
@@ -52,39 +52,43 @@ const (
 
 	getLicenseQuery = `
 	SELECT *
-	FROM vehicle_documents
+	FROM vehicle_registration
 	WHERE id = $1 AND active = true
 	`
 
 	getTotalCount = `
 	SELECT COUNT(id)
-	FROM vehicle_documents
+	FROM vehicle_registration
 	WHERE active = true
 	`
 
 	findByVehiclePlateNOCount = `
-	SELECT COUNT(*)
-	FROM  vehicle_documents
-	WHERE active = true
-	AND vehicle_no ILIKE '%' || $1 || '%'
-	ORDER BY vehicle_no
-	OFFSET $2 LIMIT $3
+		SELECT COUNT(*)
+		FROM vehicle_registration
+		WHERE active = true
+		AND vehicle_no ILIKE '%' || $1 || '%'
 	`
 
-	findByVehiclePlateNO = `
+	searchByVehiclePlateNO = `
     SELECT * 
-    FROM vehicle_documents
-    WHERE vehicle_no ILIKE '%' || $1 || '%' AND active = true
+    FROM vehicle_registration
+    WHERE vehicle_no ILIKE '%' || $1 || '%' AND active = true	
     ORDER BY vehicle_no
     OFFSET $2 LIMIT $3
 `
 
 	getVehicleDocuments = `
-	SELECT id, owner_id, brand, vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,owner_name,
-		document_type, document_no, issue_date, expiry_date, issuer, 
-		status, version, creator_id, modifier_id, created_at, updated_at,
-	FROM vehicle_documents
+	SELECT id, owner_id, brand, vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,
+    	owner_name, issue_date, expiry_date, issuer, 
+    	status, version, creator_id, modifier_id, updated_at, created_at
+	FROM vehicle_registration
 	WHERE active = true
 	ORDER BY updated_at, created_at OFFSET $1 LIMIT $2
+	`
+
+	findVehiclePlateNO = `
+	SELECT *
+	FROM vehicle_registration
+	WHERE vehicle_no = $1 AND active = true
 	`
 )

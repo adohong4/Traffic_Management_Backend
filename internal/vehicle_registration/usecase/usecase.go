@@ -2,6 +2,9 @@ package usecase
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/adohong4/driving-license/config"
@@ -26,6 +29,19 @@ func NewVehicleRegUseCase(cfg *config.Config, vehicleRegRepo vehicleRegistration
 }
 
 func (v *vehicleRegUC) CreateVehicleDoc(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error) {
+	existsVehiclePlateNO, err := v.vehicleRegRepo.FindVehiclePlateNO(ctx, veDoc)
+	fmt.Println("Exists Vehicle Plate NO:", existsVehiclePlateNO)
+	if existsVehiclePlateNO != nil {
+		return nil, httpErrors.NewRestErrorWithMessage(http.StatusBadRequest, httpErrors.ErrVehicleAlreadyExists, nil)
+	}
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, errors.Wrap(err, "vehicleRegUC.CreateVehicleDoc.FindVehiclePlateNO")
+	}
+
+	if err = veDoc.PrepareCreate(); err != nil {
+		return nil, httpErrors.NewBadRequestError(errors.Wrap(err, "vehicleRegUC.CreateVehicleDoc.PrepareCreate"))
+	}
+
 	user, err := utils.GetUserFromCtx(ctx)
 	if err != nil {
 		return nil, httpErrors.NewUnauthorizedError(errors.WithMessage(err, "vehicleRegUC.Create.GetUserFromCtx"))
@@ -36,6 +52,10 @@ func (v *vehicleRegUC) CreateVehicleDoc(ctx context.Context, veDoc *models.Vehic
 	if err = utils.ValidateStruct(ctx, veDoc); err != nil {
 		return nil, httpErrors.NewBadRequestError(errors.WithMessage(err, "vehicleRegUC.Create.ValidateStruct"))
 	}
+
+	fmt.Println("Creator ID:", veDoc.CreatorId)
+	fmt.Println("Owner ID:", veDoc.OwnerID)
+	fmt.Println("Modifier ID:", veDoc.ModifierId)
 
 	n, err := v.vehicleRegRepo.CreateVehicleDoc(ctx, veDoc)
 	if err != nil {
@@ -100,5 +120,5 @@ func (v *vehicleRegUC) GetVehicleByID(ctx context.Context, vehicleID uuid.UUID) 
 }
 
 func (v *vehicleRegUC) FindByVehiclePlateNO(ctx context.Context, vePlaNO string, query *utils.PaginationQuery) (*models.VehicleRegistrationList, error) {
-	return v.vehicleRegRepo.FindByVehiclePlateNO(ctx, vePlaNO, query)
+	return v.vehicleRegRepo.SearchByVehiclePlateNO(ctx, vePlaNO, query)
 }
