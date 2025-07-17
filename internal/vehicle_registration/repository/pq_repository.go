@@ -107,7 +107,7 @@ func (r *vehicleDocRepo) GetVehicleByID(ctx context.Context, vehicleID uuid.UUID
 	return v, nil
 }
 
-func (r *vehicleDocRepo) FindByVehiclePlateNOCount(ctx context.Context, vePlaNO string, query *utils.PaginationQuery) (*models.VehicleRegistrationList, error) {
+func (r *vehicleDocRepo) FindByVehiclePlateNO(ctx context.Context, vePlaNO string, query *utils.PaginationQuery) (*models.VehicleRegistrationList, error) {
 	var totalCount int
 	if err := r.db.GetContext(ctx, &totalCount, findByVehiclePlateNOCount, vePlaNO); err != nil {
 		return nil, errors.Wrap(err, "VehicleDocRepo.FindByVehiclePlateNOCount.GetContext")

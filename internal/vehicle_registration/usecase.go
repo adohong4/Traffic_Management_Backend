@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
-type Repository interface {
-	CreateVehicleDoc(ctx context.Context, vehicleDoc *models.VehicleRegistration) (*models.VehicleRegistration, error)
+type UseCase interface {
+	CreateVehicleDoc(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error)
 	UpdateVehicleDoc(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error)
 	DeleteVehicleDoc(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error)
 	GetVehicleDocs(ctx context.Context, pq *utils.PaginationQuery) (*models.VehicleRegistrationList, error)
