@@ -9,17 +9,17 @@ import (
 
 // Gov Agency model
 type GovAgency struct {
-	Id        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	Address   string    `json:"address"`
-	City      string    `json:"city"`
-	Type      string    `json:"type"` // Đào tạo/đăng kiểm/cấp giấy tờ/...
-	Phone     string    `json:"phone"`
-	Email     string    `json:"email"`
-	Status    string    `json:"status"`
+	Id        uuid.UUID `json:"id" db:"id"`
+	Name      string    `json:"name" db:"name"`
+	Address   string    `json:"address" db:"address"`
+	City      string    `json:"city" db:"city"`
+	Type      string    `json:"type" db:"type"` // Đào tạo/đăng kiểm/cấp giấy tờ/...
+	Phone     string    `json:"phone" db:"phone"`
+	Email     string    `json:"email" db:"email"`
+	Status    string    `json:"status" db:"status"`
 	Version   int       `json:"version" db:"version"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 	Active    bool      `json:"active" db:"active"`
 }
 

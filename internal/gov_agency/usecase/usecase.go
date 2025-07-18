@@ -40,7 +40,7 @@ func (u *GovAgencyUC) CreateGovAgency(ctx context.Context, gov *models.GovAgency
 }
 
 func (u *GovAgencyUC) UpdateGovAgency(ctx context.Context, gov *models.GovAgency) (*models.GovAgency, error) {
-	if err := gov.PrepareCreate(); err != nil {
+	if err := gov.PrepareUpdate(); err != nil {
 		return nil, httpErrors.NewBadRequestError(errors.Wrap(err, "GovAgencyUC.CreateGovAgency.PrepareCreate"))
 	}
 
@@ -57,7 +57,7 @@ func (u *GovAgencyUC) UpdateGovAgency(ctx context.Context, gov *models.GovAgency
 }
 
 func (u *GovAgencyUC) DeleteGovAgency(ctx context.Context, gov *models.GovAgency) (*models.GovAgency, error) {
-	if err := gov.PrepareCreate(); err != nil {
+	if err := gov.PrepareUpdate(); err != nil {
 		return nil, httpErrors.NewBadRequestError(errors.Wrap(err, "GovAgencyUC.CreateGovAgency.PrepareCreate"))
 	}
 

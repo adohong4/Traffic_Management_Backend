@@ -34,7 +34,7 @@ func (r *GovAgencyRepo) CreateGovAgency(ctx context.Context, gov *models.GovAgen
 func (r *GovAgencyRepo) UpdateGovAgency(ctx context.Context, gov *models.GovAgency) (*models.GovAgency, error) {
 	g := &models.GovAgency{}
 	if err := r.db.QueryRowxContext(ctx, updateGovAgencyQuery,
-		gov.Name, gov.Address, gov.City, gov.Type, gov.Phone, gov.Email, gov.Status, gov.Version, gov.UpdatedAt, gov.Id,
+		gov.Name, gov.Address, gov.City, gov.Type, gov.Phone, gov.Email, gov.Status, gov.UpdatedAt, gov.Id,
 	).StructScan(g); err != nil {
 		return nil, errors.Wrap(err, "GovAgencyRepo.UpdateGovAgency.StructScan")
 	}
@@ -43,9 +43,7 @@ func (r *GovAgencyRepo) UpdateGovAgency(ctx context.Context, gov *models.GovAgen
 
 func (r *GovAgencyRepo) DeleteGovAgency(ctx context.Context, gov *models.GovAgency) (*models.GovAgency, error) {
 	g := &models.GovAgency{}
-	if err := r.db.QueryRowxContext(ctx, deleteGovAgencyQuery,
-		gov.Version, gov.UpdatedAt, gov.Id,
-	).StructScan(g); err != nil {
+	if err := r.db.QueryRowxContext(ctx, deleteGovAgencyQuery, gov.UpdatedAt, gov.Id).StructScan(g); err != nil {
 		return nil, errors.Wrap(err, "GovAgencyRepo.DeleteGovAgency.StructScan")
 	}
 	return g, nil
@@ -107,7 +105,7 @@ func (r *GovAgencyRepo) GetGovAgencyByID(ctx context.Context, Id uuid.UUID) (*mo
 
 func (r *GovAgencyRepo) SearchByName(ctx context.Context, name string, query *utils.PaginationQuery) (*models.GovAgencyList, error) {
 	var totalCount int
-	if err := r.db.GetContext(ctx, &totalCount, searchGovAgencyByNameCount); err != nil {
+	if err := r.db.GetContext(ctx, &totalCount, searchGovAgencyByNameCount, name); err != nil {
 		return nil, errors.Wrap(err, "GovAgencyRepo.SearchByName.GetContext.totalCount")
 	}
 
@@ -123,7 +121,7 @@ func (r *GovAgencyRepo) SearchByName(ctx context.Context, name string, query *ut
 	}
 
 	var NewGovAgency = make([]*models.GovAgency, 0, query.GetSize())
-	rows, err := r.db.QueryxContext(ctx, searchGovAgencyByName, query.GetOffset(), query.GetLimit())
+	rows, err := r.db.QueryxContext(ctx, searchGovAgencyByName, name, query.GetOffset(), query.GetLimit())
 	if err != nil {
 		return nil, errors.Wrap(err, "GovAgencyRepo.SearchByName.NewGovAgency")
 	}
