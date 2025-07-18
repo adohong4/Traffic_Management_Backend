@@ -9,7 +9,6 @@ import (
 
 type DrivingLicense struct {
 	Id               uuid.UUID  `json:"id"`
-	OwnerID          *uuid.UUID `json:"owner_id" db:"owner_id"` // ID chủ sở hữu
 	Name             string     `json:"full_name"`
 	DOB              string     `json:"dob"`               // Ngày sinh
 	IdentityNo       string     `json:"identity_no"`       // Căn cước công dân
@@ -53,7 +52,6 @@ func (d *DrivingLicense) PrepareUpdate() error {
 	d.LicenseType = strings.TrimSpace(d.LicenseType)
 
 	d.UpdatedAt = time.Now()
-	d.Version++
 	return nil
 }
 
