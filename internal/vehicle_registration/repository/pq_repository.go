@@ -82,13 +82,13 @@ func (r *vehicleDocRepo) GetVehicleDocs(ctx context.Context, pq *utils.Paginatio
 	for rows.Next() {
 		n := &models.VehicleRegistration{}
 		if err = rows.StructScan(n); err != nil {
-			return nil, errors.Wrap(err, "newsRepo.GetNews.StructScan")
+			return nil, errors.Wrap(err, "VehicleDocRepo.GetNews.StructScan")
 		}
 		NewVehicleDocs = append(NewVehicleDocs, n)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "newsRepo.GetNews.rows.Err")
+		return nil, errors.Wrap(err, "VehicleDocRepo.GetNews.rows.Err")
 	}
 	return &models.VehicleRegistrationList{
 		TotalCount:      totalCount,

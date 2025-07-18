@@ -1,20 +1,20 @@
 package repository
 
 const (
-	createFacilityQuery = `
-	INSERT INTO facilities (
+	createGovAgencyQuery = `
+	INSERT INTO gov_agency (
 		id, name, address, city, type, phone, email, status, 
-		version, creator_id, created_at, updated_at
+		version, created_at, updated_at, active
 	) VALUES (
 		$1, $2, $3, $4, $5, $6, $7, $8, 
 		$9, $10, $11, $12
 	) RETURNING 
 		id, name, address, city, type, phone, email, status, 
-		version, creator_id, created_at, updated_at
+		version, created_at, updated_at, active
 	`
 
-	updateFacilityQuery = `
-	UPDATE facilities
+	updateGovAgencyQuery = `
+	UPDATE gov_agency
 	SET
 		name = COALESCE(NULLIF($1, ''), name),
 		address = COALESCE(NULLIF($2, ''), address),
@@ -29,8 +29,8 @@ const (
 	RETURNING *
 	`
 
-	deleteFacilityQuery = `
-	UPDATE facilities
+	deleteGovAgencyQuery = `
+	UPDATE gov_agency
 	SET
 		active = false,
 		version = version + 1,
@@ -39,44 +39,44 @@ const (
 	RETURNING *
 	`
 
-	getFacilityQuery = `
+	getGovAgencyQuery = `
 	SELECT *
-	FROM facilities
+	FROM gov_agency
 	WHERE id = $1 AND active = true
 	`
 
-	getTotalFacilityCount = `
+	getTotalGovAgencyCount = `
 	SELECT COUNT(id)
-	FROM facilities
+	FROM gov_agency
 	WHERE active = true
 	`
 
-	searchFacilityByNameCount = `
+	searchGovAgencyByNameCount = `
 	SELECT COUNT(*)
-	FROM facilities
+	FROM gov_agency
 	WHERE active = true
 	AND name ILIKE '%' || $1 || '%'
 	`
 
-	searchFacilityByName = `
+	searchGovAgencyByName = `
 	SELECT * 
-	FROM facilities
+	FROM gov_agency
 	WHERE name ILIKE '%' || $1 || '%' AND active = true	
 	ORDER BY name
 	OFFSET $2 LIMIT $3
 	`
 
-	getAllFacilities = `
+	getAllGovAgency = `
 	SELECT id, name, address, city, type, phone, email, status, 
-		version, creator_id, updated_at, created_at
-	FROM facilities
+		version, updated_at, created_at, active
+	FROM gov_agency
 	WHERE active = true
 	ORDER BY updated_at, created_at OFFSET $1 LIMIT $2
 	`
 
-	findFacilityByName = `
+	findGovAgencyByName = `
 	SELECT *
-	FROM facilities
+	FROM gov_agency
 	WHERE name = $1 AND active = true
 	`
 )

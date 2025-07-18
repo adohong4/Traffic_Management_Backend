@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// facility model
-type Facility struct {
+// Gov Agency model
+type GovAgency struct {
 	Id        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	Address   string    `json:"address"`
@@ -23,8 +23,8 @@ type Facility struct {
 	Active    bool      `json:"active" db:"active"`
 }
 
-// Prepare the facility for creation
-func (f *Facility) PrepareCreate() error {
+// Prepare the Gov Agency for creation
+func (f *GovAgency) PrepareCreate() error {
 	f.Phone = strings.TrimSpace(f.Phone)
 	f.Email = strings.TrimSpace(f.Email)
 
@@ -36,8 +36,8 @@ func (f *Facility) PrepareCreate() error {
 	return nil
 }
 
-// Prepare the facility for updating
-func (f *Facility) PrepareUpdate() error {
+// Prepare the Gov Agency for updating
+func (f *GovAgency) PrepareUpdate() error {
 	f.Phone = strings.TrimSpace(f.Phone)
 	f.Email = strings.TrimSpace(f.Email)
 
@@ -46,12 +46,12 @@ func (f *Facility) PrepareUpdate() error {
 	return nil
 }
 
-// All facility response
-type FacilityList struct {
-	TotalCount int         `json:"total_count"`
-	TotalPages int         `json:"total_pages"`
-	Page       int         `json:"page"`
-	Size       int         `json:"size"`
-	HasMore    bool        `json:"has_more"`
-	Facility   []*Facility `json:"facility"`
+// All Gov Agency response
+type GovAgencyList struct {
+	TotalCount int          `json:"total_count"`
+	TotalPages int          `json:"total_pages"`
+	Page       int          `json:"page"`
+	Size       int          `json:"size"`
+	HasMore    bool         `json:"has_more"`
+	GovAgency  []*GovAgency `json:"gov_agency"`
 }
