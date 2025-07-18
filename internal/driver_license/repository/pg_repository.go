@@ -151,7 +151,7 @@ func (r *DriverLicenseRepo) SearchByLicenseNo(ctx context.Context, lno string, q
 	}, nil
 }
 
-func (r *DriverLicenseRepo) FindLicenseNO(ctx context.Context, lno string, dl *models.DrivingLicense) (*models.DrivingLicense, error) {
+func (r *DriverLicenseRepo) FindLicenseNO(ctx context.Context, dl *models.DrivingLicense) (*models.DrivingLicense, error) {
 	d := &models.DrivingLicense{}
 	err := r.db.QueryRowxContext(ctx, findLicenseNO, dl.LicenseNo).StructScan(d)
 	if err == sql.ErrNoRows {

@@ -15,5 +15,5 @@ type Repository interface {
 	GetDriverLicense(ctx context.Context, pq *utils.PaginationQuery) (*models.DrivingLicenseList, error)
 	GetDriverLicenseById(ctx context.Context, Id uuid.UUID) (*models.DrivingLicense, error)
 	SearchByLicenseNo(ctx context.Context, lno string, query *utils.PaginationQuery) (*models.DrivingLicenseList, error)
-	FindLicenseNO(ctx context.Context, lno string, dl *models.DrivingLicense) (*models.DrivingLicense, error)
+	FindLicenseNO(ctx context.Context, dl *models.DrivingLicense) (*models.DrivingLicense, error)
 }

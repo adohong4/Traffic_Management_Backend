@@ -14,6 +14,7 @@ const (
 	ErrBadRequest            = "Bad request"
 	ErrIdentityAlreadyExists = "User with given identity already exists"
 	ErrVehicleAlreadyExists  = "Vehicle Palte NO already exists"
+	ErrLicenseAlreadyExists  = "License NO already exists"
 	ErrNoSuchUser            = "User not found"
 	ErrWrongCredentials      = "Wrong Credentials"
 	ErrNotFound              = "Not Found"
