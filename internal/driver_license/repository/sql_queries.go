@@ -18,17 +18,16 @@ const (
 	UPDATE driver_licenses 
 	SET
 		full_name = COALESCE(NULLIF($1, ''), full_name),
-		dob = COALESCE(NULLIF($2, ''), dob),
+		dob = COALESCE(NULLIF($2, '')::DATE, dob),
 		owner_address = COALESCE(NULLIF($3, ''), owner_address),
-		license_no = COALESCE(NULLIF($4, ''), license_no),
-		expiry_date = COALESCE($5, expiry_date),
-		status = COALESCE(NULLIF($6, ''), status),
-		nationality = COALESCE(NULLIF($7, ''), nationality),
-		point = COALESCE($8, point),
-		modifier_id = COALESCE($9, modifier_id),
+		expiry_date = COALESCE($4, expiry_date),
+		status = COALESCE(NULLIF($5, ''), status),
+		nationality = COALESCE(NULLIF($6, ''), nationality),
+		point = COALESCE($7, point),
+		modifier_id = COALESCE($8, modifier_id),
         version = version + 1,
-        updated_at = $10,
-	WHERE id = $11
+        updated_at = $9
+	WHERE id = $10
 	RETURNING *
 	`
 
@@ -36,11 +35,11 @@ const (
 	UPDATE driver_licenses
 	SET
 		active = false,
-		version = version + 1
+		version = version + 1,
 		modifier_id = $1,
 		updated_at = $2
 	WHERE id = $3
-	RETURNING license_no, status
+	RETURNING *
 	`
 
 	getDriverLicenseByIdQuery = `

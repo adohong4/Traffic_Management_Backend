@@ -35,7 +35,7 @@ func (r *DriverLicenseRepo) CreateDriverLicense(ctx context.Context, dl *models.
 func (r *DriverLicenseRepo) UpdateDriverLicense(ctx context.Context, dl *models.DrivingLicense) (*models.DrivingLicense, error) {
 	d := &models.DrivingLicense{}
 	if err := r.db.QueryRowxContext(ctx, updateDriverLicenseQuery,
-		dl.Name, dl.DOB, dl.OwnerAddress, dl.LicenseNo, dl.ExpiryDate, dl.Status,
+		dl.Name, dl.DOB, dl.OwnerAddress, dl.ExpiryDate, dl.Status,
 		dl.Nationality, dl.Point, dl.ModifierId, dl.UpdatedAt, dl.Id,
 	).StructScan(d); err != nil {
 		return nil, errors.Wrap(err, "DriverLicenseRepo.UpdateDriverLicense.StructScan")

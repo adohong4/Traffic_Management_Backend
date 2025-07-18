@@ -3,17 +3,21 @@ package server
 import (
 	"net/http"
 
-	vehicleRegHttp "github.com/adohong4/driving-license/internal/vehicle_registration/delivery/http"
-	vehicleReqRepository "github.com/adohong4/driving-license/internal/vehicle_registration/repository"
-	vehicleReqUseCase "github.com/adohong4/driving-license/internal/vehicle_registration/usecase"
+	authHttp "github.com/adohong4/driving-license/internal/auth/delivery/http"
+	authRepository "github.com/adohong4/driving-license/internal/auth/repository"
+	authUseCase "github.com/adohong4/driving-license/internal/auth/usecase"
 
 	govAgencyHttp "github.com/adohong4/driving-license/internal/gov_agency/delivery/http"
 	govAgencyRepo "github.com/adohong4/driving-license/internal/gov_agency/repository"
 	govAgencyUC "github.com/adohong4/driving-license/internal/gov_agency/usecase"
 
-	authHttp "github.com/adohong4/driving-license/internal/auth/delivery/http"
-	authRepository "github.com/adohong4/driving-license/internal/auth/repository"
-	authUseCase "github.com/adohong4/driving-license/internal/auth/usecase"
+	driverLicenseHttp "github.com/adohong4/driving-license/internal/driver_license/delivery/http"
+	driverLicenseRepo "github.com/adohong4/driving-license/internal/driver_license/repository"
+	driverLicenseUseCase "github.com/adohong4/driving-license/internal/driver_license/usecase"
+
+	vehicleRegHttp "github.com/adohong4/driving-license/internal/vehicle_registration/delivery/http"
+	vehicleReqRepository "github.com/adohong4/driving-license/internal/vehicle_registration/repository"
+	vehicleReqUseCase "github.com/adohong4/driving-license/internal/vehicle_registration/usecase"
 
 	apiMiddlewares "github.com/adohong4/driving-license/internal/middleware"
 	"github.com/adohong4/driving-license/pkg/utils"
@@ -26,16 +30,19 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	// Init Repositories
 	aRepo := authRepository.NewAuthRepository(s.db)
 	gRepo := govAgencyRepo.NewGovAgencyRepo(s.db)
+	dRepo := driverLicenseRepo.NewDriverLicenseRepo(s.db)
 	vReRepo := vehicleReqRepository.NewVehicleDocRepository(s.db)
 
 	// Init Usecase
 	authUC := authUseCase.NewAuthUseCase(s.cfg, aRepo, s.logger)
 	goAgenUC := govAgencyUC.NewGovAgencyUseCase(s.cfg, gRepo, s.logger)
+	dlUC := driverLicenseUseCase.NewDriverLicenseUseCase(s.cfg, dRepo, s.logger)
 	vReUC := vehicleReqUseCase.NewVehicleRegUseCase(s.cfg, vReRepo, s.logger)
 
 	// Init Handler
 	authHandlers := authHttp.NewAuthHandlers(s.cfg, authUC, s.logger)
 	govAgencyHandlers := govAgencyHttp.NewGovAgencyHandlers(s.cfg, goAgenUC, s.logger)
+	driverLicenseHandlers := driverLicenseHttp.NewDriverLicenseHandlers(s.cfg, dlUC, s.logger)
 	vehiclerReqHandlers := vehicleRegHttp.NewVehicleReqHandlers(s.cfg, vReUC, s.logger)
 
 	mw := apiMiddlewares.NewMiddlewareManager(authUC, s.cfg, []string{"*"}, s.logger)
@@ -63,10 +70,12 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	health := v1.Group("/health")
 	authGroup := v1.Group("/auth")
 	goAgencyGroup := v1.Group("/agency")
+	driverLicenseGroup := v1.Group("/driverLicense")
 	vehicleReq := v1.Group("/vehicleReg")
 
 	authHttp.MapAuthRoutes(authGroup, authHandlers, mw, s.cfg, authUC)
 	govAgencyHttp.MapGovAgencyRoutes(goAgencyGroup, govAgencyHandlers)
+	driverLicenseHttp.MapDriverLicenseRoutes(driverLicenseGroup, driverLicenseHandlers, mw, s.cfg, authUC)
 	vehicleRegHttp.MapVehicleRegistrationRoutes(vehicleReq, vehiclerReqHandlers, mw, s.cfg, authUC)
 
 	health.GET("", func(c echo.Context) error {
