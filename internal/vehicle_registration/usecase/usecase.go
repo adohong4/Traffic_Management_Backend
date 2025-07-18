@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -30,7 +29,6 @@ func NewVehicleRegUseCase(cfg *config.Config, vehicleRegRepo vehicleRegistration
 
 func (v *vehicleRegUC) CreateVehicleDoc(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error) {
 	existsVehiclePlateNO, err := v.vehicleRegRepo.FindVehiclePlateNO(ctx, veDoc)
-	fmt.Println("Exists Vehicle Plate NO:", existsVehiclePlateNO)
 	if existsVehiclePlateNO != nil {
 		return nil, httpErrors.NewRestErrorWithMessage(http.StatusBadRequest, httpErrors.ErrVehicleAlreadyExists, nil)
 	}
@@ -52,10 +50,6 @@ func (v *vehicleRegUC) CreateVehicleDoc(ctx context.Context, veDoc *models.Vehic
 	if err = utils.ValidateStruct(ctx, veDoc); err != nil {
 		return nil, httpErrors.NewBadRequestError(errors.WithMessage(err, "vehicleRegUC.Create.ValidateStruct"))
 	}
-
-	fmt.Println("Creator ID:", veDoc.CreatorId)
-	fmt.Println("Owner ID:", veDoc.OwnerID)
-	fmt.Println("Modifier ID:", veDoc.ModifierId)
 
 	n, err := v.vehicleRegRepo.CreateVehicleDoc(ctx, veDoc)
 	if err != nil {

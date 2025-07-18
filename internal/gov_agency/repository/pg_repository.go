@@ -44,7 +44,7 @@ func (r *GovAgencyRepo) UpdateGovAgency(ctx context.Context, gov *models.GovAgen
 func (r *GovAgencyRepo) DeleteGovAgency(ctx context.Context, gov *models.GovAgency) (*models.GovAgency, error) {
 	g := &models.GovAgency{}
 	if err := r.db.QueryRowxContext(ctx, deleteGovAgencyQuery,
-		gov.Active, gov.Version, gov.UpdatedAt, gov.Id,
+		gov.Version, gov.UpdatedAt, gov.Id,
 	).StructScan(g); err != nil {
 		return nil, errors.Wrap(err, "GovAgencyRepo.DeleteGovAgency.StructScan")
 	}

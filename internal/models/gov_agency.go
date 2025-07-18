@@ -42,7 +42,6 @@ func (f *GovAgency) PrepareUpdate() error {
 	f.Email = strings.TrimSpace(f.Email)
 
 	f.UpdatedAt = time.Now()
-	f.Version++
 	return nil
 }
 
