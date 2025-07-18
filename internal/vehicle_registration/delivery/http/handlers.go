@@ -142,7 +142,7 @@ func (h vehicleRegHandlers) GetByID() echo.HandlerFunc {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
-		return c.JSON(http.StatusCreated, getVehicleRegID)
+		return c.JSON(http.StatusOK, getVehicleRegID)
 	}
 }
 
