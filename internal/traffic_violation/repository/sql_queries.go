@@ -53,8 +53,15 @@ const (
     FROM traffic_violations
     WHERE active = true
     `
+	getTrafficViolationQuery = `
+    SELECT id, vehicle_no, date, type, description, points, fine_amount, status, 
+        version, creator_id, modifier_id, created_at, updated_at, active
+    FROM traffic_violations
+    WHERE active = true
+	ORDER BY updated_at, created_at OFFSET $1 LIMIT $2
+    `
 
-	findVehicleNoCount = `
+	findVehiclePlateNoCount = `
     SELECT COUNT(*)
     FROM traffic_violations
     WHERE active = true
