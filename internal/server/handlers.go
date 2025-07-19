@@ -19,6 +19,10 @@ import (
 	vehicleReqRepository "github.com/adohong4/driving-license/internal/vehicle_registration/repository"
 	vehicleReqUseCase "github.com/adohong4/driving-license/internal/vehicle_registration/usecase"
 
+	trafficVioHttp "github.com/adohong4/driving-license/internal/traffic_violation/delivery/http"
+	trafficVioRepository "github.com/adohong4/driving-license/internal/traffic_violation/repository"
+	trafficVioUseCase "github.com/adohong4/driving-license/internal/traffic_violation/usecase"
+
 	apiMiddlewares "github.com/adohong4/driving-license/internal/middleware"
 	"github.com/adohong4/driving-license/pkg/utils"
 	"github.com/labstack/echo/v4"
@@ -32,18 +36,21 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	gRepo := govAgencyRepo.NewGovAgencyRepo(s.db)
 	dRepo := driverLicenseRepo.NewDriverLicenseRepo(s.db)
 	vReRepo := vehicleReqRepository.NewVehicleDocRepository(s.db)
+	tRepo := trafficVioRepository.NewTrafficViolationRepo(s.db)
 
 	// Init Usecase
 	authUC := authUseCase.NewAuthUseCase(s.cfg, aRepo, s.logger)
 	goAgenUC := govAgencyUC.NewGovAgencyUseCase(s.cfg, gRepo, s.logger)
 	dlUC := driverLicenseUseCase.NewDriverLicenseUseCase(s.cfg, dRepo, s.logger)
 	vReUC := vehicleReqUseCase.NewVehicleRegUseCase(s.cfg, vReRepo, s.logger)
+	tUC := trafficVioUseCase.NewTrafficViolationUseCase(s.cfg, tRepo, s.logger)
 
 	// Init Handler
 	authHandlers := authHttp.NewAuthHandlers(s.cfg, authUC, s.logger)
 	govAgencyHandlers := govAgencyHttp.NewGovAgencyHandlers(s.cfg, goAgenUC, s.logger)
 	driverLicenseHandlers := driverLicenseHttp.NewDriverLicenseHandlers(s.cfg, dlUC, s.logger)
 	vehiclerReqHandlers := vehicleRegHttp.NewVehicleReqHandlers(s.cfg, vReUC, s.logger)
+	trafficVioHandlers := trafficVioHttp.NewTrafficViolationHandlers(s.cfg, tUC, s.logger)
 
 	mw := apiMiddlewares.NewMiddlewareManager(authUC, s.cfg, []string{"*"}, s.logger)
 
@@ -71,12 +78,14 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	authGroup := v1.Group("/auth")
 	goAgencyGroup := v1.Group("/agency")
 	driverLicenseGroup := v1.Group("/driverLicense")
-	vehicleReq := v1.Group("/vehicleReg")
+	vehicleReqGroup := v1.Group("/vehicleReg")
+	trafficVioGroup := v1.Group("/traffic")
 
 	authHttp.MapAuthRoutes(authGroup, authHandlers, mw, s.cfg, authUC)
 	govAgencyHttp.MapGovAgencyRoutes(goAgencyGroup, govAgencyHandlers)
 	driverLicenseHttp.MapDriverLicenseRoutes(driverLicenseGroup, driverLicenseHandlers, mw, s.cfg, authUC)
-	vehicleRegHttp.MapVehicleRegistrationRoutes(vehicleReq, vehiclerReqHandlers, mw, s.cfg, authUC)
+	vehicleRegHttp.MapVehicleRegistrationRoutes(vehicleReqGroup, vehiclerReqHandlers, mw, s.cfg, authUC)
+	trafficVioHttp.MapTrafficViolationRoutes(trafficVioGroup, trafficVioHandlers, mw, s.cfg, authUC)
 
 	health.GET("", func(c echo.Context) error {
 		s.logger.Infof("Health check request id: %s", utils.GetRequestId(c))
