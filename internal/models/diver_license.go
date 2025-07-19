@@ -62,5 +62,5 @@ type DrivingLicenseList struct {
 	Page           int               `json:"page"`
 	Size           int               `json:"size"`
 	HasMore        bool              `json:"has_more"`
-	DrivingLicense []*DrivingLicense `json:"driving_license"`
+	DrivingLicense []*DrivingLicense `json:"driver_licenses"`
 }
