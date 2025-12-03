@@ -10,6 +10,7 @@ import (
 	"github.com/adohong4/driving-license/pkg/httpErrors"
 	"github.com/adohong4/driving-license/pkg/logger"
 	"github.com/adohong4/driving-license/pkg/utils"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -91,8 +92,8 @@ func (n *notificationUC) GetNotification(ctx context.Context, pq *utils.Paginati
 	return n.notificationRepo.GetNotification(ctx, pq)
 }
 
-func (n *notificationUC) GetNotificationByID(ctx context.Context, notificationID string) (*models.Notification, error) {
-	dt, err := n.notificationRepo.GetNotificationByID(ctx, notificationID)
+func (n *notificationUC) GetNotificationByID(ctx context.Context, Id uuid.UUID) (*models.Notification, error) {
+	dt, err := n.notificationRepo.GetNotificationByID(ctx, Id)
 	if err != nil {
 		return nil, err
 	}

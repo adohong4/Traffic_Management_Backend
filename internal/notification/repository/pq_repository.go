@@ -6,6 +6,7 @@ import (
 	"github.com/adohong4/driving-license/internal/models"
 	notification "github.com/adohong4/driving-license/internal/notification"
 	"github.com/adohong4/driving-license/pkg/utils"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
@@ -93,9 +94,9 @@ func (r *notificationRepo) GetNotification(ctx context.Context, pq *utils.Pagina
 	}, nil
 }
 
-func (r *notificationRepo) GetNotificationByID(ctx context.Context, notificationID string) (*models.Notification, error) {
+func (r *notificationRepo) GetNotificationByID(ctx context.Context, ID uuid.UUID) (*models.Notification, error) {
 	n := &models.Notification{}
-	if err := r.db.GetContext(ctx, n, getNotificationByIdQuery, notificationID); err != nil {
+	if err := r.db.GetContext(ctx, n, getNotificationByIdQuery, ID); err != nil {
 		return nil, errors.Wrap(err, "NotificationRepo.GetNotificationByID.GetContext")
 	}
 	return n, nil
