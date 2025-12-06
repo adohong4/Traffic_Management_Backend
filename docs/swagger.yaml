@@ -1,0 +1,659 @@
+basePath: /api/v1
+definitions:
+  github_com_adohong4_driving-license_internal_models.GovAgency:
+    properties:
+      active:
+        type: boolean
+      address:
+        type: string
+      city:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      status:
+        type: string
+      type:
+        description: Đào tạo/đăng kiểm/cấp giấy tờ/...
+        type: string
+      updated_at:
+        type: string
+      version:
+        type: integer
+    type: object
+  github_com_adohong4_driving-license_internal_models.User:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        description: Thời gian tạo
+        type: string
+      creator_id:
+        description: ID của người tạo
+        type: string
+      hash_password:
+        type: string
+      id:
+        type: string
+      identity_no:
+        description: CCCD
+        maxLength: 20
+        type: string
+      modifier_id:
+        description: ID của người sửa
+        type: string
+      password:
+        description: Mật khẩu truyền thống
+        minLength: 6
+        type: string
+      role:
+        description: Vai trò (admin, user, etc.)
+        maxLength: 20
+        type: string
+      updated_at:
+        description: Thời gian cập nhật
+        type: string
+      version:
+        description: Phiên bản, tự động tăng
+        type: integer
+    required:
+    - hash_password
+    - id
+    - identity_no
+    type: object
+  github_com_adohong4_driving-license_internal_models.UserWithToken:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
+    type: object
+  github_com_adohong4_driving-license_internal_models.UsersList:
+    properties:
+      has_more:
+        type: boolean
+      page:
+        type: integer
+      size:
+        type: integer
+      total_count:
+        type: integer
+      total_pages:
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
+        type: array
+    type: object
+  github_com_adohong4_driving-license_internal_models.VehicleRegistration:
+    properties:
+      active:
+        type: boolean
+      brand:
+        description: Nhãn hiệu
+        type: string
+      chassis_no:
+        description: Số khung
+        type: string
+      color_plate:
+        description: Màu biển số xe
+        type: string
+      color_vehicle:
+        description: Màu xe
+        type: string
+      created_at:
+        description: Thời gian tạo
+        type: string
+      creator_id:
+        description: ID của người tạo
+        type: string
+      engine_no:
+        description: Số máy
+        type: string
+      expiry_date:
+        description: Ngày hết hạn
+        type: string
+      id:
+        type: string
+      issue_date:
+        description: Ngày cấp
+        type: string
+      issuer:
+        description: Nơi cấp
+        type: string
+      modifier_id:
+        description: ID của người sửa
+        type: string
+      owner_id:
+        description: ID chủ sở hữu
+        type: string
+      owner_name:
+        description: Chủ xe
+        type: string
+      seats:
+        description: Số chỗ ngồi
+        type: integer
+      status:
+        description: Tình trạng (còn hiệu lực, hết hạn, bị thu hồi...)
+        type: string
+      type_vehicle:
+        description: Loại phương tiện
+        type: string
+      updated_at:
+        description: Thời gian cập nhật
+        type: string
+      vehicle_no:
+        description: Biển số xe
+        type: string
+      version:
+        description: Phiên bản, tự động tăng
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_adohong4_driving-license_pkg_httpErrors.RestError:
+    properties:
+      error:
+        type: string
+      status:
+        type: integer
+    type: object
+info:
+  contact:
+    url: https://github.com/adohong4
+  description: REST API for Driving License Management
+  title: Driving License REST API
+  version: "1.0"
+paths:
+  /agency/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete by id GovAgency handler
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+      summary: Delete Goverment Agency
+      tags:
+      - Goverment Agency
+    get:
+      consumes:
+      - application/json
+      description: Get by Goverment Agency handler
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+      summary: Get by Goverment Agency ID
+      tags:
+      - NGoverment Agency
+    put:
+      consumes:
+      - application/json
+      description: Update GovAgency handler
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+      summary: Update Goverment Agency
+      tags:
+      - Goverment Agency
+  /agency/create:
+    post:
+      consumes:
+      - application/json
+      description: Create GovAgency handler
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+      summary: Create  Agency
+      tags:
+      - Goverment Agency
+  /agency/getAll:
+    get:
+      consumes:
+      - application/json
+      description: Get all Goverment Agency with pagination
+      parameters:
+      - description: page number
+        format: page
+        in: query
+        name: page
+        type: integer
+      - description: number of elements per page
+        format: size
+        in: query
+        name: size
+        type: integer
+      - description: filter name
+        format: orderBy
+        in: query
+        name: orderBy
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+      summary: Get all Goverment Agency
+      tags:
+      - Goverment Agency
+  /agency/search:
+    get:
+      consumes:
+      - application/json
+      description: Search Goverment Agency by Name
+      parameters:
+      - description: page number
+        format: page
+        in: query
+        name: page
+        type: integer
+      - description: number of elements per page
+        format: size
+        in: query
+        name: size
+        type: integer
+      - description: filter name
+        format: orderBy
+        in: query
+        name: orderBy
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+      summary: Search by Name
+      tags:
+      - Goverment Agency
+  /auth/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: some description
+      parameters:
+      - description: user_id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
+      summary: Delete user account
+      tags:
+      - Auth
+    get:
+      consumes:
+      - application/json
+      description: get string by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
+      summary: get user by id
+      tags:
+      - Auth
+    put:
+      consumes:
+      - application/json
+      description: update existing user
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
+      summary: Update user
+      tags:
+      - Auth
+  /auth/all:
+    get:
+      consumes:
+      - application/json
+      description: Get the list of all users
+      parameters:
+      - description: page number
+        format: page
+        in: query
+        name: page
+        type: integer
+      - description: number of elements per page
+        format: size
+        in: query
+        name: size
+        type: integer
+      - description: filter name
+        format: orderBy
+        in: query
+        name: orderBy
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.UsersList'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
+      summary: Get users
+      tags:
+      - Auth
+  /auth/create:
+    post:
+      consumes:
+      - application/json
+      description: create user by admin
+      parameters:
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.UserWithToken'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
+      summary: Create new user
+      tags:
+      - Auth
+  /auth/find:
+    get:
+      consumes:
+      - application/json
+      description: Find user by identity_no
+      parameters:
+      - description: identity_no
+        format: identity_no
+        in: query
+        name: identity_no
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.UsersList'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
+      summary: Find by identity_no
+      tags:
+      - Auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: login user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
+      summary: Login new user
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: logout user removing session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Logout user
+      tags:
+      - Auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get current user by id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
+      summary: Get user by id
+      tags:
+      - Auth
+  /vehicleReg/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete by id vehicle_registration handler
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+      summary: Delete vehicle registration
+      tags:
+      - vehicle registration
+    get:
+      consumes:
+      - application/json
+      description: Get by vehicle registration handler
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+      summary: Get by vehicle registration ID
+      tags:
+      - Nvehicle registration
+    put:
+      consumes:
+      - application/json
+      description: Update vehicle_registration handler
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+      summary: Update vehicle registration
+      tags:
+      - vehicle registration
+  /vehicleReg/create:
+    post:
+      consumes:
+      - application/json
+      description: Create vehicle_registration handler
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+      summary: Create vehicle registration
+      tags:
+      - vehicle registration
+  /vehicleReg/getAll:
+    get:
+      consumes:
+      - application/json
+      description: Get all vehicle registration with pagination
+      parameters:
+      - description: page number
+        format: page
+        in: query
+        name: page
+        type: integer
+      - description: number of elements per page
+        format: size
+        in: query
+        name: size
+        type: integer
+      - description: filter name
+        format: orderBy
+        in: query
+        name: orderBy
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+      summary: Get all vehicle registration
+      tags:
+      - vehicle registration
+  /vehicleReg/search:
+    get:
+      consumes:
+      - application/json
+      description: Search vehicle registration by VehiclePlateNO
+      parameters:
+      - description: page number
+        format: page
+        in: query
+        name: page
+        type: integer
+      - description: number of elements per page
+        format: size
+        in: query
+        name: size
+        type: integer
+      - description: filter name
+        format: orderBy
+        in: query
+        name: orderBy
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+      summary: Search by VehiclePlateNO
+      tags:
+      - vehicle registration
+swagger: "2.0"

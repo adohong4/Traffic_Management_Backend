@@ -3,6 +3,9 @@ package server
 import (
 	"net/http"
 
+	_ "github.com/adohong4/driving-license/docs"
+	echoSwagger "github.com/swaggo/echo-swagger"
+
 	authHttp "github.com/adohong4/driving-license/internal/auth/delivery/http"
 	authRepository "github.com/adohong4/driving-license/internal/auth/repository"
 	authUseCase "github.com/adohong4/driving-license/internal/auth/usecase"
@@ -58,6 +61,9 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	e.Use(mw.RequestLoggerMiddleware)
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
+
+	//Swagger
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// CSRF middleware
 	if s.cfg.Server.CSRF {

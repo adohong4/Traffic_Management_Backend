@@ -25,12 +25,12 @@ func NewGovAgencyHandlers(cfg *config.Config, GovAgencyUC govagency.UseCase, log
 }
 
 // Create godoc
-// @Summary Create Goverment Agency
-// @Description Create Goverment_Agency handler
+// @Summary Create  Agency
+// @Description Create GovAgency handler
 // @Tags Goverment Agency
 // @Accept json
 // @Produce json
-// @Success 201 {object} models.Goverment_Agency
+// @Success 201 {object} models.GovAgency
 // @Router /agency/create [post]
 func (h GovAgencyHandlers) CreateGovAgency() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -52,12 +52,12 @@ func (h GovAgencyHandlers) CreateGovAgency() echo.HandlerFunc {
 
 // Update godoc
 // @Summary Update Goverment Agency
-// @Description Update Goverment_Agency handler
+// @Description Update GovAgency handler
 // @Tags Goverment Agency
 // @Accept json
 // @Produce json
 // @Param id path int true "id"
-// @Success 200 {object} models.Goverment_Agency
+// @Success 200 {object} models.GovAgency
 // @Router /agency/{id} [put]
 func (h GovAgencyHandlers) UpdateGovAgency() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -86,12 +86,12 @@ func (h GovAgencyHandlers) UpdateGovAgency() echo.HandlerFunc {
 
 // Delete godoc
 // @Summary Delete Goverment Agency
-// @Description Delete by id Goverment_Agency handler
+// @Description Delete by id GovAgency handler
 // @Tags Goverment Agency
 // @Accept json
 // @Produce json
 // @Param id path int true "id"
-// @Success 200 {object} models.Goverment_Agency
+// @Success 200 {object} models.GovAgency
 // @Router /agency/{id} [Delete]
 func (h GovAgencyHandlers) DeleteGovAgency() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -125,7 +125,7 @@ func (h GovAgencyHandlers) DeleteGovAgency() echo.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param id path int true "id"
-// @Success 200 {object} models.Goverment_Agency
+// @Success 200 {object} models.GovAgency
 // @Router /agency/{id} [get]
 func (h GovAgencyHandlers) GetByID() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -154,7 +154,7 @@ func (h GovAgencyHandlers) GetByID() echo.HandlerFunc {
 // @Param page query int false "page number" Format(page)
 // @Param size query int false "number of elements per page" Format(size)
 // @Param orderBy query int false "filter name" Format(orderBy)
-// @Success 200 {object} models.Goverment Agency list
+// @Success 200 {object} models.GovAgency
 // @Router /agency/getAll [get]
 func (h GovAgencyHandlers) GetAllGovAgency() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -184,7 +184,7 @@ func (h GovAgencyHandlers) GetAllGovAgency() echo.HandlerFunc {
 // @Param page query int false "page number" Format(page)
 // @Param size query int false "number of elements per page" Format(size)
 // @Param orderBy query int false "filter name" Format(orderBy)
-// @Success 200 {object} models.Goverment_Agency_list
+// @Success 200 {object} models.GovAgency
 // @Router /agency/search [get]
 func (h GovAgencyHandlers) SearchByName() echo.HandlerFunc {
 	return func(c echo.Context) error {

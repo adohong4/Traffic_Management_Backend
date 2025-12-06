@@ -29,7 +29,7 @@ func NewVehicleReqHandlers(cfg *config.Config, vehicleRegUC vehicleRegistration.
 // @Tags vehicle registration
 // @Accept json
 // @Produce json
-// @Success 201 {object} models.vehicle_registration
+// @Success 201 {object} models.VehicleRegistration
 // @Router /vehicleReg/create [post]
 func (h vehicleRegHandlers) Create() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -56,7 +56,7 @@ func (h vehicleRegHandlers) Create() echo.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param id path int true "id"
-// @Success 200 {object} models.vehicle_registration
+// @Success 200 {object} models.VehicleRegistration
 // @Router /vehicleReg/{id} [put]
 func (h vehicleRegHandlers) Update() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -91,7 +91,7 @@ func (h vehicleRegHandlers) Update() echo.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param id path int true "id"
-// @Success 200 {object} models.vehicle_registration
+// @Success 200 {object} models.VehicleRegistration
 // @Router /vehicleReg/{id} [Delete]
 func (h vehicleRegHandlers) Delete() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -126,7 +126,7 @@ func (h vehicleRegHandlers) Delete() echo.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param id path int true "id"
-// @Success 200 {object} models.vehicle_registration
+// @Success 200 {object} models.VehicleRegistration
 // @Router /vehicleReg/{id} [get]
 func (h vehicleRegHandlers) GetByID() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -155,7 +155,7 @@ func (h vehicleRegHandlers) GetByID() echo.HandlerFunc {
 // @Param page query int false "page number" Format(page)
 // @Param size query int false "number of elements per page" Format(size)
 // @Param orderBy query int false "filter name" Format(orderBy)
-// @Success 200 {object} models.vehicle registration list
+// @Success 200 {object} models.VehicleRegistration
 // @Router /vehicleReg/getAll [get]
 func (h vehicleRegHandlers) GetAllVehicleReg() echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -185,7 +185,7 @@ func (h vehicleRegHandlers) GetAllVehicleReg() echo.HandlerFunc {
 // @Param page query int false "page number" Format(page)
 // @Param size query int false "number of elements per page" Format(size)
 // @Param orderBy query int false "filter name" Format(orderBy)
-// @Success 200 {object} models.vehicle_registration_list
+// @Success 200 {object} models.VehicleRegistration
 // @Router /vehicleReg/search [get]
 func (h vehicleRegHandlers) SearchByVehiclePlateNO() echo.HandlerFunc {
 	return func(c echo.Context) error {
