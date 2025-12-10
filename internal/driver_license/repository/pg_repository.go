@@ -23,9 +23,9 @@ func NewDriverLicenseRepo(db *sqlx.DB) driverlicense.Repository {
 func (r *DriverLicenseRepo) CreateDriverLicense(ctx context.Context, dl *models.DrivingLicense) (*models.DrivingLicense, error) {
 	d := &models.DrivingLicense{}
 	if err := r.db.QueryRowxContext(ctx, createDriverLicenseQuery,
-		dl.Id, dl.Name, dl.DOB, dl.IdentityNo, dl.OwnerAddress, dl.LicenseNo,
+		dl.Id, dl.Name, dl.Avatar, dl.DOB, dl.IdentityNo, dl.OwnerAddress, dl.LicenseNo,
 		dl.IssueDate, dl.ExpiryDate, dl.Status, dl.LicenseType, dl.AuthorityId, dl.IssuingAuthority,
-		dl.Nationality, dl.Point, dl.Version, dl.CreatorId, dl.ModifierId, dl.CreatedAt, dl.UpdatedAt, dl.Active,
+		dl.Nationality, dl.Point, dl.OnBlockchain, dl.BlockchainTxHash, dl.Version, dl.CreatorId, dl.ModifierId, dl.CreatedAt, dl.UpdatedAt, dl.Active,
 	).StructScan(d); err != nil {
 		return nil, errors.Wrap(err, "DriverLicenseRepo.CreateDriverLicense.StructScan")
 	}

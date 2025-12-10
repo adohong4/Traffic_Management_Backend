@@ -27,16 +27,17 @@ func NewAuthHandlers(cfg *config.Config, authUC auth.UseCase, log logger.Logger)
 }
 
 // CreateUser godoc
-// @Summary Create new user
-// @Description create user by admin
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Param user body models.User true "User data"
-// @Success 200 {object} models.UserWithToken
-// @Failure 400 {object} httpErrors.RestError
-// @Failure 500 {object} httpErrors.RestError
-// @Router /auth/create [post]
+// @Summary      Create a new user (admin only)
+// @Description  Creates a new user account. Typically used by administrators.
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.User  true  "User information"
+// @Success      200   {object}  models.UserWithToken
+// @Failure      400   {object}  httpErrors.RestError  "Invalid input"
+// @Failure      500   {object}  httpErrors.RestError  "Server error"
+// @Router       /auth/create [post]
+// @Security     BearerAuth
 func (h *authHandlers) CreateUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user := &models.User{}
@@ -71,13 +72,17 @@ func (h *authHandlers) CreateUser() echo.HandlerFunc {
 }
 
 // Login godoc
-// @Summary Login new user
-// @Description login user
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Success 200 {object} models.User
-// @Router /auth/login [post]
+// @Summary      User login
+// @Description  Authenticate user with identity number and password
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        request  body      models.LoginRequest  true  "Login credentials"
+// @Success      200      {object}  models.UserWithToken
+// @Failure      400      {object}  httpErrors.RestError  "Invalid request"
+// @Failure      401      {object}  httpErrors.RestError  "Invalid credentials"
+// @Failure      500      {object}  httpErrors.RestError
+// @Router       /auth/login [post]
 func (h *authHandlers) Login() echo.HandlerFunc {
 	type Login struct {
 		IdentityNO string `json:"identity_no" db:"identity_no" validate:"required,lte=20"`
@@ -104,13 +109,15 @@ func (h *authHandlers) Login() echo.HandlerFunc {
 	}
 }
 
-// @Summary Logout user
-// @Description logout user removing session
-// @Tags Auth
-// @Accept  json
-// @Produce  json
-// @Success 200 {string} string	"ok"
-// @Router /auth/logout [post]
+// Logout godoc
+// @Summary      Logout user
+// @Description  Invalidate the current session and remove session cookie
+// @Tags         Auth
+// @Produce      json
+// @Success      200  {string}  string  "ok"
+// @Failure      401  {object}  httpErrors.RestError
+// @Router       /auth/logout [post]
+// @Security     BearerAuth
 func (h *authHandlers) Logout() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		utils.DeleteSessionCookie(c, h.cfg.Session.Name)
@@ -120,14 +127,20 @@ func (h *authHandlers) Logout() echo.HandlerFunc {
 }
 
 // Update godoc
-// @Summary Update user
-// @Description update existing user
-// @Tags Auth
-// @Accept json
-// @Param id path int true "id"
-// @Produce json
-// @Success 200 {object} models.User
-// @Router /auth/{id} [put]
+// @Summary      Update user information
+// @Description  Update an existing user by ID (admin or own account)
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        id    path     string       true  "User ID (UUID)"
+// @Param        user  body     models.User  true  "Updated user data"
+// @Success      200   {object}  models.User
+// @Failure      400   {object}  httpErrors.RestError
+// @Failure      403   {object}  httpErrors.RestError  "Forbidden"
+// @Failure      404   {object}  httpErrors.RestError  "User not found"
+// @Failure      500   {object}  httpErrors.RestError
+// @Router       /auth/{id} [put]
+// @Security     BearerAuth
 func (h *authHandlers) Update() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -157,15 +170,17 @@ func (h *authHandlers) Update() echo.HandlerFunc {
 }
 
 // GetUserByID godoc
-// @Summary get user by id
-// @Description get string by ID
-// @Tags Auth
-// @Accept  json
-// @Produce  json
-// @Param id path int true "id"
-// @Success 200 {object} models.User
-// @Failure 500 {object} httpErrors.RestError
-// @Router /auth/{id} [get]
+// @Summary      Get user by ID
+// @Description  Retrieve a user profile by user ID
+// @Tags         Auth
+// @Produce      json
+// @Param        id   path      string  true  "User ID (UUID)"
+// @Success      200  {object}  models.User
+// @Failure      400  {object}  httpErrors.RestError  "Invalid ID"
+// @Failure      404  {object}  httpErrors.RestError  "User not found"
+// @Failure      500  {object}  httpErrors.RestError
+// @Router       /auth/{id} [get]
+// @Security     BearerAuth
 func (h *authHandlers) GetUserByID() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -186,16 +201,20 @@ func (h *authHandlers) GetUserByID() echo.HandlerFunc {
 	}
 }
 
-// Delete
-// @Summary Delete user account
-// @Description some description
-// @Tags Auth
-// @Accept json
-// @Param id path int true "user_id"
-// @Produce json
-// @Success 200 {string} string	"ok"
-// @Failure 500 {object} httpErrors.RestError
-// @Router /auth/{id} [delete]
+// Delete godoc
+// @Summary      Delete user account
+// @Description  Permanently delete a user account (admin or self-deletion)
+// @Tags         Auth
+// @Produce      json
+// @Param        id       path      string  true   "User ID (UUID)"
+// @Param        version  query     int     false  "Optimistic lock version (optional)"
+// @Success      200      {object}  object{message=string}  "User deleted successfully"
+// @Failure      400      {object}  httpErrors.RestError
+// @Failure      403      {object}  httpErrors.RestError  "Forbidden"
+// @Failure      409      {object}  httpErrors.RestError  "Conflict (version mismatch)"
+// @Failure      500      {object}  httpErrors.RestError
+// @Router       /auth/{id} [delete]
+// @Security     BearerAuth
 func (h *authHandlers) Delete() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -238,15 +257,19 @@ func (h *authHandlers) Delete() echo.HandlerFunc {
 }
 
 // FindByIdentityNO godoc
-// @Summary Find by identity_no
-// @Description Find user by identity_no
-// @Tags Auth
-// @Accept json
-// @Param identity_no query string false "identity_no" Format(identity_no)
-// @Produce json
-// @Success 200 {object} models.UsersList
-// @Failure 500 {object} httpErrors.RestError
-// @Router /auth/find [get]
+// @Summary      Search users by identity number
+// @Description  Find users matching the given identity number with pagination
+// @Tags         Auth
+// @Produce      json
+// @Param        identity_no  query     string  true   "Identity number (full or partial)"
+// @Param        page         query     int     false  "Page number"      default(1)
+// @Param        size         query     int     false  "Page size"        default(10)
+// @Param        orderBy      query     string  false  "Sort field"
+// @Success      200          {object}  models.UsersList
+// @Failure      400          {object}  httpErrors.RestError
+// @Failure      500          {object}  httpErrors.RestError
+// @Router       /auth/find [get]
+// @Security     BearerAuth
 func (h *authHandlers) FindByIdentityNO() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -273,17 +296,19 @@ func (h *authHandlers) FindByIdentityNO() echo.HandlerFunc {
 }
 
 // GetUsers godoc
-// @Summary Get users
-// @Description Get the list of all users
-// @Tags Auth
-// @Accept json
-// @Param page query int false "page number" Format(page)
-// @Param size query int false "number of elements per page" Format(size)
-// @Param orderBy query int false "filter name" Format(orderBy)
-// @Produce json
-// @Success 200 {object} models.UsersList
-// @Failure 500 {object} httpErrors.RestError
-// @Router /auth/all [get]
+// @Summary      List all users (paginated)
+// @Description  Retrieve a paginated list of all users (admin only)
+// @Tags         Auth
+// @Produce      json
+// @Param        page     query     int     false  "Page number"  default(1)
+// @Param        size     query     int     false  "Page size"    default(10)
+// @Param        orderBy  query     string  false  "Sort field"
+// @Success      200      {object}  models.UsersList
+// @Failure      400      {object}  httpErrors.RestError
+// @Failure      403      {object}  httpErrors.RestError  "Forbidden"
+// @Failure      500      {object}  httpErrors.RestError
+// @Router       /auth/all [get]
+// @Security     BearerAuth
 func (h *authHandlers) GetUsers() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -305,14 +330,15 @@ func (h *authHandlers) GetUsers() echo.HandlerFunc {
 }
 
 // GetMe godoc
-// @Summary Get user by id
-// @Description Get current user by id
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Success 200 {object} models.User
-// @Failure 500 {object} httpErrors.RestError
-// @Router /auth/me [get]
+// @Summary      Get current authenticated user
+// @Description  Returns the profile of the currently logged-in user
+// @Tags         Auth
+// @Produce      json
+// @Success      200  {object}  models.User
+// @Failure      401  {object}  httpErrors.RestError  "Unauthorized"
+// @Failure      500  {object}  httpErrors.RestError
+// @Router       /auth/me [get]
+// @Security     BearerAuth
 func (h *authHandlers) GetMe() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user, ok := c.Get("user").(*models.User)

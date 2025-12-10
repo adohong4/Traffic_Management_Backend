@@ -83,7 +83,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	health := v1.Group("/health")
 	authGroup := v1.Group("/auth")
 	goAgencyGroup := v1.Group("/agency")
-	driverLicenseGroup := v1.Group("/driverLicense")
+	driverLicenseGroup := v1.Group("/licenses")
 	vehicleReqGroup := v1.Group("/vehicleReg")
 	trafficVioGroup := v1.Group("/traffic")
 

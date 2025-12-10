@@ -3,15 +3,15 @@ package repository
 const (
 	createDriverLicenseQuery = `
 	INSERT INTO driver_licenses (
-		id, full_name, dob, identity_no, owner_address, license_no, 
+		id, full_name, avatar, dob, identity_no, owner_address, license_no, 
 		issue_date, expiry_date, status, license_type, authority_id, issuing_authority,
-		nationality, point, version, creator_id, modifier_id, created_at, updated_at, active
+		nationality, point, on_blockchain, blockchain_txhash, version, creator_id, modifier_id, created_at, updated_at, active
 	)VALUES(
 		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 
-		$15, $16, $17, $18, $19, $20
-	)RETURNING id, full_name, dob, identity_no, owner_address, license_no, 
+		$15, $16, $17, $18, $19, $20, $21, $22, $23
+	)RETURNING id, full_name, avatar, dob, identity_no, owner_address, license_no, 
 		issue_date, expiry_date, status, license_type, authority_id, issuing_authority,
-		nationality, point, version, creator_id, modifier_id, created_at, updated_at, active
+		nationality, point, on_blockchain, blockchain_txhash, version, creator_id, modifier_id, created_at, updated_at, active
 	`
 
 	updateDriverLicenseQuery = `

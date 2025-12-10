@@ -10,6 +10,7 @@ import (
 type DrivingLicense struct {
 	Id               uuid.UUID  `json:"id" db:"id" validate:"required"`
 	Name             string     `json:"full_name" db:"full_name"`
+	Avatar           string     `json:"avatar" db:"avatar"`
 	DOB              string     `json:"dob" db:"dob"`                             // Ngày sinh
 	IdentityNo       string     `json:"identity_no" db:"identity_no"`             // Căn cước công dân
 	OwnerAddress     string     `json:"owner_address" db:"owner_address"`         // Địa chỉ
@@ -22,6 +23,8 @@ type DrivingLicense struct {
 	IssuingAuthority string     `json:"issuing_authority" db:"issuing_authority"` // Nơi cấp
 	Nationality      string     `json:"nationality" db:"nationality"`             // Quốc tịch (Việt Nam, Hàn Quốc, ....)
 	Point            int        `json:"point" db:"point"`                         // Điểm bằng lái xe (0 < point < 12)
+	OnBlockchain     bool       `json:"on_blockchain" db:"on_blockchain"`         // Trạng thái lưu ở blockchain (lưa/ chưa lưu)
+	BlockchainTxHash string     `json:"blockchain_txhash" db:"blockchain_txhash"` // Mã lưu ở blockchain
 	Version          int        `json:"version" db:"version"`                     // Phiên bản, tự động tăng
 	CreatorId        uuid.UUID  `json:"creator_id" db:"creator_id"`               // ID của người tạo
 	ModifierId       *uuid.UUID `json:"modifier_id" db:"modifier_id"`             // ID của người sửa
@@ -38,6 +41,8 @@ func (d *DrivingLicense) PrepareCreate() error {
 
 	d.Id = uuid.New()
 	d.Point = 12
+	d.OnBlockchain = false
+	d.BlockchainTxHash = ""
 	d.CreatedAt = time.Now()
 	d.UpdatedAt = time.Now()
 	d.Active = true
