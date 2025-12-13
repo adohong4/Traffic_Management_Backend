@@ -96,12 +96,12 @@ func (h *DriverLicenseHandlers) UpdateDriverLicense() echo.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param id path string true "Driving License ID"
-// @Param blockchain body models.DrivingLicense true "Blockchain details"
+// @Param request body http.ConfirmBlockchainRequest true "Blockchain confirmation details"
 // @Success 200 {object} models.DrivingLicense
 // @Failure 400 {object} httpErrors.RestError
 // @Failure 500 {object} httpErrors.RestError
 // @Security JWT
-// @Router /licenses/{id}/confirm-blockchain [put]
+// @Router /driver-license/{id}/confirm-blockchain [put]
 func (h *DriverLicenseHandlers) ConfirmBlockchainStorage() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -111,12 +111,22 @@ func (h *DriverLicenseHandlers) ConfirmBlockchainStorage() echo.HandlerFunc {
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
-		dl := &models.DrivingLicense{}
-		if err = c.Bind(dl); err != nil {
+		req := &ConfirmBlockchainRequest{}
+		if err = c.Bind(req); err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
-		dl.Id = UUID
+
+		if err := utils.ValidateStruct(ctx, req); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		dl := &models.DrivingLicense{
+			Id:               UUID,
+			BlockchainTxHash: req.BlockchainTxHash,
+			OnBlockchain:     req.OnBlockchain,
+		}
 
 		updatedDL, err := h.DriverLicenseUC.ConfirmBlockchainStorage(ctx, dl)
 		if err != nil {
@@ -134,12 +144,12 @@ func (h *DriverLicenseHandlers) ConfirmBlockchainStorage() echo.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param id path string true "Driving License ID"
-// @Param wallet body models.DrivingLicense true "Wallet address"
+// @Param request body http.AddWalletRequest true "Wallet address details"
 // @Success 200 {object} models.DrivingLicense
 // @Failure 400 {object} httpErrors.RestError
 // @Failure 500 {object} httpErrors.RestError
 // @Security JWT
-// @Router /licenses/{id}/add-wallet [put]
+// @Router /driver-license/{id}/add-wallet [put]
 func (h *DriverLicenseHandlers) AddWalletAddress() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -149,12 +159,21 @@ func (h *DriverLicenseHandlers) AddWalletAddress() echo.HandlerFunc {
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
-		dl := &models.DrivingLicense{}
-		if err = c.Bind(dl); err != nil {
+		req := &AddWalletRequest{}
+		if err = c.Bind(req); err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
-		dl.Id = UUID
+
+		if err := utils.ValidateStruct(ctx, req); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		dl := &models.DrivingLicense{
+			Id:            UUID,
+			WalletAddress: req.WalletAddress,
+		}
 
 		updatedDL, err := h.DriverLicenseUC.AddWalletAddress(ctx, dl)
 		if err != nil {
@@ -321,4 +340,15 @@ func (h *DriverLicenseHandlers) SearchByLicenseNo() echo.HandlerFunc {
 
 		return c.JSON(http.StatusOK, newList)
 	}
+}
+
+// Confirm Blockchain Request
+type ConfirmBlockchainRequest struct {
+	BlockchainTxHash string `json:"blockchain_txhash" validate:"required"`
+	OnBlockchain     bool   `json:"on_blockchain"`
+}
+
+// Add Wallet Address into Record
+type AddWalletRequest struct {
+	WalletAddress string `json:"wallet_address" validate:"required"`
 }

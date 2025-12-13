@@ -113,6 +113,7 @@ func (h *authHandlers) Login() echo.HandlerFunc {
 // @Summary      Logout user
 // @Description  Invalidate the current session and remove session cookie
 // @Tags         Auth
+// @Accept 		 json
 // @Produce      json
 // @Success      200  {string}  string  "ok"
 // @Failure      401  {object}  httpErrors.RestError

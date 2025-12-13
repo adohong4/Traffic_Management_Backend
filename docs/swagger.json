@@ -459,6 +459,9 @@
                     }
                 ],
                 "description": "Invalidate the current session and remove session cookie",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -693,6 +696,122 @@
                     },
                     "409": {
                         "description": "Conflict (version mismatch)",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/driver-license/{id}/add-wallet": {
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Add or update wallet address for a driving license",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Add wallet address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Driving License ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Wallet address details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.AddWalletRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/driver-license/{id}/confirm-blockchain": {
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Update blockchain transaction hash and set on_blockchain to true",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Confirm blockchain storage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Driving License ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Blockchain confirmation details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.ConfirmBlockchainRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/httpErrors.RestError"
                         }
@@ -1062,122 +1181,6 @@
                 }
             }
         },
-        "/licenses/{id}/add-wallet": {
-            "put": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
-                "description": "Add or update wallet address for a driving license",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "DrivingLicense"
-                ],
-                "summary": "Add wallet address",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Driving License ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Wallet address",
-                        "name": "wallet",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.DrivingLicense"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.DrivingLicense"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpErrors.RestError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpErrors.RestError"
-                        }
-                    }
-                }
-            }
-        },
-        "/licenses/{id}/confirm-blockchain": {
-            "put": {
-                "security": [
-                    {
-                        "JWT": []
-                    }
-                ],
-                "description": "Update blockchain transaction hash and set on_blockchain to true",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "DrivingLicense"
-                ],
-                "summary": "Confirm blockchain storage",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Driving License ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Blockchain details",
-                        "name": "blockchain",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.DrivingLicense"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.DrivingLicense"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpErrors.RestError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpErrors.RestError"
-                        }
-                    }
-                }
-            }
-        },
         "/vehicleReg/create": {
             "post": {
                 "description": "Create vehicle_registration handler",
@@ -1387,6 +1390,31 @@
         }
     },
     "definitions": {
+        "http.AddWalletRequest": {
+            "type": "object",
+            "required": [
+                "wallet_address"
+            ],
+            "properties": {
+                "wallet_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.ConfirmBlockchainRequest": {
+            "type": "object",
+            "required": [
+                "blockchain_txhash"
+            ],
+            "properties": {
+                "blockchain_txhash": {
+                    "type": "string"
+                },
+                "on_blockchain": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpErrors.RestError": {
             "type": "object",
             "properties": {
