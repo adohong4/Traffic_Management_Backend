@@ -2018,7 +2018,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "",
-	BasePath:         "/api/v1",
+	BasePath:         "/v1/api/",
 	Schemes:          []string{},
 	Title:            "Driving License REST API",
 	Description:      "REST API for Driving License Management",

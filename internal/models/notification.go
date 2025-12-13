@@ -9,9 +9,14 @@ import (
 
 type Notification struct {
 	Id         uuid.UUID `json:"id"`
+	Code       string    `json:"code"`
 	Title      string    `json:"title"`
 	Content    string    `json:"content"`
-	Target     string    `json:"target"` // Đối tượng nhận (tất cả/cá nhân/nhóm)
+	Type       string    `json:"string"`
+	Target     string    `json:"target"`      // Đối tượng nhận (tất cả/cá nhân/nhóm)
+	TargetUser string    `json:"target_user"` // CCCD
+	Status     string    `json:"status"`
+
 	CreatorId  uuid.UUID `json:"creator_id"`
 	ModifierID uuid.UUID `json:"modifier_id"`
 	CreatedAt  time.Time `json:"created_at"`
