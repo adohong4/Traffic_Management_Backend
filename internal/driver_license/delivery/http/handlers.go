@@ -23,6 +23,17 @@ func NewDriverLicenseHandlers(cfg *config.Config, DriverLicenseUC driverlicense.
 	return &DriverLicenseHandlers{cfg: cfg, DriverLicenseUC: DriverLicenseUC, logger: logger}
 }
 
+// @Summary Create a new driving license
+// @Description Create a new driving license entry
+// @Tags DrivingLicense
+// @Accept json
+// @Produce json
+// @Param driving_license body models.DrivingLicense true "Driving License object"
+// @Success 201 {object} models.DrivingLicense
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Security JWT
+// @Router /licenses/create [post]
 func (h *DriverLicenseHandlers) CreateDriverLicense() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		n := &models.DrivingLicense{}
@@ -41,6 +52,18 @@ func (h *DriverLicenseHandlers) CreateDriverLicense() echo.HandlerFunc {
 	}
 }
 
+// @Summary Update a driving license
+// @Description Update an existing driving license by ID
+// @Tags DrivingLicense
+// @Accept json
+// @Produce json
+// @Param id path string true "Driving License ID"
+// @Param driving_license body models.DrivingLicense true "Driving License object"
+// @Success 200 {object} models.DrivingLicense
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Security JWT
+// @Router /licenses/{id} [put]
 func (h *DriverLicenseHandlers) UpdateDriverLicense() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -67,6 +90,94 @@ func (h *DriverLicenseHandlers) UpdateDriverLicense() echo.HandlerFunc {
 	}
 }
 
+// @Summary Confirm blockchain storage
+// @Description Update blockchain transaction hash and set on_blockchain to true
+// @Tags DrivingLicense
+// @Accept json
+// @Produce json
+// @Param id path string true "Driving License ID"
+// @Param blockchain body models.DrivingLicense true "Blockchain details"
+// @Success 200 {object} models.DrivingLicense
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Security JWT
+// @Router /licenses/{id}/confirm-blockchain [put]
+func (h *DriverLicenseHandlers) ConfirmBlockchainStorage() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		UUID, err := uuid.Parse(c.Param("id"))
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		dl := &models.DrivingLicense{}
+		if err = c.Bind(dl); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+		dl.Id = UUID
+
+		updatedDL, err := h.DriverLicenseUC.ConfirmBlockchainStorage(ctx, dl)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, updatedDL)
+	}
+}
+
+// @Summary Add wallet address
+// @Description Add or update wallet address for a driving license
+// @Tags DrivingLicense
+// @Accept json
+// @Produce json
+// @Param id path string true "Driving License ID"
+// @Param wallet body models.DrivingLicense true "Wallet address"
+// @Success 200 {object} models.DrivingLicense
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Security JWT
+// @Router /licenses/{id}/add-wallet [put]
+func (h *DriverLicenseHandlers) AddWalletAddress() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		UUID, err := uuid.Parse(c.Param("id"))
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		dl := &models.DrivingLicense{}
+		if err = c.Bind(dl); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+		dl.Id = UUID
+
+		updatedDL, err := h.DriverLicenseUC.AddWalletAddress(ctx, dl)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, updatedDL)
+	}
+}
+
+// @Summary Delete a driving license
+// @Description Soft delete a driving license by ID
+// @Tags DrivingLicense
+// @Accept json
+// @Produce json
+// @Param id path string true "Driving License ID"
+// @Param driving_license body models.DrivingLicense true "Driving License object (for modifier)"
+// @Success 200 {object} models.DrivingLicense
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Security JWT
+// @Router /licenses/{id} [delete]
 func (h *DriverLicenseHandlers) DeleteDriverLicense() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -93,6 +204,16 @@ func (h *DriverLicenseHandlers) DeleteDriverLicense() echo.HandlerFunc {
 	}
 }
 
+// @Summary Get all driving licenses
+// @Description Get a paginated list of all active driving licenses
+// @Tags DrivingLicense
+// @Produce json
+// @Param page query int false "Page number"
+// @Param size query int false "Page size"
+// @Success 200 {object} models.DrivingLicenseList
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /licenses/getAll [get]
 func (h *DriverLicenseHandlers) GetDriverLicense() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -112,6 +233,16 @@ func (h *DriverLicenseHandlers) GetDriverLicense() echo.HandlerFunc {
 	}
 }
 
+// @Summary Get driving license by ID
+// @Description Get a single driving license by its ID
+// @Tags DrivingLicense
+// @Produce json
+// @Param id path string true "Driving License ID"
+// @Success 200 {object} models.DrivingLicense
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 404 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /licenses/{id} [get]
 func (h *DriverLicenseHandlers) GetDriverLicenseById() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -130,6 +261,48 @@ func (h *DriverLicenseHandlers) GetDriverLicenseById() echo.HandlerFunc {
 	}
 }
 
+// @Summary Get driving license by Wallet Address
+// @Description Get a single driving license by its Wallet Address
+// @Tags DrivingLicense
+// @Produce json
+// @Param address path string true "Driving License Wallet Address"
+// @Success 200 {object} models.DrivingLicense
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 404 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /licenses/{address} [get]
+func (h *DriverLicenseHandlers) GetDriverLicenseByWalletAddress() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+
+		walletAddress := c.Param("address")
+		if walletAddress == "" {
+			err := echo.NewHTTPError(http.StatusBadRequest, "wallet address is required")
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		result, err := h.DriverLicenseUC.GetDriverLicenseByWalletAddress(ctx, walletAddress)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, result)
+	}
+}
+
+// @Summary Search driving licenses by license number
+// @Description Search for driving licenses by license number with pagination
+// @Tags DrivingLicense
+// @Produce json
+// @Param license_no query string true "License number to search"
+// @Param page query int false "Page number"
+// @Param size query int false "Page size"
+// @Success 200 {object} models.DrivingLicenseList
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Router /licenses/search [get]
 func (h *DriverLicenseHandlers) SearchByLicenseNo() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()

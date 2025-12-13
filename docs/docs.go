@@ -34,7 +34,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency"
+                            "$ref": "#/definitions/models.GovAgency"
                         }
                     }
                 }
@@ -80,7 +80,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency"
+                            "$ref": "#/definitions/models.GovAgency"
                         }
                     }
                 }
@@ -126,7 +126,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency"
+                            "$ref": "#/definitions/models.GovAgency"
                         }
                     }
                 }
@@ -158,7 +158,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency"
+                            "$ref": "#/definitions/models.GovAgency"
                         }
                     }
                 }
@@ -188,7 +188,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency"
+                            "$ref": "#/definitions/models.GovAgency"
                         }
                     }
                 }
@@ -218,7 +218,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency"
+                            "$ref": "#/definitions/models.GovAgency"
                         }
                     }
                 }
@@ -226,36 +226,37 @@ const docTemplate = `{
         },
         "/auth/all": {
             "get": {
-                "description": "Get the list of all users",
-                "consumes": [
-                    "application/json"
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
                 ],
+                "description": "Retrieve a paginated list of all users (admin only)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Get users",
+                "summary": "List all users (paginated)",
                 "parameters": [
                     {
                         "type": "integer",
-                        "format": "page",
-                        "description": "page number",
+                        "default": 1,
+                        "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "format": "size",
-                        "description": "number of elements per page",
+                        "default": 10,
+                        "description": "Page size",
                         "name": "size",
                         "in": "query"
                     },
                     {
-                        "type": "integer",
-                        "format": "orderBy",
-                        "description": "filter name",
+                        "type": "string",
+                        "description": "Sort field",
                         "name": "orderBy",
                         "in": "query"
                     }
@@ -264,13 +265,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.UsersList"
+                            "$ref": "#/definitions/models.UsersList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError"
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
@@ -278,7 +291,12 @@ const docTemplate = `{
         },
         "/auth/create": {
             "post": {
-                "description": "create user by admin",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new user account. Typically used by administrators.",
                 "consumes": [
                     "application/json"
                 ],
@@ -288,15 +306,15 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Create new user",
+                "summary": "Create a new user (admin only)",
                 "parameters": [
                     {
-                        "description": "User data",
+                        "description": "User information",
                         "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.User"
+                            "$ref": "#/definitions/models.User"
                         }
                     }
                 ],
@@ -304,19 +322,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.UserWithToken"
+                            "$ref": "#/definitions/models.UserWithToken"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError"
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Server error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError"
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
@@ -324,23 +342,45 @@ const docTemplate = `{
         },
         "/auth/find": {
             "get": {
-                "description": "Find user by identity_no",
-                "consumes": [
-                    "application/json"
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
                 ],
+                "description": "Find users matching the given identity number with pagination",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Find by identity_no",
+                "summary": "Search users by identity number",
                 "parameters": [
                     {
                         "type": "string",
-                        "format": "identity_no",
-                        "description": "identity_no",
+                        "description": "Identity number (full or partial)",
                         "name": "identity_no",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field",
+                        "name": "orderBy",
                         "in": "query"
                     }
                 ],
@@ -348,13 +388,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.UsersList"
+                            "$ref": "#/definitions/models.UsersList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError"
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
@@ -362,7 +408,7 @@ const docTemplate = `{
         },
         "/auth/login": {
             "post": {
-                "description": "login user",
+                "description": "Authenticate user with identity number and password",
                 "consumes": [
                     "application/json"
                 ],
@@ -372,12 +418,41 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Login new user",
+                "summary": "User login",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.User"
+                            "$ref": "#/definitions/models.UserWithToken"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
@@ -385,10 +460,12 @@ const docTemplate = `{
         },
         "/auth/logout": {
             "post": {
-                "description": "logout user removing session",
-                "consumes": [
-                    "application/json"
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
                 ],
+                "description": "Invalidate the current session and remove session cookie",
                 "produces": [
                     "application/json"
                 ],
@@ -402,34 +479,48 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
                     }
                 }
             }
         },
         "/auth/me": {
             "get": {
-                "description": "Get current user by id",
-                "consumes": [
-                    "application/json"
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
                 ],
+                "description": "Returns the profile of the currently logged-in user",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Get user by id",
+                "summary": "Get current authenticated user",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.User"
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError"
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
@@ -437,21 +528,23 @@ const docTemplate = `{
         },
         "/auth/{id}": {
             "get": {
-                "description": "get string by ID",
-                "consumes": [
-                    "application/json"
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
                 ],
+                "description": "Retrieve a user profile by user ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Auth"
                 ],
-                "summary": "get user by id",
+                "summary": "Get user by ID",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "id",
+                        "type": "string",
+                        "description": "User ID (UUID)",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -461,19 +554,36 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.User"
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError"
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
             },
             "put": {
-                "description": "update existing user",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing user by ID (admin or own account)",
                 "consumes": [
                     "application/json"
                 ],
@@ -483,30 +593,65 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Update user",
+                "summary": "Update user information",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "id",
+                        "type": "string",
+                        "description": "User ID (UUID)",
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Updated user data",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.User"
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
             },
             "delete": {
-                "description": "some description",
-                "consumes": [
-                    "application/json"
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
                 ],
+                "description": "Permanently delete a user account (admin or self-deletion)",
                 "produces": [
                     "application/json"
                 ],
@@ -516,8 +661,269 @@ const docTemplate = `{
                 "summary": "Delete user account",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
-                        "description": "user_id",
+                        "description": "Optimistic lock version (optional)",
+                        "name": "version",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User deleted successfully",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict (version mismatch)",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/licenses/create": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Create a new driving license entry",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Create a new driving license",
+                "parameters": [
+                    {
+                        "description": "Driving License object",
+                        "name": "driving_license",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/licenses/getAll": {
+            "get": {
+                "description": "Get a paginated list of all active driving licenses",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Get all driving licenses",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicenseList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/licenses/search": {
+            "get": {
+                "description": "Search for driving licenses by license number with pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Search driving licenses by license number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "License number to search",
+                        "name": "license_no",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicenseList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/licenses/{address}": {
+            "get": {
+                "description": "Get a single driving license by its Wallet Address",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Get driving license by Wallet Address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Driving License Wallet Address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/licenses/{id}": {
+            "get": {
+                "description": "Get a single driving license by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Get driving license by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Driving License ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -525,15 +931,255 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "ok",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError"
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Update an existing driving license by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Update a driving license",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Driving License ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Driving License object",
+                        "name": "driving_license",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Soft delete a driving license by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Delete a driving license",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Driving License ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Driving License object (for modifier)",
+                        "name": "driving_license",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/licenses/{id}/add-wallet": {
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Add or update wallet address for a driving license",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Add wallet address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Driving License ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Wallet address",
+                        "name": "wallet",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/licenses/{id}/confirm-blockchain": {
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Update blockchain transaction hash and set on_blockchain to true",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Confirm blockchain storage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Driving License ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Blockchain details",
+                        "name": "blockchain",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
@@ -556,7 +1202,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration"
+                            "$ref": "#/definitions/models.VehicleRegistration"
                         }
                     }
                 }
@@ -602,7 +1248,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration"
+                            "$ref": "#/definitions/models.VehicleRegistration"
                         }
                     }
                 }
@@ -648,7 +1294,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration"
+                            "$ref": "#/definitions/models.VehicleRegistration"
                         }
                     }
                 }
@@ -680,7 +1326,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration"
+                            "$ref": "#/definitions/models.VehicleRegistration"
                         }
                     }
                 }
@@ -710,7 +1356,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration"
+                            "$ref": "#/definitions/models.VehicleRegistration"
                         }
                     }
                 }
@@ -740,7 +1386,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration"
+                            "$ref": "#/definitions/models.VehicleRegistration"
                         }
                     }
                 }
@@ -748,7 +1394,143 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_adohong4_driving-license_internal_models.GovAgency": {
+        "httpErrors.RestError": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.DrivingLicense": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "authority_id": {
+                    "description": "Mã nơi cấp",
+                    "type": "string"
+                },
+                "avatar": {
+                    "type": "string"
+                },
+                "blockchain_txhash": {
+                    "description": "Mã lưu ở blockchain",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "Thời gian tạo",
+                    "type": "string"
+                },
+                "creator_id": {
+                    "description": "ID của người tạo",
+                    "type": "string"
+                },
+                "dob": {
+                    "description": "Ngày sinh",
+                    "type": "string"
+                },
+                "expiry_date": {
+                    "description": "Ngày hết hạn (có thời hạn, vô thời hạn)",
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "identity_no": {
+                    "description": "Căn cước công dân",
+                    "type": "string"
+                },
+                "issue_date": {
+                    "description": "Ngày cấp",
+                    "type": "string"
+                },
+                "issuing_authority": {
+                    "description": "Nơi cấp",
+                    "type": "string"
+                },
+                "license_no": {
+                    "description": "Số bằng lái",
+                    "type": "string"
+                },
+                "license_type": {
+                    "description": "Loại bằng lái (A1, B1, B2, ...)",
+                    "type": "string"
+                },
+                "modifier_id": {
+                    "description": "ID của người sửa",
+                    "type": "string"
+                },
+                "nationality": {
+                    "description": "Quốc tịch (Việt Nam, Hàn Quốc, ....)",
+                    "type": "string"
+                },
+                "on_blockchain": {
+                    "description": "Trạng thái lưu ở blockchain (lưa/ chưa lưu)",
+                    "type": "boolean"
+                },
+                "owner_address": {
+                    "description": "Địa chỉ",
+                    "type": "string"
+                },
+                "point": {
+                    "description": "Điểm bằng lái xe (0 \u003c point \u003c 12)",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "Trạng thái (pending: chờ đợi, expiry: hết hạn, active: hoạt động, pause: tạm dừng (point = 0))",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "Thời gian cập nhật",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "Phiên bản, tự động tăng",
+                    "type": "integer"
+                },
+                "wallet_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.DrivingLicenseList": {
+            "type": "object",
+            "properties": {
+                "driver_licenses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.DrivingLicense"
+                    }
+                },
+                "has_more": {
+                    "type": "boolean"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total_count": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.GovAgency": {
             "type": "object",
             "properties": {
                 "active": {
@@ -790,7 +1572,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_adohong4_driving-license_internal_models.User": {
+        "models.User": {
             "type": "object",
             "required": [
                 "hash_password",
@@ -844,18 +1626,18 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_adohong4_driving-license_internal_models.UserWithToken": {
+        "models.UserWithToken": {
             "type": "object",
             "properties": {
                 "token": {
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.User"
+                    "$ref": "#/definitions/models.User"
                 }
             }
         },
-        "github_com_adohong4_driving-license_internal_models.UsersList": {
+        "models.UsersList": {
             "type": "object",
             "properties": {
                 "has_more": {
@@ -876,12 +1658,12 @@ const docTemplate = `{
                 "users": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_adohong4_driving-license_internal_models.User"
+                        "$ref": "#/definitions/models.User"
                     }
                 }
             }
         },
-        "github_com_adohong4_driving-license_internal_models.VehicleRegistration": {
+        "models.VehicleRegistration": {
             "type": "object",
             "required": [
                 "id"
@@ -970,17 +1752,6 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
-        },
-        "github_com_adohong4_driving-license_pkg_httpErrors.RestError": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                }
-            }
         }
     }
 }`
@@ -988,7 +1759,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Driving License REST API",

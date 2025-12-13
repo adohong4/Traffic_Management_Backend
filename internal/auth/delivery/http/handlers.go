@@ -77,7 +77,7 @@ func (h *authHandlers) CreateUser() echo.HandlerFunc {
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      models.LoginRequest  true  "Login credentials"
+// @Param        request  body      models.User  true  "Login credentials"
 // @Success      200      {object}  models.UserWithToken
 // @Failure      400      {object}  httpErrors.RestError  "Invalid request"
 // @Failure      401      {object}  httpErrors.RestError  "Invalid credentials"

@@ -3,15 +3,17 @@ package repository
 const (
 	createDriverLicenseQuery = `
 	INSERT INTO driver_licenses (
-		id, full_name, avatar, dob, identity_no, owner_address, license_no, 
-		issue_date, expiry_date, status, license_type, authority_id, issuing_authority,
-		nationality, point, on_blockchain, blockchain_txhash, version, creator_id, modifier_id, created_at, updated_at, active
+		id, full_name, avatar, dob, identity_no, owner_address, license_no,  
+		issue_date, expiry_date, status, license_type, authority_id, issuing_authority, 
+		nationality, point, wallet_address, on_blockchain, blockchain_txhash,
+		version, creator_id, modifier_id, created_at, updated_at, active
 	)VALUES(
 		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 
-		$15, $16, $17, $18, $19, $20, $21, $22, $23
+		$15, $16, $17, $18, $19, $20, $21, $22, $23, $24
 	)RETURNING id, full_name, avatar, dob, identity_no, owner_address, license_no, 
 		issue_date, expiry_date, status, license_type, authority_id, issuing_authority,
-		nationality, point, on_blockchain, blockchain_txhash, version, creator_id, modifier_id, created_at, updated_at, active
+		nationality, point, wallet_address, on_blockchain, blockchain_txhash, 
+		version, creator_id, modifier_id, created_at, updated_at, active
 	`
 
 	updateDriverLicenseQuery = `
@@ -30,6 +32,28 @@ const (
 	WHERE id = $10
 	RETURNING *
 	`
+	updateBlockchainConfirmationQuery = `
+    UPDATE driver_licenses 
+    SET
+        blockchain_txhash = COALESCE(NULLIF($1, ''), blockchain_txhash),
+        on_blockchain = $2,
+        modifier_id = COALESCE($3, modifier_id),
+        version = version + 1,
+        updated_at = $4
+    WHERE id = $5
+    RETURNING *
+    `
+
+	updateWalletAddressQuery = `
+    UPDATE driver_licenses 
+    SET
+        wallet_address = COALESCE(NULLIF($1, ''), wallet_address),
+        modifier_id = COALESCE($2, modifier_id),
+        version = version + 1,
+        updated_at = $3
+    WHERE id = $4
+    RETURNING *
+    `
 
 	deleteDriverLicenseQuery = `
 	UPDATE driver_licenses
@@ -46,6 +70,12 @@ const (
 	SELECT *
 	FROM driver_licenses
 	WHERE id = $1 AND active = true
+	`
+
+	getDriverLicenseByWalletAddressQuery = `
+	SELECT *
+	FROM driver_licenses
+	WHERE wallet_address = $1 AND active = true
 	`
 
 	getTotalCount = `
@@ -72,7 +102,8 @@ const (
 	getDriverLicense = `
 	SELECT id, full_name, dob, identity_no, owner_address, license_no, 
 		issue_date, expiry_date, status, license_type, authority_id, issuing_authority,
-		nationality, point, version, creator_id, modifier_id, created_at, updated_at, active
+		nationality, point, wallet_address, on_blockchain, blockchain_txhash, 
+		version, creator_id, modifier_id, created_at, updated_at, active
 	FROM driver_licenses
 	WHERE active = true
 	ORDER BY updated_at, created_at OFFSET $1 LIMIT $2

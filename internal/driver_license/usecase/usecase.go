@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
+	"time"
 
 	"github.com/adohong4/driving-license/config"
 	driverlicense "github.com/adohong4/driving-license/internal/driver_license"
@@ -81,6 +82,49 @@ func (u *DriverLicenseUC) UpdateDriverLicense(ctx context.Context, dl *models.Dr
 	return updatedLicense, nil
 }
 
+func (u *DriverLicenseUC) ConfirmBlockchainStorage(ctx context.Context, dl *models.DrivingLicense) (*models.DrivingLicense, error) {
+	user, err := utils.GetUserFromCtx(ctx)
+	if err != nil {
+		return nil, httpErrors.NewUnauthorizedError(errors.WithMessage(err, "DriverLicenseUC.ConfirmBlockchainStorage.GetUserFromCtx"))
+	}
+
+	dl.ModifierId = &user.Id
+	dl.OnBlockchain = true
+	dl.UpdatedAt = time.Now()
+
+	if dl.BlockchainTxHash == "" {
+		return nil, httpErrors.NewBadRequestError(errors.New("BlockchainTxHash is required"))
+	}
+
+	updatedLicense, err := u.DriverLicenseRepo.ConfirmBlockchainStorage(ctx, dl)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedLicense, nil
+}
+
+func (u *DriverLicenseUC) AddWalletAddress(ctx context.Context, dl *models.DrivingLicense) (*models.DrivingLicense, error) {
+	user, err := utils.GetUserFromCtx(ctx)
+	if err != nil {
+		return nil, httpErrors.NewUnauthorizedError(errors.WithMessage(err, "DriverLicenseUC.AddWalletAddress.GetUserFromCtx"))
+	}
+
+	dl.ModifierId = &user.Id
+	dl.UpdatedAt = time.Now()
+
+	if dl.WalletAddress == "" {
+		return nil, httpErrors.NewBadRequestError(errors.New("WalletAddress is required"))
+	}
+
+	updatedLicense, err := u.DriverLicenseRepo.UpdateWalletAddress(ctx, dl)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedLicense, nil
+}
+
 func (u *DriverLicenseUC) DeleteDriverLicense(ctx context.Context, dl *models.DrivingLicense) (*models.DrivingLicense, error) {
 	user, err := utils.GetUserFromCtx(ctx)
 	if err != nil {
@@ -111,6 +155,14 @@ func (u *DriverLicenseUC) GetDriverLicense(ctx context.Context, pq *utils.Pagina
 
 func (u *DriverLicenseUC) GetDriverLicenseById(ctx context.Context, Id uuid.UUID) (*models.DrivingLicense, error) {
 	n, err := u.DriverLicenseRepo.GetDriverLicenseById(ctx, Id)
+	if err != nil {
+		return nil, err
+	}
+	return n, nil
+}
+
+func (u *DriverLicenseUC) GetDriverLicenseByWalletAddress(ctx context.Context, address string) (*models.DrivingLicense, error) {
+	n, err := u.DriverLicenseRepo.GetDriverLicenseByWalletAddress(ctx, address)
 	if err != nil {
 		return nil, err
 	}

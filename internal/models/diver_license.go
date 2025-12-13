@@ -23,6 +23,7 @@ type DrivingLicense struct {
 	IssuingAuthority string     `json:"issuing_authority" db:"issuing_authority"` // Nơi cấp
 	Nationality      string     `json:"nationality" db:"nationality"`             // Quốc tịch (Việt Nam, Hàn Quốc, ....)
 	Point            int        `json:"point" db:"point"`                         // Điểm bằng lái xe (0 < point < 12)
+	WalletAddress    string     `json:"wallet_address" db:"wallet_address"`
 	OnBlockchain     bool       `json:"on_blockchain" db:"on_blockchain"`         // Trạng thái lưu ở blockchain (lưa/ chưa lưu)
 	BlockchainTxHash string     `json:"blockchain_txhash" db:"blockchain_txhash"` // Mã lưu ở blockchain
 	Version          int        `json:"version" db:"version"`                     // Phiên bản, tự động tăng
@@ -43,6 +44,7 @@ func (d *DrivingLicense) PrepareCreate() error {
 	d.Point = 12
 	d.OnBlockchain = false
 	d.BlockchainTxHash = ""
+	d.WalletAddress = ""
 	d.CreatedAt = time.Now()
 	d.UpdatedAt = time.Now()
 	d.Active = true

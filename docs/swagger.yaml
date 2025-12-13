@@ -1,6 +1,103 @@
 basePath: /api/v1
 definitions:
-  github_com_adohong4_driving-license_internal_models.GovAgency:
+  httpErrors.RestError:
+    properties:
+      error:
+        type: string
+      status:
+        type: integer
+    type: object
+  models.DrivingLicense:
+    properties:
+      active:
+        type: boolean
+      authority_id:
+        description: Mã nơi cấp
+        type: string
+      avatar:
+        type: string
+      blockchain_txhash:
+        description: Mã lưu ở blockchain
+        type: string
+      created_at:
+        description: Thời gian tạo
+        type: string
+      creator_id:
+        description: ID của người tạo
+        type: string
+      dob:
+        description: Ngày sinh
+        type: string
+      expiry_date:
+        description: Ngày hết hạn (có thời hạn, vô thời hạn)
+        type: string
+      full_name:
+        type: string
+      id:
+        type: string
+      identity_no:
+        description: Căn cước công dân
+        type: string
+      issue_date:
+        description: Ngày cấp
+        type: string
+      issuing_authority:
+        description: Nơi cấp
+        type: string
+      license_no:
+        description: Số bằng lái
+        type: string
+      license_type:
+        description: Loại bằng lái (A1, B1, B2, ...)
+        type: string
+      modifier_id:
+        description: ID của người sửa
+        type: string
+      nationality:
+        description: Quốc tịch (Việt Nam, Hàn Quốc, ....)
+        type: string
+      on_blockchain:
+        description: Trạng thái lưu ở blockchain (lưa/ chưa lưu)
+        type: boolean
+      owner_address:
+        description: Địa chỉ
+        type: string
+      point:
+        description: Điểm bằng lái xe (0 < point < 12)
+        type: integer
+      status:
+        description: 'Trạng thái (pending: chờ đợi, expiry: hết hạn, active: hoạt
+          động, pause: tạm dừng (point = 0))'
+        type: string
+      updated_at:
+        description: Thời gian cập nhật
+        type: string
+      version:
+        description: Phiên bản, tự động tăng
+        type: integer
+      wallet_address:
+        type: string
+    required:
+    - id
+    type: object
+  models.DrivingLicenseList:
+    properties:
+      driver_licenses:
+        items:
+          $ref: '#/definitions/models.DrivingLicense'
+        type: array
+      has_more:
+        type: boolean
+      page:
+        type: integer
+      size:
+        type: integer
+      total_count:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  models.GovAgency:
     properties:
       active:
         type: boolean
@@ -28,7 +125,7 @@ definitions:
       version:
         type: integer
     type: object
-  github_com_adohong4_driving-license_internal_models.User:
+  models.User:
     properties:
       active:
         type: boolean
@@ -68,14 +165,14 @@ definitions:
     - id
     - identity_no
     type: object
-  github_com_adohong4_driving-license_internal_models.UserWithToken:
+  models.UserWithToken:
     properties:
       token:
         type: string
       user:
-        $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
+        $ref: '#/definitions/models.User'
     type: object
-  github_com_adohong4_driving-license_internal_models.UsersList:
+  models.UsersList:
     properties:
       has_more:
         type: boolean
@@ -89,10 +186,10 @@ definitions:
         type: integer
       users:
         items:
-          $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
+          $ref: '#/definitions/models.User'
         type: array
     type: object
-  github_com_adohong4_driving-license_internal_models.VehicleRegistration:
+  models.VehicleRegistration:
     properties:
       active:
         type: boolean
@@ -158,13 +255,6 @@ definitions:
     required:
     - id
     type: object
-  github_com_adohong4_driving-license_pkg_httpErrors.RestError:
-    properties:
-      error:
-        type: string
-      status:
-        type: integer
-    type: object
 info:
   contact:
     url: https://github.com/adohong4
@@ -189,7 +279,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+            $ref: '#/definitions/models.GovAgency'
       summary: Delete Goverment Agency
       tags:
       - Goverment Agency
@@ -209,7 +299,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+            $ref: '#/definitions/models.GovAgency'
       summary: Get by Goverment Agency ID
       tags:
       - NGoverment Agency
@@ -229,7 +319,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+            $ref: '#/definitions/models.GovAgency'
       summary: Update Goverment Agency
       tags:
       - Goverment Agency
@@ -244,7 +334,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+            $ref: '#/definitions/models.GovAgency'
       summary: Create  Agency
       tags:
       - Goverment Agency
@@ -275,7 +365,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+            $ref: '#/definitions/models.GovAgency'
       summary: Get all Goverment Agency
       tags:
       - Goverment Agency
@@ -306,154 +396,61 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.GovAgency'
+            $ref: '#/definitions/models.GovAgency'
       summary: Search by Name
       tags:
       - Goverment Agency
   /auth/{id}:
     delete:
-      consumes:
-      - application/json
-      description: some description
+      description: Permanently delete a user account (admin or self-deletion)
       parameters:
-      - description: user_id
+      - description: User ID (UUID)
         in: path
         name: id
         required: true
+        type: string
+      - description: Optimistic lock version (optional)
+        in: query
+        name: version
         type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: ok
+          description: User deleted successfully
           schema:
-            type: string
+            properties:
+              message:
+                type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "409":
+          description: Conflict (version mismatch)
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - BearerAuth: []
       summary: Delete user account
       tags:
       - Auth
     get:
-      consumes:
-      - application/json
-      description: get string by ID
+      description: Retrieve a user profile by user ID
       parameters:
-      - description: id
+      - description: User ID (UUID)
         in: path
         name: id
         required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
-      summary: get user by id
-      tags:
-      - Auth
-    put:
-      consumes:
-      - application/json
-      description: update existing user
-      parameters:
-      - description: id
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
-      summary: Update user
-      tags:
-      - Auth
-  /auth/all:
-    get:
-      consumes:
-      - application/json
-      description: Get the list of all users
-      parameters:
-      - description: page number
-        format: page
-        in: query
-        name: page
-        type: integer
-      - description: number of elements per page
-        format: size
-        in: query
-        name: size
-        type: integer
-      - description: filter name
-        format: orderBy
-        in: query
-        name: orderBy
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.UsersList'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
-      summary: Get users
-      tags:
-      - Auth
-  /auth/create:
-    post:
-      consumes:
-      - application/json
-      description: create user by admin
-      parameters:
-      - description: User data
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.UserWithToken'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
-      summary: Create new user
-      tags:
-      - Auth
-  /auth/find:
-    get:
-      consumes:
-      - application/json
-      description: Find user by identity_no
-      parameters:
-      - description: identity_no
-        format: identity_no
-        in: query
-        name: identity_no
         type: string
       produces:
       - application/json
@@ -461,34 +458,222 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.UsersList'
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Invalid ID
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
-      summary: Find by identity_no
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
       tags:
       - Auth
-  /auth/login:
-    post:
+    put:
       consumes:
       - application/json
-      description: login user
+      description: Update an existing user by ID (admin or own account)
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated user data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
-      summary: Login new user
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - BearerAuth: []
+      summary: Update user information
+      tags:
+      - Auth
+  /auth/all:
+    get:
+      description: Retrieve a paginated list of all users (admin only)
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: size
+        type: integer
+      - description: Sort field
+        in: query
+        name: orderBy
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UsersList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - BearerAuth: []
+      summary: List all users (paginated)
+      tags:
+      - Auth
+  /auth/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account. Typically used by administrators.
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserWithToken'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - BearerAuth: []
+      summary: Create a new user (admin only)
+      tags:
+      - Auth
+  /auth/find:
+    get:
+      description: Find users matching the given identity number with pagination
+      parameters:
+      - description: Identity number (full or partial)
+        in: query
+        name: identity_no
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: size
+        type: integer
+      - description: Sort field
+        in: query
+        name: orderBy
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UsersList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - BearerAuth: []
+      summary: Search users by identity number
+      tags:
+      - Auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with identity number and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserWithToken'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: User login
       tags:
       - Auth
   /auth/logout:
     post:
-      consumes:
-      - application/json
-      description: logout user removing session
+      description: Invalidate the current session and remove session cookie
       produces:
       - application/json
       responses:
@@ -496,28 +681,343 @@ paths:
           description: ok
           schema:
             type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - BearerAuth: []
       summary: Logout user
       tags:
       - Auth
   /auth/me:
     get:
-      consumes:
-      - application/json
-      description: Get current user by id
+      description: Returns the profile of the currently logged-in user
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.User'
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_pkg_httpErrors.RestError'
-      summary: Get user by id
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - BearerAuth: []
+      summary: Get current authenticated user
       tags:
       - Auth
+  /licenses/{address}:
+    get:
+      description: Get a single driving license by its Wallet Address
+      parameters:
+      - description: Driving License Wallet Address
+        in: path
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DrivingLicense'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get driving license by Wallet Address
+      tags:
+      - DrivingLicense
+  /licenses/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a driving license by ID
+      parameters:
+      - description: Driving License ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Driving License object (for modifier)
+        in: body
+        name: driving_license
+        required: true
+        schema:
+          $ref: '#/definitions/models.DrivingLicense'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DrivingLicense'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Delete a driving license
+      tags:
+      - DrivingLicense
+    get:
+      description: Get a single driving license by its ID
+      parameters:
+      - description: Driving License ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DrivingLicense'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get driving license by ID
+      tags:
+      - DrivingLicense
+    put:
+      consumes:
+      - application/json
+      description: Update an existing driving license by ID
+      parameters:
+      - description: Driving License ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Driving License object
+        in: body
+        name: driving_license
+        required: true
+        schema:
+          $ref: '#/definitions/models.DrivingLicense'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DrivingLicense'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Update a driving license
+      tags:
+      - DrivingLicense
+  /licenses/{id}/add-wallet:
+    put:
+      consumes:
+      - application/json
+      description: Add or update wallet address for a driving license
+      parameters:
+      - description: Driving License ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Wallet address
+        in: body
+        name: wallet
+        required: true
+        schema:
+          $ref: '#/definitions/models.DrivingLicense'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DrivingLicense'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Add wallet address
+      tags:
+      - DrivingLicense
+  /licenses/{id}/confirm-blockchain:
+    put:
+      consumes:
+      - application/json
+      description: Update blockchain transaction hash and set on_blockchain to true
+      parameters:
+      - description: Driving License ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Blockchain details
+        in: body
+        name: blockchain
+        required: true
+        schema:
+          $ref: '#/definitions/models.DrivingLicense'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DrivingLicense'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Confirm blockchain storage
+      tags:
+      - DrivingLicense
+  /licenses/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new driving license entry
+      parameters:
+      - description: Driving License object
+        in: body
+        name: driving_license
+        required: true
+        schema:
+          $ref: '#/definitions/models.DrivingLicense'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.DrivingLicense'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Create a new driving license
+      tags:
+      - DrivingLicense
+  /licenses/getAll:
+    get:
+      description: Get a paginated list of all active driving licenses
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DrivingLicenseList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get all driving licenses
+      tags:
+      - DrivingLicense
+  /licenses/search:
+    get:
+      description: Search for driving licenses by license number with pagination
+      parameters:
+      - description: License number to search
+        in: query
+        name: license_no
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DrivingLicenseList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Search driving licenses by license number
+      tags:
+      - DrivingLicense
   /vehicleReg/{id}:
     delete:
       consumes:
@@ -535,7 +1035,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+            $ref: '#/definitions/models.VehicleRegistration'
       summary: Delete vehicle registration
       tags:
       - vehicle registration
@@ -555,7 +1055,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+            $ref: '#/definitions/models.VehicleRegistration'
       summary: Get by vehicle registration ID
       tags:
       - Nvehicle registration
@@ -575,7 +1075,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+            $ref: '#/definitions/models.VehicleRegistration'
       summary: Update vehicle registration
       tags:
       - vehicle registration
@@ -590,7 +1090,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+            $ref: '#/definitions/models.VehicleRegistration'
       summary: Create vehicle registration
       tags:
       - vehicle registration
@@ -621,7 +1121,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+            $ref: '#/definitions/models.VehicleRegistration'
       summary: Get all vehicle registration
       tags:
       - vehicle registration
@@ -652,7 +1152,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_adohong4_driving-license_internal_models.VehicleRegistration'
+            $ref: '#/definitions/models.VehicleRegistration'
       summary: Search by VehiclePlateNO
       tags:
       - vehicle registration

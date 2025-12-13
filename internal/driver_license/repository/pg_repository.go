@@ -25,7 +25,8 @@ func (r *DriverLicenseRepo) CreateDriverLicense(ctx context.Context, dl *models.
 	if err := r.db.QueryRowxContext(ctx, createDriverLicenseQuery,
 		dl.Id, dl.Name, dl.Avatar, dl.DOB, dl.IdentityNo, dl.OwnerAddress, dl.LicenseNo,
 		dl.IssueDate, dl.ExpiryDate, dl.Status, dl.LicenseType, dl.AuthorityId, dl.IssuingAuthority,
-		dl.Nationality, dl.Point, dl.OnBlockchain, dl.BlockchainTxHash, dl.Version, dl.CreatorId, dl.ModifierId, dl.CreatedAt, dl.UpdatedAt, dl.Active,
+		dl.Nationality, dl.Point, dl.WalletAddress, dl.OnBlockchain, dl.BlockchainTxHash,
+		dl.Version, dl.CreatorId, dl.ModifierId, dl.CreatedAt, dl.UpdatedAt, dl.Active,
 	).StructScan(d); err != nil {
 		return nil, errors.Wrap(err, "DriverLicenseRepo.CreateDriverLicense.StructScan")
 	}
@@ -39,6 +40,26 @@ func (r *DriverLicenseRepo) UpdateDriverLicense(ctx context.Context, dl *models.
 		dl.Nationality, dl.Point, dl.ModifierId, dl.UpdatedAt, dl.Id,
 	).StructScan(d); err != nil {
 		return nil, errors.Wrap(err, "DriverLicenseRepo.UpdateDriverLicense.StructScan")
+	}
+	return d, nil
+}
+
+func (r *DriverLicenseRepo) ConfirmBlockchainStorage(ctx context.Context, dl *models.DrivingLicense) (*models.DrivingLicense, error) {
+	d := &models.DrivingLicense{}
+	if err := r.db.QueryRowxContext(ctx, updateBlockchainConfirmationQuery,
+		dl.BlockchainTxHash, dl.OnBlockchain, dl.ModifierId, dl.UpdatedAt, dl.Id,
+	).StructScan(d); err != nil {
+		return nil, errors.Wrap(err, "DriverLicenseRepo.ConfirmBlockchainStorage.StructScan")
+	}
+	return d, nil
+}
+
+func (r *DriverLicenseRepo) UpdateWalletAddress(ctx context.Context, dl *models.DrivingLicense) (*models.DrivingLicense, error) {
+	d := &models.DrivingLicense{}
+	if err := r.db.QueryRowxContext(ctx, updateWalletAddressQuery,
+		dl.WalletAddress, dl.ModifierId, dl.UpdatedAt, dl.Id,
+	).StructScan(d); err != nil {
+		return nil, errors.Wrap(err, "DriverLicenseRepo.UpdateWalletAddress.StructScan")
 	}
 	return d, nil
 }
@@ -101,6 +122,14 @@ func (r *DriverLicenseRepo) GetDriverLicenseById(ctx context.Context, Id uuid.UU
 	d := &models.DrivingLicense{}
 	if err := r.db.GetContext(ctx, d, getDriverLicenseByIdQuery, Id); err != nil {
 		return nil, errors.Wrap(err, "DriverLicenseRepo.GetDriverLicenseById.GetContext")
+	}
+	return d, nil
+}
+
+func (r *DriverLicenseRepo) GetDriverLicenseByWalletAddress(ctx context.Context, address string) (*models.DrivingLicense, error) {
+	d := &models.DrivingLicense{}
+	if err := r.db.GetContext(ctx, d, getDriverLicenseByWalletAddressQuery, address); err != nil {
+		return nil, errors.Wrap(err, "DriverLicenseRepo.getDriverLicenseByWalletAddressQuery.GetContext")
 	}
 	return d, nil
 }
