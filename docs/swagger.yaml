@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /v1/api
 definitions:
   http.AddWalletRequest:
     properties:
@@ -204,6 +204,25 @@ definitions:
           $ref: '#/definitions/models.LicenseTypeDistributionItem'
         type: array
       total:
+        type: integer
+    type: object
+  models.News:
+    type: object
+  models.NewsList:
+    properties:
+      has_more:
+        type: boolean
+      news:
+        items:
+          $ref: '#/definitions/models.News'
+        type: array
+      page:
+        type: integer
+      size:
+        type: integer
+      total_count:
+        type: integer
+      total_pages:
         type: integer
     type: object
   models.StatusDistributionItem:
@@ -1188,6 +1207,160 @@ paths:
       summary: Get status distribution
       tags:
       - DrivingLicense
+  /news:
+    get:
+      description: Get list of news with pagination
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NewsList'
+      summary: Get all news (paginated)
+      tags:
+      - News
+    post:
+      consumes:
+      - application/json
+      description: Create a new news article
+      parameters:
+      - description: News object
+        in: body
+        name: news
+        required: true
+        schema:
+          $ref: '#/definitions/models.News'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.News'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Create news
+      tags:
+      - News
+  /news/{id}:
+    delete:
+      description: Soft delete news
+      parameters:
+      - description: News ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.News'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Delete news by ID
+      tags:
+      - News
+    get:
+      description: Get single news (view count will increase)
+      parameters:
+      - description: News ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.News'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get news by ID
+      tags:
+      - News
+    put:
+      consumes:
+      - application/json
+      description: Update an existing news
+      parameters:
+      - description: News ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: News object
+        in: body
+        name: news
+        required: true
+        schema:
+          $ref: '#/definitions/models.News'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.News'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Update news by ID
+      tags:
+      - News
   /vehicleReg/{id}:
     delete:
       consumes:

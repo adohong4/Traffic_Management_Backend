@@ -5,28 +5,29 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx/types"
 )
 
 type News struct {
-	Id         uuid.UUID `json:"id" db:"id" validate:"required"`
-	Code       string    `json:"code" db:"code"`
-	Image      string    `json:"image" db:"image"`
-	Title      string    `json:"title" db:"title"`
-	Content    string    `json:"content" db:"content"`
-	Category   string    `json:"category" db:"category"`
-	Author     string    `json:"author" db:"author"`
-	Type       string    `json:"string" db:"string"`
-	Target     string    `json:"target" db:"target"`           // Đối tượng nhận (tất cả/cá nhân/nhóm)
-	TargetUser string    `json:"target_user" db:"target_user"` // CCCD
-	Tag        []string  `json:"tag" db:"tag"`
-	View       int       `json:"view" db:"view"`
-	Status     string    `json:"status" db:"status"`
-	Version    int       `json:"version" db:"version"`
-	CreatorId  uuid.UUID `json:"creator_id" db:"creator_id"`
-	ModifierID uuid.UUID `json:"modifier_id" db:"modifier_id"`
-	CreatedAt  time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at" db:"updated_at"`
-	Active     bool      `json:"active" db:"active"`
+	Id         uuid.UUID      `json:"id" db:"id" validate:"required"`
+	Code       string         `json:"code" db:"code"`
+	Image      string         `json:"image" db:"image"`
+	Title      string         `json:"title" db:"title"`
+	Content    string         `json:"content" db:"content"`
+	Category   string         `json:"category" db:"category"`
+	Author     string         `json:"author" db:"author"`
+	Type       string         `json:"type" db:"type"`
+	Target     string         `json:"target" db:"target"`           // Đối tượng nhận (tất cả/cá nhân/nhóm)
+	TargetUser string         `json:"target_user" db:"target_user"` // CCCD
+	Tag        types.JSONText `json:"tag" db:"tag"`
+	View       int            `json:"view" db:"view"`
+	Status     string         `json:"status" db:"status"`
+	Version    int            `json:"version" db:"version"`
+	CreatorId  uuid.UUID      `json:"creator_id" db:"creator_id"`
+	ModifierID *uuid.UUID     `json:"modifier_id" db:"modifier_id"`
+	CreatedAt  time.Time      `json:"created_at" db:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at" db:"updated_at"`
+	Active     bool           `json:"active" db:"active"`
 }
 
 func (n *News) PrepareCreate() error {

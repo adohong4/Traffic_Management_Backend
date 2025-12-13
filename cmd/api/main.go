@@ -15,7 +15,7 @@ import (
 // @version 1.0
 // @description REST API for Driving License Management
 // @contact.url https://github.com/adohong4
-// @BasePath /api/v1
+// @BasePath /v1/api
 func main() {
 	log.Println("Starting driving license API server")
 
