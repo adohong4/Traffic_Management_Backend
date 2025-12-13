@@ -23,6 +23,33 @@ definitions:
       status:
         type: integer
     type: object
+  models.CityDetailDistribution:
+    properties:
+      by_status:
+        items:
+          $ref: '#/definitions/models.CityStatusItem'
+        type: array
+      owner_city:
+        type: string
+      total:
+        type: integer
+    type: object
+  models.CityDetailDistributionResponse:
+    properties:
+      distribution:
+        items:
+          $ref: '#/definitions/models.CityDetailDistribution'
+        type: array
+      grand_total:
+        type: integer
+    type: object
+  models.CityStatusItem:
+    properties:
+      count:
+        type: integer
+      status:
+        type: string
+    type: object
   models.DrivingLicense:
     properties:
       active:
@@ -78,12 +105,14 @@ definitions:
       owner_address:
         description: Địa chỉ
         type: string
+      owner_city:
+        type: string
       point:
         description: Điểm bằng lái xe (0 < point < 12)
         type: integer
       status:
-        description: 'Trạng thái (pending: chờ đợi, expiry: hết hạn, active: hoạt
-          động, pause: tạm dừng (point = 0))'
+        description: 'Trạng thái (pending: chờ đợi, expired: hết hạn, active: hoạt
+          động, pause: tạm dừng (point = 0), revoke: thu hồi)'
         type: string
       updated_at:
         description: Thời gian cập nhật
@@ -139,6 +168,58 @@ definitions:
       updated_at:
         type: string
       version:
+        type: integer
+    type: object
+  models.LicenseTypeDetailDistribution:
+    properties:
+      by_status:
+        items:
+          $ref: '#/definitions/models.StatusDistributionItem'
+        type: array
+      license_type:
+        type: string
+      total:
+        type: integer
+    type: object
+  models.LicenseTypeDetailDistributionResponse:
+    properties:
+      distribution:
+        items:
+          $ref: '#/definitions/models.LicenseTypeDetailDistribution'
+        type: array
+      grand_total:
+        type: integer
+    type: object
+  models.LicenseTypeDistributionItem:
+    properties:
+      count:
+        type: integer
+      license_type:
+        type: string
+    type: object
+  models.LicenseTypeDistributionResponse:
+    properties:
+      distribution:
+        items:
+          $ref: '#/definitions/models.LicenseTypeDistributionItem'
+        type: array
+      total:
+        type: integer
+    type: object
+  models.StatusDistributionItem:
+    properties:
+      count:
+        type: integer
+      status:
+        type: string
+    type: object
+  models.StatusDistributionResponse:
+    properties:
+      distribution:
+        items:
+          $ref: '#/definitions/models.StatusDistributionItem'
+        type: array
+      total:
         type: integer
     type: object
   models.User:
@@ -1034,6 +1115,77 @@ paths:
           schema:
             $ref: '#/definitions/httpErrors.RestError'
       summary: Search driving licenses by license number
+      tags:
+      - DrivingLicense
+  /licenses/stats/city-detail:
+    get:
+      description: Get count of driving licenses grouped by owner_city (province/city),
+        with breakdown by status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CityDetailDistributionResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get detailed distribution by owner city and status
+      tags:
+      - DrivingLicense
+  /licenses/stats/license-type:
+    get:
+      description: Get count of driving licenses by license type (A1, B1, B2, C, ...)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LicenseTypeDistributionResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get license type distribution
+      tags:
+      - DrivingLicense
+  /licenses/stats/license-type-detail:
+    get:
+      description: Get count of driving licenses grouped by license_type, with breakdown
+        by status (active, expired, pause, pending, revoke)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LicenseTypeDetailDistributionResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get detailed distribution by license type and status
+      tags:
+      - DrivingLicense
+  /licenses/stats/status:
+    get:
+      description: Get count of driving licenses by status (active, pending, expired,
+        pause, revoke)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.StatusDistributionResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get status distribution
       tags:
       - DrivingLicense
   /vehicleReg/{id}:

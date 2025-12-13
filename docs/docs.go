@@ -982,6 +982,110 @@ const docTemplate = `{
                 }
             }
         },
+        "/licenses/stats/city-detail": {
+            "get": {
+                "description": "Get count of driving licenses grouped by owner_city (province/city), with breakdown by status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Get detailed distribution by owner city and status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CityDetailDistributionResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/licenses/stats/license-type": {
+            "get": {
+                "description": "Get count of driving licenses by license type (A1, B1, B2, C, ...)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Get license type distribution",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LicenseTypeDistributionResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/licenses/stats/license-type-detail": {
+            "get": {
+                "description": "Get count of driving licenses grouped by license_type, with breakdown by status (active, expired, pause, pending, revoke)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Get detailed distribution by license type and status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LicenseTypeDetailDistributionResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/licenses/stats/status": {
+            "get": {
+                "description": "Get count of driving licenses by status (active, pending, expired, pause, revoke)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense"
+                ],
+                "summary": "Get status distribution",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.StatusDistributionResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
         "/licenses/{address}": {
             "get": {
                 "description": "Get a single driving license by its Wallet Address",
@@ -1433,6 +1537,48 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CityDetailDistribution": {
+            "type": "object",
+            "properties": {
+                "by_status": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CityStatusItem"
+                    }
+                },
+                "owner_city": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.CityDetailDistributionResponse": {
+            "type": "object",
+            "properties": {
+                "distribution": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CityDetailDistribution"
+                    }
+                },
+                "grand_total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.CityStatusItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "models.DrivingLicense": {
             "type": "object",
             "required": [
@@ -1511,12 +1657,15 @@ const docTemplate = `{
                     "description": "Địa chỉ",
                     "type": "string"
                 },
+                "owner_city": {
+                    "type": "string"
+                },
                 "point": {
                     "description": "Điểm bằng lái xe (0 \u003c point \u003c 12)",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "Trạng thái (pending: chờ đợi, expiry: hết hạn, active: hoạt động, pause: tạm dừng (point = 0))",
+                    "description": "Trạng thái (pending: chờ đợi, expired: hết hạn, active: hoạt động, pause: tạm dừng (point = 0), revoke: thu hồi)",
                     "type": "string"
                 },
                 "updated_at": {
@@ -1596,6 +1745,87 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.LicenseTypeDetailDistribution": {
+            "type": "object",
+            "properties": {
+                "by_status": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.StatusDistributionItem"
+                    }
+                },
+                "license_type": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.LicenseTypeDetailDistributionResponse": {
+            "type": "object",
+            "properties": {
+                "distribution": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.LicenseTypeDetailDistribution"
+                    }
+                },
+                "grand_total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.LicenseTypeDistributionItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "license_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.LicenseTypeDistributionResponse": {
+            "type": "object",
+            "properties": {
+                "distribution": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.LicenseTypeDistributionItem"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.StatusDistributionItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.StatusDistributionResponse": {
+            "type": "object",
+            "properties": {
+                "distribution": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.StatusDistributionItem"
+                    }
+                },
+                "total": {
                     "type": "integer"
                 }
             }

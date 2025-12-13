@@ -18,4 +18,8 @@ func MapDriverLicenseRoutes(driverLicenseGroup *echo.Group, h driverlicense.Hand
 	driverLicenseGroup.GET("/blockchain/:address", h.GetDriverLicenseByWalletAddress())
 	driverLicenseGroup.GET("/getAll", h.GetDriverLicense())
 	driverLicenseGroup.GET("/search", h.SearchByLicenseNo())
+	driverLicenseGroup.GET("/stats/status", h.GetStatusDistribution())
+	driverLicenseGroup.GET("/stats/license-type", h.GetLicenseTypeDistribution())
+	driverLicenseGroup.GET("/stats/license-type-detail", h.GetLicenseTypeStatusDistribution())
+	driverLicenseGroup.GET("/stats/city-detail", h.GetCityStatusDistribution())
 }

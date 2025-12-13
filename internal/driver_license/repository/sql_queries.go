@@ -3,14 +3,14 @@ package repository
 const (
 	createDriverLicenseQuery = `
 	INSERT INTO driver_licenses (
-		id, full_name, avatar, dob, identity_no, owner_address, license_no,  
+		id, full_name, avatar, dob, identity_no, owner_address, owner_city, license_no,  
 		issue_date, expiry_date, status, license_type, authority_id, issuing_authority, 
 		nationality, point, wallet_address, on_blockchain, blockchain_txhash,
 		version, creator_id, modifier_id, created_at, updated_at, active
 	)VALUES(
 		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 
-		$15, $16, $17, $18, $19, $20, $21, $22, $23, $24
-	)RETURNING id, full_name, avatar, dob, identity_no, owner_address, license_no, 
+		$15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25
+	)RETURNING id, full_name, avatar, dob, identity_no, owner_address, owner_city, license_no, 
 		issue_date, expiry_date, status, license_type, authority_id, issuing_authority,
 		nationality, point, wallet_address, on_blockchain, blockchain_txhash, 
 		version, creator_id, modifier_id, created_at, updated_at, active
@@ -22,14 +22,15 @@ const (
 		full_name = COALESCE(NULLIF($1, ''), full_name),
 		dob = COALESCE(NULLIF($2, '')::DATE, dob),
 		owner_address = COALESCE(NULLIF($3, ''), owner_address),
-		expiry_date = COALESCE($4, expiry_date),
-		status = COALESCE(NULLIF($5, ''), status),
-		nationality = COALESCE(NULLIF($6, ''), nationality),
-		point = COALESCE($7, point),
-		modifier_id = COALESCE($8, modifier_id),
+		owner_city = COALESCE(NULLIF($4, ''), owner_city),
+		expiry_date = COALESCE($5, expiry_date),
+		status = COALESCE(NULLIF($6, ''), status),
+		nationality = COALESCE(NULLIF($7, ''), nationality),
+		point = COALESCE($8, point),
+		modifier_id = COALESCE($9, modifier_id),
         version = version + 1,
-        updated_at = $9
-	WHERE id = $10
+        updated_at = $10
+	WHERE id = $11
 	RETURNING *
 	`
 	updateBlockchainConfirmationQuery = `
@@ -100,7 +101,7 @@ const (
 `
 
 	getDriverLicense = `
-	SELECT id, full_name, dob, identity_no, owner_address, license_no, 
+	SELECT id, full_name, dob, identity_no, owner_address, owner_city, license_no, 
 		issue_date, expiry_date, status, license_type, authority_id, issuing_authority,
 		nationality, point, wallet_address, on_blockchain, blockchain_txhash, 
 		version, creator_id, modifier_id, created_at, updated_at, active
@@ -114,4 +115,47 @@ const (
 	FROM driver_licenses
 	WHERE license_no = $1 AND active = true
 	`
+
+	// Statistic
+	getStatusDistributionQuery = `
+        SELECT status, COUNT(*) as count
+        FROM driver_licenses
+        WHERE active = true
+        GROUP BY status
+        ORDER BY count DESC
+    `
+
+	getLicenseTypeDistributionQuery = `
+        SELECT license_type, COUNT(*) as count
+        FROM driver_licenses
+        WHERE active = true AND license_type IS NOT NULL AND license_type != ''
+        GROUP BY license_type
+        ORDER BY count DESC
+    `
+
+	getLicenseTypeStatusDistributionQuery = `
+        SELECT 
+            license_type,
+            status,
+            COUNT(*) as count
+        FROM driver_licenses
+        WHERE active = true 
+          AND license_type IS NOT NULL 
+          AND license_type != ''
+        GROUP BY license_type, status
+        ORDER BY license_type, 
+                 count DESC,
+                 status
+    `
+
+	getCityStatusDistributionQuery = `
+        SELECT 
+            COALESCE(owner_city, 'Không xác định') as owner_city,
+            status,
+            COUNT(*) as count
+        FROM driver_licenses
+        WHERE active = true
+        GROUP BY owner_city, status
+        ORDER BY count DESC, owner_city, status
+    `
 )

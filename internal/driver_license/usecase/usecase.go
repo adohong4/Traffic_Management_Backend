@@ -172,3 +172,19 @@ func (u *DriverLicenseUC) GetDriverLicenseByWalletAddress(ctx context.Context, a
 func (u *DriverLicenseUC) SearchByLicenseNo(ctx context.Context, lno string, query *utils.PaginationQuery) (*models.DrivingLicenseList, error) {
 	return u.DriverLicenseRepo.SearchByLicenseNo(ctx, lno, query)
 }
+
+func (u *DriverLicenseUC) GetStatusDistribution(ctx context.Context) (*models.StatusDistributionResponse, error) {
+	return u.DriverLicenseRepo.GetStatusDistribution(ctx)
+}
+
+func (u *DriverLicenseUC) GetLicenseTypeDistribution(ctx context.Context) (*models.LicenseTypeDistributionResponse, error) {
+	return u.DriverLicenseRepo.GetLicenseTypeDistribution(ctx)
+}
+
+func (u *DriverLicenseUC) GetLicenseTypeStatusDistribution(ctx context.Context) (*models.LicenseTypeDetailDistributionResponse, error) {
+	return u.DriverLicenseRepo.GetLicenseTypeStatusDistribution(ctx)
+}
+
+func (u *DriverLicenseUC) GetCityStatusDistribution(ctx context.Context) (*models.CityDetailDistributionResponse, error) {
+	return u.DriverLicenseRepo.GetCityStatusDistribution(ctx)
+}

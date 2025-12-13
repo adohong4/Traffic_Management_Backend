@@ -11,13 +11,14 @@ type DrivingLicense struct {
 	Id               uuid.UUID  `json:"id" db:"id" validate:"required"`
 	Name             string     `json:"full_name" db:"full_name"`
 	Avatar           string     `json:"avatar" db:"avatar"`
-	DOB              string     `json:"dob" db:"dob"`                             // Ngày sinh
-	IdentityNo       string     `json:"identity_no" db:"identity_no"`             // Căn cước công dân
-	OwnerAddress     string     `json:"owner_address" db:"owner_address"`         // Địa chỉ
+	DOB              string     `json:"dob" db:"dob"`                     // Ngày sinh
+	IdentityNo       string     `json:"identity_no" db:"identity_no"`     // Căn cước công dân
+	OwnerAddress     string     `json:"owner_address" db:"owner_address"` // Địa chỉ
+	OwnerCity        string     `json:"owner_city" db:"owner_city"`
 	LicenseNo        string     `json:"license_no" db:"license_no"`               // Số bằng lái
 	IssueDate        string     `json:"issue_date" db:"issue_date"`               // Ngày cấp
 	ExpiryDate       *string    `json:"expiry_date" db:"expiry_date"`             // Ngày hết hạn (có thời hạn, vô thời hạn)
-	Status           string     `json:"status" db:"status"`                       // Trạng thái (pending: chờ đợi, expiry: hết hạn, active: hoạt động, pause: tạm dừng (point = 0))
+	Status           string     `json:"status" db:"status"`                       // Trạng thái (pending: chờ đợi, expired: hết hạn, active: hoạt động, pause: tạm dừng (point = 0), revoke: thu hồi)
 	LicenseType      string     `json:"license_type" db:"license_type"`           // Loại bằng lái (A1, B1, B2, ...)
 	AuthorityId      uuid.UUID  `json:"authority_id" db:"authority_id"`           // Mã nơi cấp
 	IssuingAuthority string     `json:"issuing_authority" db:"issuing_authority"` // Nơi cấp
@@ -70,4 +71,60 @@ type DrivingLicenseList struct {
 	Size           int               `json:"size"`
 	HasMore        bool              `json:"has_more"`
 	DrivingLicense []*DrivingLicense `json:"driver_licenses"`
+}
+
+// Status Distribution Item
+type StatusDistributionItem struct {
+	Status string `json:"status"`
+	Count  int    `json:"count"`
+}
+
+// Status Distribution Response
+type StatusDistributionResponse struct {
+	Distribution []StatusDistributionItem `json:"distribution"`
+	Total        int                      `json:"total"`
+}
+
+// License Type Distribution Item
+type LicenseTypeDistributionItem struct {
+	LicenseType string `json:"license_type"`
+	Count       int    `json:"count"`
+}
+
+// License Type Distribution Response
+type LicenseTypeDistributionResponse struct {
+	Distribution []LicenseTypeDistributionItem `json:"distribution"`
+	Total        int                           `json:"total"`
+}
+
+// License Type Detail Distribution
+type LicenseTypeDetailDistribution struct {
+	LicenseType string                   `json:"license_type"`
+	Total       int                      `json:"total"`
+	ByStatus    []StatusDistributionItem `json:"by_status"`
+}
+
+// License Type Detail Distribution Response
+type LicenseTypeDetailDistributionResponse struct {
+	Distribution []LicenseTypeDetailDistribution `json:"distribution"`
+	GrandTotal   int                             `json:"grand_total"`
+}
+
+// City Status Item
+type CityStatusItem struct {
+	Status string `json:"status"`
+	Count  int    `json:"count"`
+}
+
+// City Detail Distribution
+type CityDetailDistribution struct {
+	OwnerCity string           `json:"owner_city"`
+	Total     int              `json:"total"`
+	ByStatus  []CityStatusItem `json:"by_status"`
+}
+
+// City Detail Distribution Response
+type CityDetailDistributionResponse struct {
+	Distribution []CityDetailDistribution `json:"distribution"`
+	GrandTotal   int                      `json:"grand_total"`
 }

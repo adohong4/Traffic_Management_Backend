@@ -342,6 +342,90 @@ func (h *DriverLicenseHandlers) SearchByLicenseNo() echo.HandlerFunc {
 	}
 }
 
+// @Summary Get status distribution
+// @Description Get count of driving licenses by status (active, pending, expired, pause, revoke)
+// @Tags DrivingLicense
+// @Produce json
+// @Success 200 {object} models.StatusDistributionResponse
+// @Failure 500 {object} httpErrors.RestError
+// @Router /licenses/stats/status [get]
+func (h *DriverLicenseHandlers) GetStatusDistribution() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+
+		dist, err := h.DriverLicenseUC.GetStatusDistribution(ctx)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, dist)
+	}
+}
+
+// @Summary Get license type distribution
+// @Description Get count of driving licenses by license type (A1, B1, B2, C, ...)
+// @Tags DrivingLicense
+// @Produce json
+// @Success 200 {object} models.LicenseTypeDistributionResponse
+// @Failure 500 {object} httpErrors.RestError
+// @Router /licenses/stats/license-type [get]
+func (h *DriverLicenseHandlers) GetLicenseTypeDistribution() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+
+		dist, err := h.DriverLicenseUC.GetLicenseTypeDistribution(ctx)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, dist)
+	}
+}
+
+// @Summary Get detailed distribution by license type and status
+// @Description Get count of driving licenses grouped by license_type, with breakdown by status (active, expired, pause, pending, revoke)
+// @Tags DrivingLicense
+// @Produce json
+// @Success 200 {object} models.LicenseTypeDetailDistributionResponse
+// @Failure 500 {object} httpErrors.RestError
+// @Router /licenses/stats/license-type-detail [get]
+func (h *DriverLicenseHandlers) GetLicenseTypeStatusDistribution() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+
+		dist, err := h.DriverLicenseUC.GetLicenseTypeStatusDistribution(ctx)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, dist)
+	}
+}
+
+// @Summary Get detailed distribution by owner city and status
+// @Description Get count of driving licenses grouped by owner_city (province/city), with breakdown by status
+// @Tags DrivingLicense
+// @Produce json
+// @Success 200 {object} models.CityDetailDistributionResponse
+// @Failure 500 {object} httpErrors.RestError
+// @Router /licenses/stats/city-detail [get]
+func (h *DriverLicenseHandlers) GetCityStatusDistribution() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+
+		dist, err := h.DriverLicenseUC.GetCityStatusDistribution(ctx)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, dist)
+	}
+}
+
 // Confirm Blockchain Request
 type ConfirmBlockchainRequest struct {
 	BlockchainTxHash string `json:"blockchain_txhash" validate:"required"`

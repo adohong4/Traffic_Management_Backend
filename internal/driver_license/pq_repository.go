@@ -19,4 +19,8 @@ type Repository interface {
 	GetDriverLicenseByWalletAddress(ctx context.Context, address string) (*models.DrivingLicense, error)
 	SearchByLicenseNo(ctx context.Context, lno string, query *utils.PaginationQuery) (*models.DrivingLicenseList, error)
 	FindLicenseNO(ctx context.Context, dl *models.DrivingLicense) (*models.DrivingLicense, error)
+	GetStatusDistribution(ctx context.Context) (*models.StatusDistributionResponse, error)
+	GetLicenseTypeDistribution(ctx context.Context) (*models.LicenseTypeDistributionResponse, error)
+	GetLicenseTypeStatusDistribution(ctx context.Context) (*models.LicenseTypeDetailDistributionResponse, error)
+	GetCityStatusDistribution(ctx context.Context) (*models.CityDetailDistributionResponse, error)
 }

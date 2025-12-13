@@ -12,4 +12,8 @@ type Handlers interface {
 	GetDriverLicenseById() echo.HandlerFunc
 	GetDriverLicenseByWalletAddress() echo.HandlerFunc
 	SearchByLicenseNo() echo.HandlerFunc
+	GetStatusDistribution() echo.HandlerFunc
+	GetLicenseTypeDistribution() echo.HandlerFunc
+	GetLicenseTypeStatusDistribution() echo.HandlerFunc
+	GetCityStatusDistribution() echo.HandlerFunc
 }
