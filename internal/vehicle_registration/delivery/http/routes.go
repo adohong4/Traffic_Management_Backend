@@ -11,6 +11,7 @@ import (
 func MapVehicleRegistrationRoutes(vehicleRegGroup *echo.Group, h vehicleRegistration.Handlers, mw *middleware.MiddlewareManager, cfg *config.Config, authUC auth.UseCase) {
 	vehicleRegGroup.POST("/create", h.Create(), mw.AuthJWTMiddleware(authUC, cfg))
 	vehicleRegGroup.PUT("/:id", h.Update(), mw.AuthJWTMiddleware(authUC, cfg))
+	vehicleRegGroup.PUT("/:id/confirm-blockchain", h.ConfirmBlockchainStorage(), mw.AuthJWTMiddleware(authUC, cfg))
 	vehicleRegGroup.DELETE("/:id", h.Delete(), mw.AuthJWTMiddleware(authUC, cfg))
 	vehicleRegGroup.GET("/:id", h.GetByID())
 	vehicleRegGroup.GET("/getAll", h.GetAllVehicleReg())

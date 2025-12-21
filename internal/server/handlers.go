@@ -91,7 +91,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	authGroup := v1.Group("/auth")
 	goAgencyGroup := v1.Group("/agency")
 	driverLicenseGroup := v1.Group("/licenses")
-	vehicleReqGroup := v1.Group("/vehicleReg")
+	vehicleReqGroup := v1.Group("/vehicle")
 	trafficVioGroup := v1.Group("/traffic")
 	newsGroup := v1.Group("/news")
 

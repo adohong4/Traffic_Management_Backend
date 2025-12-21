@@ -84,6 +84,54 @@ func (h vehicleRegHandlers) Update() echo.HandlerFunc {
 	}
 }
 
+// @Summary Confirm blockchain storage
+// @Description Update blockchain transaction hash and set on_blockchain to true
+// @Tags vehicle registrationn
+// @Accept json
+// @Produce json
+// @Param id path string true "Vehicle Registration ID"
+// @Param request body http.ConfirmBlockchainRequest true "Blockchain confirmation details"
+// @Success 200 {object} models.VehicleRegistration
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Security JWT
+// @Router /vehicle/{id}/confirm-blockchain [put]
+func (h *vehicleRegHandlers) ConfirmBlockchainStorage() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		UUID, err := uuid.Parse(c.Param("id"))
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		req := &models.ConfirmBlockchainRequest{}
+		if err = c.Bind(req); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		if err := utils.ValidateStruct(ctx, req); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		dl := &models.VehicleRegistration{
+			ID:               UUID,
+			BlockchainTxHash: req.BlockchainTxHash,
+			OnBlockchain:     req.OnBlockchain,
+		}
+
+		updatedDL, err := h.vehicleRegUC.ConfirmBlockchainStorage(ctx, dl)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, updatedDL)
+	}
+}
+
 // Delete godoc
 // @Summary Delete vehicle registration
 // @Description Delete by id vehicle_registration handler
@@ -92,7 +140,7 @@ func (h vehicleRegHandlers) Update() echo.HandlerFunc {
 // @Produce json
 // @Param id path int true "id"
 // @Success 200 {object} models.VehicleRegistration
-// @Router /vehicleReg/{id} [Delete]
+// @Router /vehicle/{id} [Delete]
 func (h vehicleRegHandlers) Delete() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()

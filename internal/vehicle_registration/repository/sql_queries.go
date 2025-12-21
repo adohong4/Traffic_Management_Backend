@@ -4,13 +4,13 @@ const (
 	createLicenseQuery = `
 	INSERT INTO vehicle_registration (
 		id, owner_id, brand, type_vehicle, vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,
-		owner_name,seats, issue_date, expiry_date, issuer, status, 
+		owner_name, seats, issue_date, issuer, registration_date, expiry_date, registration_place, on_blockchain, blockchain_txhash, status, 
 		version, creator_id, modifier_id, created_at, updated_at
 	)VALUES(
-		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24
 	)RETURNING 
-		id, owner_id, brand, type_vehicle vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,
-		owner_name, issue_date, expiry_date, issuer, 
+		id, owner_id, brand, type_vehicle, vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,
+		owner_name,seats, issue_date,issuer, registration_date, expiry_date, registration_place, on_blockchain, blockchain_txhash,
 		status, version, creator_id, modifier_id, created_at, updated_at
 	`
 
@@ -28,16 +28,30 @@ const (
         owner_name = COALESCE(NULLIF($9, ''), owner_name),
         seats = COALESCE($10, seats),
         issue_date = COALESCE($11, issue_date),
-        expiry_date = COALESCE($12, expiry_date),
-        issuer = COALESCE(NULLIF($13, ''), issuer),
-        status = COALESCE(NULLIF($14, ''), status),
-        modifier_id = COALESCE($15, modifier_id),
+		issuer = COALESCE(NULLIF($12, ''), issuer),
+		registration_date = COALESCE($13, registration_date),
+        expiry_date = COALESCE($14, expiry_date),
+		registration_place = COALESCE($15, registration_place),
+        status = COALESCE(NULLIF($16, ''), status),
+        modifier_id = COALESCE($17, modifier_id),
         version = version + 1,
         updated_at = now(),
-        active = COALESCE($16, active)
-    WHERE id = $17
+        active = COALESCE($18, active)
+    WHERE id = $19
     RETURNING *
-`
+	`
+
+	updateBlockchainConfirmationQuery = `
+    UPDATE vehicle_registration 
+    SET
+        blockchain_txhash = COALESCE(NULLIF($1, ''), blockchain_txhash),
+        on_blockchain = $2,
+        modifier_id = COALESCE($3, modifier_id),
+        version = version + 1,
+        updated_at = $4
+    WHERE id = $5
+    RETURNING *
+    `
 
 	deleteLicenseQuery = `
 	UPDATE vehicle_registration
@@ -78,7 +92,7 @@ const (
 `
 
 	getVehicleDocuments = `
-	SELECT id, owner_id, brand, vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,
+	SELECT id, owner_id, brand, type_vehicle, vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,
     	owner_name, issue_date, expiry_date, issuer, 
     	status, version, creator_id, modifier_id, updated_at, created_at
 	FROM vehicle_registration

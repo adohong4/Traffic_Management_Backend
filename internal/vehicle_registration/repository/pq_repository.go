@@ -26,7 +26,7 @@ func (r *vehicleDocRepo) CreateVehicleDoc(ctx context.Context, veDoc *models.Veh
 	v := &models.VehicleRegistration{}
 	if err := r.db.QueryRowxContext(ctx, createLicenseQuery,
 		veDoc.ID, veDoc.OwnerID, veDoc.Brand, veDoc.TypeVehicle, veDoc.VehiclePlateNo, veDoc.ColorPlate, veDoc.ChassisNo, veDoc.EngineNo, veDoc.ColorVehicle,
-		veDoc.OwnerName, veDoc.Seats, veDoc.IssueDate, veDoc.ExpiryDate, veDoc.Issuer,
+		veDoc.OwnerName, veDoc.Seats, veDoc.IssueDate, veDoc.Issuer, veDoc.RegistrationDate, veDoc.ExpiryDate, veDoc.RegistrationPlace, veDoc.OnBlockchain, veDoc.BlockchainTxHash,
 		veDoc.Status, veDoc.Version, veDoc.CreatorId, veDoc.ModifierId, veDoc.CreatedAt, veDoc.UpdatedAt,
 	).StructScan(v); err != nil {
 		return nil, errors.Wrap(err, "vehicleDocRepo.CreateVehicleDoc.StructScan")
@@ -38,12 +38,22 @@ func (r *vehicleDocRepo) UpdateVehicleDoc(ctx context.Context, veDoc *models.Veh
 	v := &models.VehicleRegistration{}
 	if err := r.db.QueryRowxContext(ctx, updateLicenseQuery,
 		veDoc.OwnerID, veDoc.Brand, veDoc.TypeVehicle, veDoc.VehiclePlateNo, veDoc.ColorPlate, veDoc.ChassisNo, veDoc.EngineNo,
-		veDoc.ColorVehicle, veDoc.OwnerName, veDoc.Seats, veDoc.IssueDate, veDoc.ExpiryDate, veDoc.Issuer,
-		veDoc.Status, veDoc.ModifierId, veDoc.Active, veDoc.ID,
+		veDoc.ColorVehicle, veDoc.OwnerName, veDoc.Seats, veDoc.IssueDate, veDoc.Issuer, veDoc.RegistrationDate, veDoc.ExpiryDate, veDoc.RegistrationPlace,
+		veDoc.Status, veDoc.ModifierId, veDoc.Active, veDoc.ID, veDoc.Version,
 	).StructScan(v); err != nil {
 		return nil, errors.Wrap(err, "vehicleDocRepo.UpdateVehicleDoc.StructScan")
 	}
 	return v, nil
+}
+
+func (r *vehicleDocRepo) ConfirmBlockchainStorage(ctx context.Context, v *models.VehicleRegistration) (*models.VehicleRegistration, error) {
+	d := &models.VehicleRegistration{}
+	if err := r.db.QueryRowxContext(ctx, updateBlockchainConfirmationQuery,
+		v.BlockchainTxHash, v.OnBlockchain, v.ModifierId, v.UpdatedAt, v.ID,
+	).StructScan(d); err != nil {
+		return nil, errors.Wrap(err, "VehicleDocRepo.ConfirmBlockchainStorage.StructScan")
+	}
+	return d, nil
 }
 
 func (r *vehicleDocRepo) DeleteVehicleDoc(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error) {

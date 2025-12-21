@@ -48,12 +48,14 @@ var loggerLevelMap = map[string]zapcore.Level{
 }
 
 func (l *apiLogger) getLoggerLevel(cfg *config.Config) zapcore.Level {
-	level, exist := loggerLevelMap[cfg.Logger.Level]
-	if !exist {
-		return zapcore.DebugLevel
+	levelStr := cfg.Logger.Level
+	if levelStr == "" {
+		return zapcore.InfoLevel
 	}
-
-	return level
+	if level, exist := loggerLevelMap[levelStr]; exist {
+		return level
+	}
+	return zapcore.InfoLevel
 }
 
 // Init logger
@@ -63,32 +65,50 @@ func (l *apiLogger) InitLogger() {
 	logWriter := zapcore.AddSync(os.Stderr)
 
 	var encoderCfg zapcore.EncoderConfig
-	if l.cfg.Server.Mode == "Development" {
+
+	isDev := l.cfg.Server.Mode == "Development" || l.cfg.Server.Mode == "development" || l.cfg.Server.Mode == "dev"
+	isConsole := l.cfg.Logger.Encoding == "console"
+
+	if isDev || isConsole {
 		encoderCfg = zap.NewDevelopmentEncoderConfig()
+		encoderCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	} else {
 		encoderCfg = zap.NewProductionEncoderConfig()
+		encoderCfg.EncodeLevel = zapcore.CapitalLevelEncoder
 	}
 
-	var encoder zapcore.Encoder
 	encoderCfg.LevelKey = "LEVEL"
 	encoderCfg.CallerKey = "CALLER"
 	encoderCfg.TimeKey = "TIME"
-	encoderCfg.NameKey = "NAME"
 	encoderCfg.MessageKey = "MESSAGE"
+	encoderCfg.NameKey = "NAME"
 
-	if l.cfg.Logger.Encoding == "console" {
+	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	encoderCfg.EncodeCaller = zapcore.ShortCallerEncoder
+
+	var encoder zapcore.Encoder
+	if isDev || isConsole {
 		encoder = zapcore.NewConsoleEncoder(encoderCfg)
 	} else {
 		encoder = zapcore.NewJSONEncoder(encoderCfg)
 	}
 
-	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-	core := zapcore.NewCore(encoder, logWriter, zap.NewAtomicLevelAt(logLevel))
-	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+	core := zapcore.NewCore(
+		encoder,
+		logWriter,
+		zap.NewAtomicLevelAt(logLevel),
+	)
+
+	logger := zap.New(core,
+		zap.AddCaller(),
+		zap.AddCallerSkip(1),
+	)
 
 	l.sugarLogger = logger.Sugar()
+
 	if err := l.sugarLogger.Sync(); err != nil {
-		l.sugarLogger.Error(err)
+		os.Stderr.WriteString("Warning: failed to sync logger: " + err.Error() + "\n")
 	}
 }
 

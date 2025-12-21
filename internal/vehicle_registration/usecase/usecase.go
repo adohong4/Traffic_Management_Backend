@@ -80,6 +80,28 @@ func (v *vehicleRegUC) UpdateVehicleDoc(ctx context.Context, veDoc *models.Vehic
 	return updatedVeReg, nil
 }
 
+func (u *vehicleRegUC) ConfirmBlockchainStorage(ctx context.Context, dl *models.VehicleRegistration) (*models.VehicleRegistration, error) {
+	user, err := utils.GetUserFromCtx(ctx)
+	if err != nil {
+		return nil, httpErrors.NewUnauthorizedError(errors.WithMessage(err, "VehicleRegistrationUC.ConfirmBlockchainStorage.GetUserFromCtx"))
+	}
+
+	dl.ModifierId = &user.Id
+	dl.OnBlockchain = true
+	dl.UpdatedAt = time.Now()
+
+	if dl.BlockchainTxHash == "" {
+		return nil, httpErrors.NewBadRequestError(errors.New("BlockchainTxHash is required"))
+	}
+
+	updatedLicense, err := u.vehicleRegRepo.ConfirmBlockchainStorage(ctx, dl)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedLicense, nil
+}
+
 func (v *vehicleRegUC) DeleteVehicleDoc(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error) {
 	user, err := utils.GetUserFromCtx(ctx)
 	if err != nil {

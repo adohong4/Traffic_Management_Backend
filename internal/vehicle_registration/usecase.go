@@ -11,6 +11,7 @@ import (
 type UseCase interface {
 	CreateVehicleDoc(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error)
 	UpdateVehicleDoc(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error)
+	ConfirmBlockchainStorage(ctx context.Context, dl *models.VehicleRegistration) (*models.VehicleRegistration, error)
 	DeleteVehicleDoc(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error)
 	GetVehicleDocs(ctx context.Context, pq *utils.PaginationQuery) (*models.VehicleRegistrationList, error)
 	GetVehicleByID(ctx context.Context, vehicleID uuid.UUID) (*models.VehicleRegistration, error)
