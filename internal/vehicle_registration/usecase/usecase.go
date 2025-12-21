@@ -138,3 +138,27 @@ func (v *vehicleRegUC) GetVehicleByID(ctx context.Context, vehicleID uuid.UUID) 
 func (v *vehicleRegUC) FindByVehiclePlateNO(ctx context.Context, vePlaNO string, query *utils.PaginationQuery) (*models.VehicleRegistrationList, error) {
 	return v.vehicleRegRepo.SearchByVehiclePlateNO(ctx, vePlaNO, query)
 }
+
+func (v *vehicleRegUC) GetCountByType(ctx context.Context) (models.VehicleTypeCounts, error) {
+	items, err := v.vehicleRegRepo.GetCountByType(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return models.VehicleTypeCounts(items), nil
+}
+
+func (v *vehicleRegUC) GetTopBrands(ctx context.Context) (models.BrandCounts, error) {
+	items, err := v.vehicleRegRepo.GetTopBrands(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return models.BrandCounts(items), nil
+}
+
+func (v *vehicleRegUC) GetCountByStatus(ctx context.Context) (models.StatusCounts, error) {
+	items, err := v.vehicleRegRepo.GetRegistrationStatusStats(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return *items, nil
+}

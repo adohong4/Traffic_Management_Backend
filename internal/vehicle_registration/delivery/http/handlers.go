@@ -254,3 +254,65 @@ func (h vehicleRegHandlers) SearchByVehiclePlateNO() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, newList)
 	}
 }
+
+// GetStatsByType godoc
+// @Summary Get vehicle count by type
+// @Description Get count by vehicle type
+// @Tags vehicle registration
+// @Accept json
+// @Produce json
+// @Success 200 {object} models.VehicleTypeCounts
+// @Router /vehicleReg/stats/type [get]
+func (h vehicleRegHandlers) GetStatsByType() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		stats, err := h.vehicleRegUC.GetCountByType(ctx)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+		return c.JSON(http.StatusOK, stats)
+	}
+}
+
+// GetStatsByBrand godoc
+// @Summary Get top brands distribution
+// @Description Get top 5 brands and others
+// @Tags vehicle registration
+// @Accept json
+// @Produce json
+// @Success 200 {object} models.BrandCounts
+// @Router /vehicleReg/stats/brand [get]
+func (h vehicleRegHandlers) GetStatsByBrand() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		stats, err := h.vehicleRegUC.GetTopBrands(ctx)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+		return c.JSON(http.StatusOK, stats)
+	}
+}
+
+// GetStatsByStatus godoc
+// @Summary Thống kê trạng thái đăng kiểm của xe cơ giới
+// @Description Statistics on the number of motor vehicles by status: valid, expired, and pending inspection (based on ExpiryDate and RegistrationDate). Excludes motorcycles, motorbikes, mopeds, bicycles, and electric motorbikes.
+// @Tags vehicle registration
+// @Accept json
+// @Produce json
+// @Success 200 {object} models.StatusCounts
+// @Router /vehicleReg/stats/status [get]
+func (h vehicleRegHandlers) GetStatsByStatus() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+
+		stats, err := h.vehicleRegUC.GetCountByStatus(ctx)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, stats)
+	}
+}

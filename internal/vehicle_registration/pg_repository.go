@@ -17,4 +17,7 @@ type Repository interface {
 	GetVehicleByID(ctx context.Context, vehicleID uuid.UUID) (*models.VehicleRegistration, error)
 	SearchByVehiclePlateNO(ctx context.Context, vePlaNO string, query *utils.PaginationQuery) (*models.VehicleRegistrationList, error)
 	FindVehiclePlateNO(ctx context.Context, veDoc *models.VehicleRegistration) (*models.VehicleRegistration, error)
+	GetCountByType(ctx context.Context) ([]*models.CountItem, error)
+	GetTopBrands(ctx context.Context) ([]*models.CountItem, error)
+	GetRegistrationStatusStats(ctx context.Context) (*models.StatusCounts, error)
 }

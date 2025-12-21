@@ -105,4 +105,51 @@ const (
 	FROM vehicle_registration
 	WHERE vehicle_no = $1 AND active = true
 	`
+
+	// Query for count by type_vehicle
+	getCountByType = `
+    SELECT type_vehicle, COUNT(*) as count
+    FROM vehicle_registration
+    WHERE active = true
+    GROUP BY type_vehicle
+    `
+
+	getRegistrationStatusStats = `
+    SELECT 
+        COUNT(*) FILTER (WHERE expiry_date >= CURRENT_DATE AND expiry_date IS NOT NULL) AS valid_count,
+        COUNT(*) FILTER (WHERE expiry_date < CURRENT_DATE AND expiry_date IS NOT NULL) AS expired_count,
+        COUNT(*) FILTER (WHERE expiry_date IS NULL OR registration_date IS NULL) AS pending_count
+    FROM vehicle_registration
+    WHERE active = true
+      AND type_vehicle NOT ILIKE ANY (ARRAY[
+        '%xe máy%', '%xe mô tô%', '%xe gắn máy%', 
+        '%xe đạp%', '%xe đạp điện%', '%xe máy điện%'
+      ])
+    `
+
+	// Query for top 5 brands
+	getTopBrands = `
+    SELECT brand, COUNT(*) as count
+    FROM vehicle_registration
+    WHERE active = true
+    GROUP BY brand
+    ORDER BY count DESC
+    LIMIT 5
+    `
+
+	// Total active vehicles for others calculation
+	getTotalActiveVehicles = `
+    SELECT COUNT(*)
+    FROM vehicle_registration
+    WHERE active = true
+    `
 )
+
+var excludedVehicleTypes = []string{
+	"%xe máy%",
+	"%xe mô tô%",
+	"%xe gắn máy%",
+	"%xe đạp%",
+	"%xe đạp điện%",
+	"%xe máy điện%",
+}

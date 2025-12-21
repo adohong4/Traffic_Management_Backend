@@ -175,3 +175,96 @@ func (r *vehicleDocRepo) FindVehiclePlateNO(ctx context.Context, veDoc *models.V
 	}
 	return foundVehicleReq, nil
 }
+
+func (r *vehicleDocRepo) GetCountByType(ctx context.Context) ([]*models.CountItem, error) {
+	var items []*models.CountItem
+	rows, err := r.db.QueryxContext(ctx, getCountByType)
+	if err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetCountByType.QueryxContext")
+	}
+	defer rows.Close()
+
+	// Map specific types, others to "xe khác"
+	typeMap := make(map[string]int)
+	for rows.Next() {
+		var typeVehicle string
+		var count int
+		if err := rows.Scan(&typeVehicle, &count); err != nil {
+			return nil, errors.Wrap(err, "vehicleDocRepo.GetCountByType.Scan")
+		}
+		typeMap[typeVehicle] = count
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetCountByType.rows.Err")
+	}
+
+	// Aggregate
+	specificTypes := []string{"xe đầu kéo", "ô tô tải", "ô tô con", "xe khách", "xe máy"}
+	var others int
+	for _, t := range specificTypes {
+		items = append(items, &models.CountItem{Key: t, Count: typeMap[t]})
+		delete(typeMap, t) // Remove from map to calculate others
+	}
+	for _, count := range typeMap {
+		others += count
+	}
+	items = append(items, &models.CountItem{Key: "xe khác", Count: others})
+
+	return items, nil
+}
+
+func (r *vehicleDocRepo) GetTopBrands(ctx context.Context) ([]*models.CountItem, error) {
+	var items []*models.CountItem
+	rows, err := r.db.QueryxContext(ctx, getTopBrands)
+	if err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetTopBrands.QueryxContext")
+	}
+	defer rows.Close()
+
+	var topSum int
+	for rows.Next() {
+		var brand string
+		var count int
+		if err := rows.Scan(&brand, &count); err != nil {
+			return nil, errors.Wrap(err, "vehicleDocRepo.GetTopBrands.Scan")
+		}
+		items = append(items, &models.CountItem{Key: brand, Count: count})
+		topSum += count
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetTopBrands.rows.Err")
+	}
+
+	// Calculate others
+	var total int
+	if err := r.db.GetContext(ctx, &total, getTotalActiveVehicles); err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetTopBrands.GetTotalActiveVehicles")
+	}
+	others := total - topSum
+	items = append(items, &models.CountItem{Key: "khác", Count: others})
+
+	return items, nil
+}
+
+func (r *vehicleDocRepo) GetRegistrationStatusStats(ctx context.Context) (*models.StatusCounts, error) {
+	var valid, expired, pending int
+
+	err := r.db.QueryRowxContext(ctx, getRegistrationStatusStats).Scan(
+		&valid,
+		&expired,
+		&pending,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetRegistrationStatusStats.QueryRowxContext")
+	}
+
+	items := []*models.CountItem{
+		{Key: "hợp lệ", Count: valid},
+		{Key: "hết hạn", Count: expired},
+		{Key: "chờ đăng kiểm", Count: pending},
+	}
+
+	return (*models.StatusCounts)(&items), nil
+}

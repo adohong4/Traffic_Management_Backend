@@ -89,3 +89,18 @@ type ConfirmBlockchainRequest struct {
 	BlockchainTxHash string `json:"blockchain_txhash" validate:"required"`
 	OnBlockchain     bool   `json:"on_blockchain"`
 }
+
+// CountItem for generic count responses
+type CountItem struct {
+	Key   string `json:"key"`
+	Count int    `json:"count"`
+}
+
+// VehicleTypeCounts response for type stats
+type VehicleTypeCounts []*CountItem
+
+// StatusCounts response for status stats
+type StatusCounts []*CountItem
+
+// BrandCounts response for brand stats
+type BrandCounts []*CountItem
