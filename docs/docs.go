@@ -1530,9 +1530,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/vehicleReg/create": {
+        "/vehicle/create": {
             "post": {
-                "description": "Create vehicle_registration handler",
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Creates a new vehicle registration record. The vehicle plate number must be unique.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1540,52 +1545,69 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "vehicle registration"
+                    "vehicle-registration"
                 ],
-                "summary": "Create vehicle registration",
+                "summary": "Create a new vehicle registration",
+                "parameters": [
+                    {
+                        "description": "Vehicle registration data",
+                        "name": "vehicle",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.VehicleRegistration"
+                        }
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/models.VehicleRegistration"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
                     }
                 }
             }
         },
-        "/vehicleReg/getAll": {
+        "/vehicle/getAll": {
             "get": {
-                "description": "Get all vehicle registration with pagination",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Returns a paginated list of active vehicle registrations.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "vehicle registration"
+                    "vehicle-registration"
                 ],
-                "summary": "Get all vehicle registration",
+                "summary": "List all vehicle registrations",
                 "parameters": [
                     {
                         "type": "integer",
-                        "format": "page",
-                        "description": "page number",
+                        "description": "Page number (default: 1)",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "format": "size",
-                        "description": "number of elements per page",
+                        "description": "Page size (default: 10)",
                         "name": "size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "format": "orderBy",
-                        "description": "filter name",
-                        "name": "orderBy",
                         "in": "query"
                     }
                 ],
@@ -1593,45 +1615,52 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.VehicleRegistration"
+                            "$ref": "#/definitions/models.VehicleRegistrationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
             }
         },
-        "/vehicleReg/search": {
+        "/vehicle/search": {
             "get": {
-                "description": "Search vehicle registration by VehiclePlateNO",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Searches for active vehicle registrations containing the given plate number (partial match, case-insensitive).",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "vehicle registration"
+                    "vehicle-registration"
                 ],
-                "summary": "Search by VehiclePlateNO",
+                "summary": "Search vehicle registrations by plate number",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Plate number (partial)",
+                        "name": "vehicle_no",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
-                        "format": "page",
-                        "description": "page number",
+                        "description": "Page number (default: 1)",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "format": "size",
-                        "description": "number of elements per page",
+                        "description": "Page size (default: 10)",
                         "name": "size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "format": "orderBy",
-                        "description": "filter name",
-                        "name": "orderBy",
                         "in": "query"
                     }
                 ],
@@ -1639,29 +1668,125 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.VehicleRegistration"
+                            "$ref": "#/definitions/models.VehicleRegistrationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
             }
         },
-        "/vehicleReg/{id}": {
+        "/vehicle/stats/brand": {
             "get": {
-                "description": "Get by vehicle registration handler",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Returns the top 5 most common vehicle brands and groups the rest under \"khác\".",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Nvehicle registration"
+                    "vehicle-registration"
                 ],
-                "summary": "Get by vehicle registration ID",
+                "summary": "Top vehicle brands distribution",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.CountItem"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vehicle/stats/status": {
+            "get": {
+                "description": "Returns count of motor vehicles (excluding motorcycles, mopeds, bicycles, electric bikes) by inspection status:\n- Valid: ExpiryDate \u003e= today\n- Expired: ExpiryDate \u003c today\n- Pending: No registration date or expiry date yet (e.g., new vehicles)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle-registration"
+                ],
+                "summary": "Registration inspection status statistics (motor vehicles only)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.CountItem"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vehicle/stats/type": {
+            "get": {
+                "description": "Returns count of vehicles by type: xe đầu kéo, ô tô tải, ô tô con, xe khách, xe máy, and \"khác\" (others).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle-registration"
+                ],
+                "summary": "Vehicle statistics by type",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.CountItem"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vehicle/{id}": {
+            "get": {
+                "description": "Retrieves a single active vehicle registration record by its UUID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle-registration"
+                ],
+                "summary": "Get vehicle registration by ID",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "id",
+                        "type": "string",
+                        "description": "Vehicle Registration ID (UUID)",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1672,12 +1797,35 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.VehicleRegistration"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
             },
             "put": {
-                "description": "Update vehicle_registration handler",
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Updates vehicle registration details by ID. Only provided fields are updated.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1685,13 +1833,81 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "vehicle registration"
+                    "vehicle-registration"
                 ],
-                "summary": "Update vehicle registration",
+                "summary": "Update an existing vehicle registration",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "id",
+                        "type": "string",
+                        "description": "Vehicle Registration ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated vehicle registration data",
+                        "name": "vehicle",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.VehicleRegistration"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.VehicleRegistration"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Marks a vehicle registration as inactive (soft delete).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle-registration"
+                ],
+                "summary": "Soft delete a vehicle registration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle Registration ID (UUID)",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1703,11 +1919,42 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/models.VehicleRegistration"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
                     }
                 }
-            },
-            "delete": {
-                "description": "Delete by id vehicle_registration handler",
+            }
+        },
+        "/vehicle/{id}/confirm-blockchain": {
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Updates the blockchain transaction hash and sets on_blockchain to true after successful storage.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1715,16 +1962,25 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "vehicle registration"
+                    "vehicle-registration"
                 ],
-                "summary": "Delete vehicle registration",
+                "summary": "Confirm blockchain storage for a vehicle registration",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "id",
+                        "type": "string",
+                        "description": "Vehicle Registration ID (UUID)",
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Blockchain confirmation details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ConfirmBlockchainRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1732,6 +1988,24 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.VehicleRegistration"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     }
                 }
@@ -1813,6 +2087,31 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ConfirmBlockchainRequest": {
+            "type": "object",
+            "required": [
+                "blockchain_txhash"
+            ],
+            "properties": {
+                "blockchain_txhash": {
+                    "type": "string"
+                },
+                "on_blockchain": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.CountItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "key": {
                     "type": "string"
                 }
             }
@@ -2197,6 +2496,10 @@ const docTemplate = `{
                 "active": {
                     "type": "boolean"
                 },
+                "blockchain_txhash": {
+                    "description": "Mã lưu ở blockchain",
+                    "type": "string"
+                },
                 "brand": {
                     "description": "Nhãn hiệu",
                     "type": "string"
@@ -2226,7 +2529,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "expiry_date": {
-                    "description": "Ngày hết hạn",
+                    "description": "Ngày hết hạn dang kiem",
                     "type": "string"
                 },
                 "id": {
@@ -2244,12 +2547,24 @@ const docTemplate = `{
                     "description": "ID của người sửa",
                     "type": "string"
                 },
+                "on_blockchain": {
+                    "description": "Trạng thái lưu ở blockchain (lưa/ chưa lưu)",
+                    "type": "boolean"
+                },
                 "owner_id": {
                     "description": "ID chủ sở hữu",
                     "type": "string"
                 },
                 "owner_name": {
                     "description": "Chủ xe",
+                    "type": "string"
+                },
+                "registration_date": {
+                    "description": "Ngay dang kiem",
+                    "type": "string"
+                },
+                "registration_place": {
+                    "description": "nơi đăng kiểm",
                     "type": "string"
                 },
                 "seats": {
@@ -2277,6 +2592,40 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "models.VehicleRegistrationList": {
+            "type": "object",
+            "properties": {
+                "has_more": {
+                    "type": "boolean"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total_count": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                },
+                "vehicle_registration": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.VehicleRegistration"
+                    }
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "JWT": {
+            "description": "Type 'Bearer {your-jwt-token}' to authenticate. This is required for protected endpoints.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
@@ -2287,8 +2636,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "/v1/api",
 	Schemes:          []string{},
-	Title:            "Driving License REST API",
-	Description:      "REST API for Driving License Management",
+	Title:            "Traffic License REST API",
+	Description:      "REST API for Traffic License Management",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

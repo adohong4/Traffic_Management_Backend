@@ -89,7 +89,7 @@ const (
     WHERE vehicle_no ILIKE '%' || $1 || '%' AND active = true	
     ORDER BY vehicle_no
     OFFSET $2 LIMIT $3
-`
+	`
 
 	getVehicleDocuments = `
 	SELECT id, owner_id, brand, type_vehicle, vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,

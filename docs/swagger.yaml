@@ -50,6 +50,22 @@ definitions:
       status:
         type: string
     type: object
+  models.ConfirmBlockchainRequest:
+    properties:
+      blockchain_txhash:
+        type: string
+      on_blockchain:
+        type: boolean
+    required:
+    - blockchain_txhash
+    type: object
+  models.CountItem:
+    properties:
+      count:
+        type: integer
+      key:
+        type: string
+    type: object
   models.DrivingLicense:
     properties:
       active:
@@ -309,6 +325,9 @@ definitions:
     properties:
       active:
         type: boolean
+      blockchain_txhash:
+        description: Mã lưu ở blockchain
+        type: string
       brand:
         description: Nhãn hiệu
         type: string
@@ -331,7 +350,7 @@ definitions:
         description: Số máy
         type: string
       expiry_date:
-        description: Ngày hết hạn
+        description: Ngày hết hạn dang kiem
         type: string
       id:
         type: string
@@ -344,11 +363,20 @@ definitions:
       modifier_id:
         description: ID của người sửa
         type: string
+      on_blockchain:
+        description: Trạng thái lưu ở blockchain (lưa/ chưa lưu)
+        type: boolean
       owner_id:
         description: ID chủ sở hữu
         type: string
       owner_name:
         description: Chủ xe
+        type: string
+      registration_date:
+        description: Ngay dang kiem
+        type: string
+      registration_place:
+        description: nơi đăng kiểm
         type: string
       seats:
         description: Số chỗ ngồi
@@ -371,11 +399,28 @@ definitions:
     required:
     - id
     type: object
+  models.VehicleRegistrationList:
+    properties:
+      has_more:
+        type: boolean
+      page:
+        type: integer
+      size:
+        type: integer
+      total_count:
+        type: integer
+      total_pages:
+        type: integer
+      vehicle_registration:
+        items:
+          $ref: '#/definitions/models.VehicleRegistration'
+        type: array
+    type: object
 info:
   contact:
     url: https://github.com/adohong4
-  description: REST API for Driving License Management
-  title: Driving License REST API
+  description: REST API for Traffic License Management
+  title: Traffic License REST API
   version: "1.0"
 paths:
   /agency/{id}:
@@ -1361,17 +1406,17 @@ paths:
       summary: Update news by ID
       tags:
       - News
-  /vehicleReg/{id}:
+  /vehicle/{id}:
     delete:
       consumes:
       - application/json
-      description: Delete by id vehicle_registration handler
+      description: Marks a vehicle registration as inactive (soft delete).
       parameters:
-      - description: id
+      - description: Vehicle Registration ID (UUID)
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -1379,19 +1424,35 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.VehicleRegistration'
-      summary: Delete vehicle registration
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Soft delete a vehicle registration
       tags:
-      - vehicle registration
+      - vehicle-registration
     get:
-      consumes:
-      - application/json
-      description: Get by vehicle registration handler
+      description: Retrieves a single active vehicle registration record by its UUID.
       parameters:
-      - description: id
+      - description: Vehicle Registration ID (UUID)
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -1399,19 +1460,38 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.VehicleRegistration'
-      summary: Get by vehicle registration ID
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get vehicle registration by ID
       tags:
-      - Nvehicle registration
+      - vehicle-registration
     put:
       consumes:
       - application/json
-      description: Update vehicle_registration handler
+      description: Updates vehicle registration details by ID. Only provided fields
+        are updated.
       parameters:
-      - description: id
+      - description: Vehicle Registration ID (UUID)
         in: path
         name: id
         required: true
-        type: integer
+        type: string
+      - description: Updated vehicle registration data
+        in: body
+        name: vehicle
+        required: true
+        schema:
+          $ref: '#/definitions/models.VehicleRegistration'
       produces:
       - application/json
       responses:
@@ -1419,14 +1499,82 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.VehicleRegistration'
-      summary: Update vehicle registration
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Update an existing vehicle registration
       tags:
-      - vehicle registration
-  /vehicleReg/create:
+      - vehicle-registration
+  /vehicle/{id}/confirm-blockchain:
+    put:
+      consumes:
+      - application/json
+      description: Updates the blockchain transaction hash and sets on_blockchain
+        to true after successful storage.
+      parameters:
+      - description: Vehicle Registration ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Blockchain confirmation details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ConfirmBlockchainRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.VehicleRegistration'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Confirm blockchain storage for a vehicle registration
+      tags:
+      - vehicle-registration
+  /vehicle/create:
     post:
       consumes:
       - application/json
-      description: Create vehicle_registration handler
+      description: Creates a new vehicle registration record. The vehicle plate number
+        must be unique.
+      parameters:
+      - description: Vehicle registration data
+        in: body
+        name: vehicle
+        required: true
+        schema:
+          $ref: '#/definitions/models.VehicleRegistration'
       produces:
       - application/json
       responses:
@@ -1434,29 +1582,34 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/models.VehicleRegistration'
-      summary: Create vehicle registration
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Create a new vehicle registration
       tags:
-      - vehicle registration
-  /vehicleReg/getAll:
+      - vehicle-registration
+  /vehicle/getAll:
     get:
-      consumes:
-      - application/json
-      description: Get all vehicle registration with pagination
+      description: Returns a paginated list of active vehicle registrations.
       parameters:
-      - description: page number
-        format: page
+      - description: 'Page number (default: 1)'
         in: query
         name: page
         type: integer
-      - description: number of elements per page
-        format: size
+      - description: 'Page size (default: 10)'
         in: query
         name: size
-        type: integer
-      - description: filter name
-        format: orderBy
-        in: query
-        name: orderBy
         type: integer
       produces:
       - application/json
@@ -1464,30 +1617,35 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.VehicleRegistration'
-      summary: Get all vehicle registration
+            $ref: '#/definitions/models.VehicleRegistrationList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: List all vehicle registrations
       tags:
-      - vehicle registration
-  /vehicleReg/search:
+      - vehicle-registration
+  /vehicle/search:
     get:
-      consumes:
-      - application/json
-      description: Search vehicle registration by VehiclePlateNO
+      description: Searches for active vehicle registrations containing the given
+        plate number (partial match, case-insensitive).
       parameters:
-      - description: page number
-        format: page
+      - description: Plate number (partial)
+        in: query
+        name: vehicle_no
+        required: true
+        type: string
+      - description: 'Page number (default: 1)'
         in: query
         name: page
         type: integer
-      - description: number of elements per page
-        format: size
+      - description: 'Page size (default: 10)'
         in: query
         name: size
-        type: integer
-      - description: filter name
-        format: orderBy
-        in: query
-        name: orderBy
         type: integer
       produces:
       - application/json
@@ -1495,8 +1653,86 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.VehicleRegistration'
-      summary: Search by VehiclePlateNO
+            $ref: '#/definitions/models.VehicleRegistrationList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Search vehicle registrations by plate number
       tags:
-      - vehicle registration
+      - vehicle-registration
+  /vehicle/stats/brand:
+    get:
+      description: Returns the top 5 most common vehicle brands and groups the rest
+        under "khác".
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CountItem'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Top vehicle brands distribution
+      tags:
+      - vehicle-registration
+  /vehicle/stats/status:
+    get:
+      description: |-
+        Returns count of motor vehicles (excluding motorcycles, mopeds, bicycles, electric bikes) by inspection status:
+        - Valid: ExpiryDate >= today
+        - Expired: ExpiryDate < today
+        - Pending: No registration date or expiry date yet (e.g., new vehicles)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CountItem'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Registration inspection status statistics (motor vehicles only)
+      tags:
+      - vehicle-registration
+  /vehicle/stats/type:
+    get:
+      description: 'Returns count of vehicles by type: xe đầu kéo, ô tô tải, ô tô
+        con, xe khách, xe máy, and "khác" (others).'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CountItem'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Vehicle statistics by type
+      tags:
+      - vehicle-registration
+securityDefinitions:
+  JWT:
+    description: Type 'Bearer {your-jwt-token}' to authenticate. This is required
+      for protected endpoints.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

@@ -11,11 +11,16 @@ import (
 	"github.com/adohong4/driving-license/pkg/utils"
 )
 
-// @title Driving License REST API
+// @title Traffic License REST API
 // @version 1.0
-// @description REST API for Driving License Management
+// @description REST API for Traffic License Management
 // @contact.url https://github.com/adohong4
 // @BasePath /v1/api
+
+// @securityDefinitions.apikey JWT
+// @in header
+// @name Authorization
+// @description Type 'Bearer {your-jwt-token}' to authenticate. This is required for protected endpoints.
 func main() {
 	log.Println("Starting driving license API server")
 

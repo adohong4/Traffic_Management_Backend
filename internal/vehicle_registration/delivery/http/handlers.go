@@ -24,13 +24,18 @@ func NewVehicleReqHandlers(cfg *config.Config, vehicleRegUC vehicleRegistration.
 }
 
 // Create godoc
-// @Summary Create vehicle registration
-// @Description Create vehicle_registration handler
-// @Tags vehicle registration
-// @Accept json
-// @Produce json
-// @Success 201 {object} models.VehicleRegistration
-// @Router /vehicleReg/create [post]
+// @Summary      Create a new vehicle registration
+// @Description  Creates a new vehicle registration record. The vehicle plate number must be unique.
+// @Tags         vehicle-registration
+// @Accept       json
+// @Produce      json
+// @Param        vehicle  body      models.VehicleRegistration  true  "Vehicle registration data"
+// @Success      201      {object}  models.VehicleRegistration
+// @Failure      400      {object}  httpErrors.RestError
+// @Failure      401      {object}  httpErrors.RestError
+// @Failure      500      {object}  httpErrors.RestError
+// @Security     JWT
+// @Router       /vehicle/create [post]
 func (h vehicleRegHandlers) Create() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		n := &models.VehicleRegistration{}
@@ -50,14 +55,20 @@ func (h vehicleRegHandlers) Create() echo.HandlerFunc {
 }
 
 // Update godoc
-// @Summary Update vehicle registration
-// @Description Update vehicle_registration handler
-// @Tags vehicle registration
-// @Accept json
-// @Produce json
-// @Param id path int true "id"
-// @Success 200 {object} models.VehicleRegistration
-// @Router /vehicleReg/{id} [put]
+// @Summary      Update an existing vehicle registration
+// @Description  Updates vehicle registration details by ID. Only provided fields are updated.
+// @Tags         vehicle-registration
+// @Accept       json
+// @Produce      json
+// @Param        id       path      string                      true  "Vehicle Registration ID (UUID)"
+// @Param        vehicle  body      models.VehicleRegistration  true  "Updated vehicle registration data"
+// @Success      200      {object}  models.VehicleRegistration
+// @Failure      400      {object}  httpErrors.RestError
+// @Failure      401      {object}  httpErrors.RestError
+// @Failure      404      {object}  httpErrors.RestError
+// @Failure      500      {object}  httpErrors.RestError
+// @Security     JWT
+// @Router       /vehicle/{id} [put]
 func (h vehicleRegHandlers) Update() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -84,18 +95,20 @@ func (h vehicleRegHandlers) Update() echo.HandlerFunc {
 	}
 }
 
-// @Summary Confirm blockchain storage
-// @Description Update blockchain transaction hash and set on_blockchain to true
-// @Tags vehicle registrationn
-// @Accept json
-// @Produce json
-// @Param id path string true "Vehicle Registration ID"
-// @Param request body http.ConfirmBlockchainRequest true "Blockchain confirmation details"
-// @Success 200 {object} models.VehicleRegistration
-// @Failure 400 {object} httpErrors.RestError
-// @Failure 500 {object} httpErrors.RestError
-// @Security JWT
-// @Router /vehicle/{id}/confirm-blockchain [put]
+// ConfirmBlockchainStorage godoc
+// @Summary      Confirm blockchain storage for a vehicle registration
+// @Description  Updates the blockchain transaction hash and sets on_blockchain to true after successful storage.
+// @Tags         vehicle-registration
+// @Accept       json
+// @Produce      json
+// @Param        id       path      string                              true  "Vehicle Registration ID (UUID)"
+// @Param        request  body      models.ConfirmBlockchainRequest     true  "Blockchain confirmation details"
+// @Success      200      {object}  models.VehicleRegistration
+// @Failure      400      {object}  httpErrors.RestError
+// @Failure      401      {object}  httpErrors.RestError
+// @Failure      500      {object}  httpErrors.RestError
+// @Security     JWT
+// @Router       /vehicle/{id}/confirm-blockchain [put]
 func (h *vehicleRegHandlers) ConfirmBlockchainStorage() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -133,14 +146,19 @@ func (h *vehicleRegHandlers) ConfirmBlockchainStorage() echo.HandlerFunc {
 }
 
 // Delete godoc
-// @Summary Delete vehicle registration
-// @Description Delete by id vehicle_registration handler
-// @Tags vehicle registration
-// @Accept json
-// @Produce json
-// @Param id path int true "id"
-// @Success 200 {object} models.VehicleRegistration
-// @Router /vehicle/{id} [Delete]
+// @Summary      Soft delete a vehicle registration
+// @Description  Marks a vehicle registration as inactive (soft delete).
+// @Tags         vehicle-registration
+// @Accept       json
+// @Produce      json
+// @Param        id  path      string  true  "Vehicle Registration ID (UUID)"
+// @Success      200  {object}  models.VehicleRegistration
+// @Failure      400  {object}  httpErrors.RestError
+// @Failure      401  {object}  httpErrors.RestError
+// @Failure      404  {object}  httpErrors.RestError
+// @Failure      500  {object}  httpErrors.RestError
+// @Security     JWT
+// @Router       /vehicle/{id} [delete]
 func (h vehicleRegHandlers) Delete() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -150,12 +168,7 @@ func (h vehicleRegHandlers) Delete() echo.HandlerFunc {
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
-		n := &models.VehicleRegistration{}
-		if err = c.Bind(n); err != nil {
-			utils.LogResponseError(c, h.logger, err)
-			return c.JSON(httpErrors.ErrorResponse(err))
-		}
-		n.ID = vehicleRegUUID
+		n := &models.VehicleRegistration{ID: vehicleRegUUID}
 
 		deletedVehicleReg, err := h.vehicleRegUC.DeleteVehicleDoc(ctx, n)
 		if err != nil {
@@ -168,14 +181,16 @@ func (h vehicleRegHandlers) Delete() echo.HandlerFunc {
 }
 
 // GetByID godoc
-// @Summary Get by vehicle registration ID
-// @Description Get by vehicle registration handler
-// @Tags Nvehicle registration
-// @Accept json
-// @Produce json
-// @Param id path int true "id"
-// @Success 200 {object} models.VehicleRegistration
-// @Router /vehicleReg/{id} [get]
+// @Summary      Get vehicle registration by ID
+// @Description  Retrieves a single active vehicle registration record by its UUID.
+// @Tags         vehicle-registration
+// @Produce      json
+// @Param        id   path      string  true  "Vehicle Registration ID (UUID)"
+// @Success      200  {object}  models.VehicleRegistration
+// @Failure      400  {object}  httpErrors.RestError
+// @Failure      404  {object}  httpErrors.RestError
+// @Failure      500  {object}  httpErrors.RestError
+// @Router       /vehicle/{id} [get]
 func (h vehicleRegHandlers) GetByID() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -195,16 +210,16 @@ func (h vehicleRegHandlers) GetByID() echo.HandlerFunc {
 }
 
 // GetAllVehicleReg godoc
-// @Summary Get all vehicle registration
-// @Description Get all vehicle registration with pagination
-// @Tags vehicle registration
-// @Accept json
-// @Produce json
-// @Param page query int false "page number" Format(page)
-// @Param size query int false "number of elements per page" Format(size)
-// @Param orderBy query int false "filter name" Format(orderBy)
-// @Success 200 {object} models.VehicleRegistration
-// @Router /vehicleReg/getAll [get]
+// @Summary      List all vehicle registrations
+// @Description  Returns a paginated list of active vehicle registrations.
+// @Tags         vehicle-registration
+// @Produce      json
+// @Param        page   query     int  false  "Page number (default: 1)"
+// @Param        size   query     int  false  "Page size (default: 10)"
+// @Success      200    {object}  models.VehicleRegistrationList
+// @Failure      400    {object}  httpErrors.RestError
+// @Failure      500    {object}  httpErrors.RestError
+// @Router       /vehicle/getAll [get]
 func (h vehicleRegHandlers) GetAllVehicleReg() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -225,16 +240,17 @@ func (h vehicleRegHandlers) GetAllVehicleReg() echo.HandlerFunc {
 }
 
 // SearchByVehiclePlateNO godoc
-// @Summary Search by VehiclePlateNO
-// @Description Search vehicle registration by VehiclePlateNO
-// @Tags vehicle registration
-// @Accept json
-// @Produce json
-// @Param page query int false "page number" Format(page)
-// @Param size query int false "number of elements per page" Format(size)
-// @Param orderBy query int false "filter name" Format(orderBy)
-// @Success 200 {object} models.VehicleRegistration
-// @Router /vehicleReg/search [get]
+// @Summary      Search vehicle registrations by plate number
+// @Description  Searches for active vehicle registrations containing the given plate number (partial match, case-insensitive).
+// @Tags         vehicle-registration
+// @Produce      json
+// @Param        vehicle_no  query     string  true   "Plate number (partial)"
+// @Param        page        query     int     false  "Page number (default: 1)"
+// @Param        size        query     int     false  "Page size (default: 10)"
+// @Success      200         {object}  models.VehicleRegistrationList
+// @Failure      400         {object}  httpErrors.RestError
+// @Failure      500         {object}  httpErrors.RestError
+// @Router       /vehicle/search [get]
 func (h vehicleRegHandlers) SearchByVehiclePlateNO() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -244,8 +260,12 @@ func (h vehicleRegHandlers) SearchByVehiclePlateNO() echo.HandlerFunc {
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
-		newList, err := h.vehicleRegUC.FindByVehiclePlateNO(ctx, c.QueryParam("vehicle_no"), pq)
+		vehicleNo := c.QueryParam("vehicle_no")
+		if vehicleNo == "" {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "vehicle_no query parameter is required"})
+		}
 
+		newList, err := h.vehicleRegUC.FindByVehiclePlateNO(ctx, vehicleNo, pq)
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
@@ -256,13 +276,13 @@ func (h vehicleRegHandlers) SearchByVehiclePlateNO() echo.HandlerFunc {
 }
 
 // GetStatsByType godoc
-// @Summary Get vehicle count by type
-// @Description Get count by vehicle type
-// @Tags vehicle registration
-// @Accept json
-// @Produce json
-// @Success 200 {object} models.VehicleTypeCounts
-// @Router /vehicleReg/stats/type [get]
+// @Summary      Vehicle statistics by type
+// @Description  Returns count of vehicles by type: xe đầu kéo, ô tô tải, ô tô con, xe khách, xe máy, and "khác" (others).
+// @Tags         vehicle-registration
+// @Produce      json
+// @Success      200  {array}   models.CountItem
+// @Failure      500  {object}  httpErrors.RestError
+// @Router       /vehicle/stats/type [get]
 func (h vehicleRegHandlers) GetStatsByType() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -276,13 +296,13 @@ func (h vehicleRegHandlers) GetStatsByType() echo.HandlerFunc {
 }
 
 // GetStatsByBrand godoc
-// @Summary Get top brands distribution
-// @Description Get top 5 brands and others
-// @Tags vehicle registration
-// @Accept json
-// @Produce json
-// @Success 200 {object} models.BrandCounts
-// @Router /vehicleReg/stats/brand [get]
+// @Summary      Top vehicle brands distribution
+// @Description  Returns the top 5 most common vehicle brands and groups the rest under "khác".
+// @Tags         vehicle-registration
+// @Produce      json
+// @Success      200  {array}   models.CountItem
+// @Failure      500  {object}  httpErrors.RestError
+// @Router       /vehicle/stats/brand [get]
 func (h vehicleRegHandlers) GetStatsByBrand() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -296,13 +316,16 @@ func (h vehicleRegHandlers) GetStatsByBrand() echo.HandlerFunc {
 }
 
 // GetStatsByStatus godoc
-// @Summary Thống kê trạng thái đăng kiểm của xe cơ giới
-// @Description Statistics on the number of motor vehicles by status: valid, expired, and pending inspection (based on ExpiryDate and RegistrationDate). Excludes motorcycles, motorbikes, mopeds, bicycles, and electric motorbikes.
-// @Tags vehicle registration
-// @Accept json
-// @Produce json
-// @Success 200 {object} models.StatusCounts
-// @Router /vehicleReg/stats/status [get]
+// @Summary      Registration inspection status statistics (motor vehicles only)
+// @Description  Returns count of motor vehicles (excluding motorcycles, mopeds, bicycles, electric bikes) by inspection status:
+// @Description  - Valid: ExpiryDate >= today
+// @Description  - Expired: ExpiryDate < today
+// @Description  - Pending: No registration date or expiry date yet (e.g., new vehicles)
+// @Tags         vehicle-registration
+// @Produce      json
+// @Success      200  {array}   models.CountItem
+// @Failure      500  {object}  httpErrors.RestError
+// @Router       /vehicle/stats/status [get]
 func (h vehicleRegHandlers) GetStatsByStatus() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
