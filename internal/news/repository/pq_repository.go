@@ -22,8 +22,7 @@ func NewNewsRepo(db *sqlx.DB) news.Repository {
 func (r *newsRepo) Create(ctx context.Context, n *models.News) (*models.News, error) {
 	news := &models.News{}
 	err := r.db.QueryRowxContext(ctx, createNewsQuery,
-		n.Id, n.Code, n.Image, n.Title, n.Content, n.Category, n.Author, n.Type, n.Target,
-		n.TargetUser, n.Tag, n.View, n.Status, n.Version, n.CreatorId, n.ModifierID,
+		n.Id, n.Code, n.Image, n.Title, n.Content, n.Category, n.Author, n.Type, n.Tag, n.View, n.Status, n.Version, n.CreatorId, n.ModifierID,
 		n.CreatedAt, n.UpdatedAt, n.Active,
 	).StructScan(news)
 	if err != nil {
@@ -35,8 +34,7 @@ func (r *newsRepo) Create(ctx context.Context, n *models.News) (*models.News, er
 func (r *newsRepo) Update(ctx context.Context, n *models.News) (*models.News, error) {
 	news := &models.News{}
 	err := r.db.QueryRowxContext(ctx, updateNewsQuery,
-		n.Code, n.Image, n.Title, n.Content, n.Category, n.Author, n.Type, n.Target,
-		n.TargetUser, n.Tag, n.Status, n.ModifierID, n.UpdatedAt, n.Id,
+		n.Code, n.Image, n.Title, n.Content, n.Category, n.Author, n.Type, n.Tag, n.Status, n.ModifierID, n.UpdatedAt, n.Id,
 	).StructScan(news)
 	if err != nil {
 		return nil, errors.Wrap(err, "newsRepo.Update")

@@ -22,7 +22,7 @@ func NewNotificationRepo(db *sqlx.DB) notification.Repository {
 func (r *notificationRepo) CreateNotification(ctx context.Context, db *models.Notification) (*models.Notification, error) {
 	n := &models.Notification{}
 	if err := r.db.QueryRowxContext(ctx, createNotificationQuery,
-		db.Id, db.Title, db.Content, db.Target, db.CreatorId, db.CreatedAt, db.UpdatedAt, db.Active,
+		db.Id, db.Code, db.Title, db.Content, db.Type, db.Target, db.TargetUser, db.Status, db.CreatorId, db.CreatedAt, db.UpdatedAt, db.Active,
 	).StructScan(n); err != nil {
 		return nil, errors.Wrap(err, "notificationRepo.CreateNotification.StructScan")
 	}
@@ -32,7 +32,7 @@ func (r *notificationRepo) CreateNotification(ctx context.Context, db *models.No
 func (r *notificationRepo) UpdateNotification(ctx context.Context, db *models.Notification) (*models.Notification, error) {
 	n := &models.Notification{}
 	if err := r.db.QueryRowxContext(ctx, updateNotificationQuery,
-		db.Title, db.Content, db.Target, db.ModifierID, db.UpdatedAt, db.Active, db.Id,
+		db.Code, db.Title, db.Content, db.Type, db.Target, db.TargetUser, db.Status, db.ModifierID, db.UpdatedAt, db.Active, db.Id,
 	).StructScan(n); err != nil {
 		return nil, errors.Wrap(err, "NotificationRepo.UpdateNotification.StructScan")
 	}

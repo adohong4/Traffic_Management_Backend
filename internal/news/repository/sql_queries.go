@@ -3,11 +3,11 @@ package repository
 const (
 	createNewsQuery = `
         INSERT INTO news (
-            id, code, image, title, content, category, author, type, target,
-            target_user, tag, view, status, version, creator_id, modifier_id,
+            id, code, image, title, content, category, author, type, 
+            tag, view, status, version, creator_id, modifier_id,
             created_at, updated_at, active
         ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
         ) RETURNING *
     `
 
@@ -21,14 +21,12 @@ const (
             category = COALESCE(NULLIF($5, ''), category),
             author = COALESCE(NULLIF($6, ''), author),
             type = COALESCE(NULLIF($7, ''), type),
-            target = COALESCE(NULLIF($8, ''), target),
-            target_user = COALESCE(NULLIF($9, ''), target_user),
-            tag = COALESCE($10, tag),
-            status = COALESCE(NULLIF($11, ''), status),
-            modifier_id = $12,
+            tag = COALESCE($8, tag),
+            status = COALESCE(NULLIF($9, ''), status),
+            modifier_id = $10,
             version = version + 1,
-            updated_at = $13
-        WHERE id = $14 AND active = true
+            updated_at = $11
+        WHERE id = $12 AND active = true
         RETURNING *
     `
 

@@ -30,6 +30,10 @@ import (
 	newsRepository "github.com/adohong4/driving-license/internal/news/repository"
 	newsUseCase "github.com/adohong4/driving-license/internal/news/usecase"
 
+	notiHttp "github.com/adohong4/driving-license/internal/notification/delivery/http"
+	notiRepository "github.com/adohong4/driving-license/internal/notification/repository"
+	notiUseCase "github.com/adohong4/driving-license/internal/notification/usecase"
+
 	apiMiddlewares "github.com/adohong4/driving-license/internal/middleware"
 	"github.com/adohong4/driving-license/pkg/utils"
 	"github.com/labstack/echo/v4"
@@ -45,6 +49,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	vReRepo := vehicleReqRepository.NewVehicleDocRepository(s.db)
 	tRepo := trafficVioRepository.NewTrafficViolationRepo(s.db)
 	newsRepo := newsRepository.NewNewsRepo(s.db)
+	notiRepo := notiRepository.NewNotificationRepo(s.db)
 
 	// Init Usecase
 	authUC := authUseCase.NewAuthUseCase(s.cfg, aRepo, s.logger)
@@ -53,6 +58,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	vReUC := vehicleReqUseCase.NewVehicleRegUseCase(s.cfg, vReRepo, s.logger)
 	tUC := trafficVioUseCase.NewTrafficViolationUseCase(s.cfg, tRepo, s.logger)
 	newsUC := newsUseCase.NewNewsUseCase(s.cfg, newsRepo, s.logger)
+	notiUC := notiUseCase.NewNotificationUseCase(s.cfg, notiRepo, s.logger)
 
 	// Init Handler
 	authHandlers := authHttp.NewAuthHandlers(s.cfg, authUC, s.logger)
@@ -61,6 +67,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	vehiclerReqHandlers := vehicleRegHttp.NewVehicleReqHandlers(s.cfg, vReUC, s.logger)
 	trafficVioHandlers := trafficVioHttp.NewTrafficViolationHandlers(s.cfg, tUC, s.logger)
 	newsHandlers := newsHttp.NewsHandlers(s.cfg, newsUC, s.logger)
+	notiHandlers := notiHttp.NewNotificationHandlers(s.cfg, notiUC, s.logger)
 
 	mw := apiMiddlewares.NewMiddlewareManager(authUC, s.cfg, []string{"*"}, s.logger)
 
@@ -94,6 +101,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	vehicleReqGroup := v1.Group("/vehicle")
 	trafficVioGroup := v1.Group("/traffic")
 	newsGroup := v1.Group("/news")
+	notiGroup := v1.Group("/noti")
 
 	authHttp.MapAuthRoutes(authGroup, authHandlers, mw, s.cfg, authUC)
 	govAgencyHttp.MapGovAgencyRoutes(goAgencyGroup, govAgencyHandlers)
@@ -101,6 +109,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	vehicleRegHttp.MapVehicleRegistrationRoutes(vehicleReqGroup, vehiclerReqHandlers, mw, s.cfg, authUC)
 	trafficVioHttp.MapTrafficViolationRoutes(trafficVioGroup, trafficVioHandlers, mw, s.cfg, authUC)
 	newsHttp.MapNewsRoutes(newsGroup, newsHandlers, mw, authUC, s.cfg)
+	notiHttp.MapNotificationRoutes(notiGroup, notiHandlers, mw, s.cfg, authUC)
 
 	health.GET("", func(c echo.Context) error {
 		s.logger.Infof("Health check request id: %s", utils.GetRequestId(c))

@@ -17,8 +17,6 @@ type News struct {
 	Category   string         `json:"category" db:"category"`
 	Author     string         `json:"author" db:"author"`
 	Type       string         `json:"type" db:"type"`
-	Target     string         `json:"target" db:"target"`           // Đối tượng nhận (tất cả/cá nhân/nhóm)
-	TargetUser string         `json:"target_user" db:"target_user"` // CCCD
 	Tag        types.JSONText `json:"tag" db:"tag"`
 	View       int            `json:"view" db:"view"`
 	Status     string         `json:"status" db:"status"`
@@ -33,7 +31,6 @@ type News struct {
 func (n *News) PrepareCreate() error {
 	n.Title = strings.TrimSpace(n.Title)
 	n.Content = strings.TrimSpace(n.Content)
-	n.Target = strings.TrimSpace(n.Target)
 
 	n.Id = uuid.New()
 	n.CreatedAt = time.Now()
@@ -46,7 +43,6 @@ func (n *News) PrepareCreate() error {
 func (n *News) PrepareUpdate() error {
 	n.Title = strings.TrimSpace(n.Title)
 	n.Content = strings.TrimSpace(n.Content)
-	n.Target = strings.TrimSpace(n.Target)
 
 	n.UpdatedAt = time.Now()
 	return nil

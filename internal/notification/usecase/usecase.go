@@ -54,7 +54,7 @@ func (n *notificationUC) UpdateNotification(ctx context.Context, db *models.Noti
 		return nil, httpErrors.NewUnauthorizedError(errors.WithMessage(err, "notificationUC.UpdateNotification.GetUserFromCtx"))
 	}
 
-	db.ModifierID = user.Id
+	db.ModifierID = &user.Id
 	db.UpdatedAt = time.Now()
 
 	if err := utils.ValidateStruct(ctx, db); err != nil {
@@ -74,7 +74,7 @@ func (n *notificationUC) DeleteNotification(ctx context.Context, db *models.Noti
 		return nil, httpErrors.NewUnauthorizedError(errors.WithMessage(err, "notificationUC.UpdateNotification.GetUserFromCtx"))
 	}
 
-	db.ModifierID = user.Id
+	db.ModifierID = &user.Id
 	db.UpdatedAt = time.Now()
 
 	if err := utils.ValidateStruct(ctx, db); err != nil {

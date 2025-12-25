@@ -8,20 +8,20 @@ import (
 )
 
 type Notification struct {
-	Id         uuid.UUID `json:"id"`
-	Code       string    `json:"code"`
-	Title      string    `json:"title"`
-	Content    string    `json:"content"`
-	Type       string    `json:"string"`
-	Target     string    `json:"target"`      // Đối tượng nhận (tất cả/cá nhân/nhóm)
-	TargetUser string    `json:"target_user"` // CCCD
-	Status     string    `json:"status"`
+	Id         uuid.UUID `json:"id" db:"id" validate:"required"`
+	Code       string    `json:"code" db:"code"`
+	Title      string    `json:"title" db:"title"`
+	Content    string    `json:"content" db:"content"`
+	Type       string    `json:"type" db:"type"`
+	Target     string    `json:"target" db:"target"`           // Đối tượng nhận (tất cả/cá nhân/nhóm)
+	TargetUser string    `json:"target_user" db:"target_user"` // CCCD
+	Status     string    `json:"status" db:"status"`
 
-	CreatorId  uuid.UUID `json:"creator_id"`
-	ModifierID uuid.UUID `json:"modifier_id"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
-	Active     bool      `json:"active"`
+	CreatorId  uuid.UUID  `json:"creator_id" db:"creator_id"`
+	ModifierID *uuid.UUID `json:"modifier_id" db:"modifier_id"`
+	CreatedAt  time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at" db:"updated_at"`
+	Active     bool       `json:"active" db:"active"`
 }
 
 func (n *Notification) PrepareCreate() error {
