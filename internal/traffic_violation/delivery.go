@@ -9,4 +9,6 @@ type Handlers interface {
 	GetTrafficViolationById() echo.HandlerFunc
 	GetAllTrafficViolation() echo.HandlerFunc
 	SearchTrafficViolation() echo.HandlerFunc
+	GetTrafficViolationStats() echo.HandlerFunc
+	GetTrafficViolationStatusStats() echo.HandlerFunc
 }

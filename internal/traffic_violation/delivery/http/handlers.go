@@ -149,3 +149,31 @@ func (h *TrafficViolationHandlers) SearchTrafficViolation() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, newList)
 	}
 }
+
+func (h *TrafficViolationHandlers) GetTrafficViolationStats() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+
+		stats, err := h.TrafficViolationUC.GetTrafficViolationStats(ctx)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, stats)
+	}
+}
+
+func (h *TrafficViolationHandlers) GetTrafficViolationStatusStats() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+
+		stats, err := h.TrafficViolationUC.GetTrafficViolationStatusStats(ctx)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, stats)
+	}
+}

@@ -15,4 +15,6 @@ func MapTrafficViolationRoutes(trafficViolationGroup *echo.Group, h trafficviola
 	trafficViolationGroup.GET("/:id", h.GetTrafficViolationById())
 	trafficViolationGroup.GET("/getAll", h.GetAllTrafficViolation())
 	trafficViolationGroup.GET("/search", h.SearchTrafficViolation())
+	trafficViolationGroup.GET("/stats", h.GetTrafficViolationStats())
+	trafficViolationGroup.GET("/stats/status", h.GetTrafficViolationStatusStats())
 }

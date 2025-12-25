@@ -22,7 +22,7 @@ func NewTrafficViolationRepo(db *sqlx.DB) trafficviolation.Repository {
 func (r *TrafficViolationRepo) CreateTrafficViolation(ctx context.Context, tv *models.TrafficViolation) (*models.TrafficViolation, error) {
 	t := &models.TrafficViolation{}
 	if err := r.db.QueryRowxContext(ctx, createTrafficViolationQuery,
-		tv.Id, tv.VehiclePlateNo, tv.Date, tv.Type, tv.Description, tv.Points, tv.FineAmount,
+		tv.Id, tv.VehiclePlateNo, tv.Date, tv.Type, tv.Address, tv.Description, tv.Points, tv.FineAmount, tv.ExpiryDate,
 		tv.Status, tv.Version, tv.CreatorId, tv.ModifierId, tv.CreatedAt, tv.UpdatedAt, tv.Active,
 	).StructScan(t); err != nil {
 		return nil, errors.Wrap(err, "TrafficViolationRepo.CreateTrafficViolation.StructScan")
@@ -33,7 +33,7 @@ func (r *TrafficViolationRepo) CreateTrafficViolation(ctx context.Context, tv *m
 func (r *TrafficViolationRepo) UpdateTrafficViolation(ctx context.Context, tv *models.TrafficViolation) (*models.TrafficViolation, error) {
 	t := &models.TrafficViolation{}
 	if err := r.db.QueryRowxContext(ctx, updateTrafficViolationQuery,
-		tv.VehiclePlateNo, tv.Date, tv.Type, tv.Description, tv.Points, tv.FineAmount,
+		tv.VehiclePlateNo, tv.Date, tv.Type, tv.Address, tv.Description, tv.Points, tv.FineAmount, tv.ExpiryDate,
 		tv.Status, tv.ModifierId, tv.UpdatedAt, tv.Id,
 	).StructScan(t); err != nil {
 		return nil, errors.Wrap(err, "TrafficViolationRepo.UpdateTrafficViolation.StructScan")
@@ -147,4 +147,24 @@ func (r *TrafficViolationRepo) SearchTrafficViolation(ctx context.Context, vpn s
 		HasMore:          utils.GetHasMore(query.GetPage(), totalCount, query.GetSize()),
 		TrafficViolation: NewTrafficViolation,
 	}, nil
+}
+
+func (r *TrafficViolationRepo) GetTrafficViolationStats(ctx context.Context) (*models.TrafficViolationStats, error) {
+	var stats models.TrafficViolationStats
+	err := r.db.GetContext(ctx, &stats, getTrafficViolationStatsQuery)
+	if err != nil {
+		return nil, errors.Wrap(err, "TrafficViolationRepo.GetTrafficViolationStats")
+	}
+	return &stats, nil
+}
+
+func (r *TrafficViolationRepo) GetTrafficViolationStatusStats(ctx context.Context) ([]*models.TrafficViolationStatusStats, error) {
+	var stats []*models.TrafficViolationStatusStats
+
+	err := r.db.SelectContext(ctx, &stats, getTrafficViolationStatusStatsQuery)
+	if err != nil {
+		return nil, errors.Wrap(err, "TrafficViolationRepo.GetTrafficViolationStatusStats.SelectContext")
+	}
+
+	return stats, nil
 }

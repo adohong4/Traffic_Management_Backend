@@ -3,11 +3,11 @@ package repository
 const (
 	createTrafficViolationQuery = `
     INSERT INTO traffic_violations (
-        id, vehicle_no, date, type, description, points, fine_amount, status, 
+        id, vehicle_no, date, type, address, description, points, fine_amount, expiry_date, status, 
         version, creator_id, modifier_id, created_at, updated_at, active
     ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
-    ) RETURNING id, vehicle_no, date, type, description, points, fine_amount, status, 
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+    ) RETURNING id, vehicle_no, date, type, address, description, points, fine_amount, status, 
         version, creator_id, modifier_id, created_at, updated_at, active
     `
 
@@ -17,14 +17,16 @@ const (
         vehicle_no = COALESCE(NULLIF($1, ''), vehicle_no),
         date = COALESCE($2, date),
         type = COALESCE(NULLIF($3, ''), type),
-        description = COALESCE(NULLIF($4, ''), description),
-        points = COALESCE($5, points),
-        fine_amount = COALESCE($6, fine_amount),
-        status = COALESCE(NULLIF($7, ''), status),
-        modifier_id = COALESCE($8, modifier_id),
+        address = COALESCE($4, address),
+        description = COALESCE(NULLIF($5, ''), description),
+        points = COALESCE($6, points),
+        fine_amount = COALESCE($7, fine_amount),
+        expiry_date = COALESCE($8, expiry_date),
+        status = COALESCE(NULLIF($9, ''), status),
+        modifier_id = COALESCE($10, modifier_id),
         version = version + 1,
-        updated_at = $9
-    WHERE id = $10
+        updated_at = $11
+    WHERE id = $12
     RETURNING id, vehicle_no, date, type, description, points, fine_amount, status, 
         version, creator_id, modifier_id, created_at, updated_at, active
     `
@@ -53,6 +55,7 @@ const (
     FROM traffic_violations
     WHERE active = true
     `
+
 	getTrafficViolationQuery = `
     SELECT id, vehicle_no, date, type, description, points, fine_amount, status, 
         version, creator_id, modifier_id, created_at, updated_at, active
@@ -81,5 +84,31 @@ const (
     SELECT vehicle_no
     FROM traffic_violations
     WHERE vehicle_no = $1 AND active = true
+    `
+
+	getTrafficViolationStatsQuery = `
+        SELECT 
+            COUNT(*) AS total_violations,
+            COALESCE(SUM(fine_amount), 0) AS total_fine_amount,
+            COALESCE(SUM(CASE WHEN status = 'completed' THEN fine_amount ELSE 0 END), 0) AS total_paid_fine_amount,
+            COALESCE(SUM(CASE WHEN status != 'cancelled' THEN fine_amount ELSE 0 END), 0) 
+            - COALESCE(SUM(CASE WHEN status = 'completed' THEN fine_amount ELSE 0 END), 0) AS total_unpaid_fine_amount
+        FROM traffic_violations
+        WHERE active = true
+    `
+
+	getTrafficViolationStatusStatsQuery = `
+        SELECT 
+            status,
+            COUNT(*) AS total_count,
+            COALESCE(SUM(fine_amount), 0) AS total_fine_amount,
+            COUNT(*) FILTER (WHERE expiry_date < CURRENT_DATE) AS overdue_count,
+            COALESCE(SUM(fine_amount) FILTER (WHERE expiry_date < CURRENT_DATE), 0) AS overdue_fine_amount,
+            COUNT(*) FILTER (WHERE expiry_date IS NULL OR expiry_date >= CURRENT_DATE) AS not_overdue_count,
+            COALESCE(SUM(fine_amount) FILTER (WHERE expiry_date IS NULL OR expiry_date >= CURRENT_DATE), 0) AS not_overdue_amount
+        FROM traffic_violations
+        WHERE active = true
+        GROUP BY status
+        ORDER BY status
     `
 )

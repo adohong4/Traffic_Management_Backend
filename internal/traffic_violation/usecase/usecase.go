@@ -110,3 +110,11 @@ func (u *TrafficViolationUC) GetAllTrafficViolation(ctx context.Context, pq *uti
 func (u *TrafficViolationUC) SearchTrafficViolation(ctx context.Context, vpn string, query *utils.PaginationQuery) (*models.TrafficViolationList, error) {
 	return u.TrafficViolationRepo.SearchTrafficViolation(ctx, vpn, query)
 }
+
+func (u *TrafficViolationUC) GetTrafficViolationStats(ctx context.Context) (*models.TrafficViolationStats, error) {
+	return u.TrafficViolationRepo.GetTrafficViolationStats(ctx)
+}
+
+func (u *TrafficViolationUC) GetTrafficViolationStatusStats(ctx context.Context) ([]*models.TrafficViolationStatusStats, error) {
+	return u.TrafficViolationRepo.GetTrafficViolationStatusStats(ctx)
+}
