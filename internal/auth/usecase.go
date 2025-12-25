@@ -16,4 +16,5 @@ type UseCase interface {
 	FindByIdentity(ctx context.Context, identity string, query *utils.PaginationQuery) (*models.UsersList, error)
 	GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*models.UsersList, error)
 	Login(ctx context.Context, user *models.User) (*models.UserWithToken, error)
+	ConnectWallet(ctx context.Context, user *models.User) (*models.UserWithToken, error)
 }

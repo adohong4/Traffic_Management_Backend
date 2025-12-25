@@ -3,26 +3,25 @@ package repository
 const (
 	createUserQuery = `
         INSERT INTO users (
-            id, identity_no, password, hash_password, active, role, version, creator_id, modifier_id, 
+            id, user_address, identity_no, active, role, version, creator_id, modifier_id, 
             created_at, updated_at
         ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
-        ) RETURNING id, identity_no, password, hash_password, active, role, version, creator_id, modifier_id, created_at, updated_at`
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+        ) RETURNING id, identity_no, user_address, active, role, version, creator_id, modifier_id, created_at, updated_at`
 
 	updateUserQuery = `
         UPDATE users 
         SET
-            identity_no = COALESCE(NULLIF($1, ''), identity_no),
-            password = COALESCE(NULLIF($2, ''), password),
-            hash_password = COALESCE(NULLIF($3, ''), hash_password),
-            active = COALESCE($4, active),
-            role = COALESCE(NULLIF($5, ''), role),
-            creator_id = COALESCE($6, creator_id),
-            modifier_id = COALESCE($7, modifier_id),
+            user_address = COALESCE(NULLIF($1, ''), user_address),
+            identity_no = COALESCE(NULLIF($2, ''), identity_no),
+            active = COALESCE($3, active),
+            role = COALESCE(NULLIF($4, ''), role),
+            creator_id = COALESCE($5, creator_id),
+            modifier_id = COALESCE($6, modifier_id),
             version = version + 1,
             updated_at = now()
-        WHERE id = $8 AND version = $9
-        RETURNING id, identity_no, password, hash_password, active, role, version, creator_id, modifier_id, created_at, updated_at`
+        WHERE id = $7 AND version = $8
+        RETURNING id, identity_no, user_address, active, role, version, creator_id, modifier_id, created_at, updated_at`
 
 	deleteUserQuery = `
         UPDATE users
@@ -36,7 +35,7 @@ const (
 
 	getUserQuery = `
         SELECT 
-            id, identity_no, password, hash_password, active, role, version, creator_id, modifier_id, created_at, updated_at
+            id, identity_no, user_address, active, role, version, creator_id, modifier_id, created_at, updated_at
         FROM users
         WHERE id = $1 AND active = true`
 
@@ -47,7 +46,7 @@ const (
         AND (identity_no ILIKE '%' || $1 || '%' OR role ILIKE '%' || $1 || '%')`
 
 	findUsers = `
-        SELECT id, identity_no, password, hash_password, active, role, version, creator_id, modifier_id, created_at, updated_at
+        SELECT id, identity_no, user_address, active, role, version, creator_id, modifier_id, created_at, updated_at
         FROM users 
         WHERE active = true 
         AND (identity_no ILIKE '%' || $1 || '%' OR role ILIKE '%' || $1 || '%')
@@ -60,14 +59,19 @@ const (
         WHERE active = true`
 
 	getUsers = `
-        SELECT id, identity_no, password, hash_password, active, role, version, creator_id, modifier_id, created_at, updated_at
+        SELECT id, identity_no, user_address, active, role, version, creator_id, modifier_id, created_at, updated_at
         FROM users 
         WHERE active = true 
         ORDER BY COALESCE(NULLIF($1, ''), identity_no), role
         OFFSET $2 LIMIT $3`
 
 	findUserByIdentity = `
-        SELECT id, identity_no, password, hash_password, active, role, version, creator_id, modifier_id, created_at, updated_at
+        SELECT id, identity_no, user_address, active, role, version, creator_id, modifier_id, created_at, updated_at
         FROM users
         WHERE identity_no = $1 AND active = true`
+
+	findUserByUserAddress = `
+        SELECT id, identity_no, user_address, active, role, version, creator_id, modifier_id, created_at, updated_at
+        FROM users
+        WHERE user_address = $1 AND active = true`
 )

@@ -16,4 +16,5 @@ type Repository interface {
 	FindByIdentityNO(ctx context.Context, identity string, query *utils.PaginationQuery) (*models.UsersList, error)
 	GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*models.UsersList, error)
 	FindByIdentity(ctx context.Context, user *models.User) (*models.User, error)
+	FindByUserAddress(ctx context.Context, user *models.User) (*models.User, error)
 }

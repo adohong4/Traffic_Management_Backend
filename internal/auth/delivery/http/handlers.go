@@ -86,7 +86,6 @@ func (h *authHandlers) CreateUser() echo.HandlerFunc {
 func (h *authHandlers) Login() echo.HandlerFunc {
 	type Login struct {
 		IdentityNO string `json:"identity_no" db:"identity_no" validate:"required,lte=20"`
-		Password   string `json:"password,omitempty" db:"password" validate:"omitempty,gte=6"`
 	}
 	return func(c echo.Context) error {
 		login := &Login{}
@@ -98,7 +97,30 @@ func (h *authHandlers) Login() echo.HandlerFunc {
 		ctx := c.Request().Context()
 		userWithToken, err := h.authUC.Login(ctx, &models.User{
 			IdentityNo: login.IdentityNO,
-			Password:   login.Password,
+		})
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, userWithToken)
+	}
+}
+
+func (h *authHandlers) ConnectWallet() echo.HandlerFunc {
+	type ConnectWallet struct {
+		UserAddress string `json:"user_address" db:"user_address"`
+	}
+	return func(c echo.Context) error {
+		connectWallet := &ConnectWallet{}
+		if err := utils.ReadRequest(c, connectWallet); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		ctx := c.Request().Context()
+		userWithToken, err := h.authUC.ConnectWallet(ctx, &models.User{
+			UserAddress: &connectWallet.UserAddress,
 		})
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)

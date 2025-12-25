@@ -26,7 +26,7 @@ func NewAuthRepository(db *sqlx.DB) auth.Repository {
 func (r *authRepo) CreateUser(ctx context.Context, user *models.User) (*models.User, error) {
 	u := &models.User{}
 	if err := r.db.QueryRowxContext(ctx, createUserQuery,
-		user.Id, user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role,
+		user.Id, user.UserAddress, user.IdentityNo, user.Active, user.Role,
 		user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
 	).StructScan(u); err != nil {
 		return nil, errors.Wrap(err, "authRepo.CreateUser.StructScan")
@@ -37,7 +37,7 @@ func (r *authRepo) CreateUser(ctx context.Context, user *models.User) (*models.U
 func (r *authRepo) Update(ctx context.Context, user *models.User) (*models.User, error) {
 	u := &models.User{}
 	if err := r.db.QueryRowxContext(ctx, updateUserQuery,
-		user.IdentityNo, user.Password, user.HashPassword, user.Active, user.Role,
+		user.UserAddress, user.IdentityNo, user.Active, user.Role,
 		user.CreatorId, user.ModifierId, user.Id, user.Version,
 	).StructScan(u); err != nil {
 		return nil, errors.Wrap(err, "authRepo.Update.QueryRowxContext")
@@ -140,6 +140,18 @@ func (r *authRepo) FindByIdentity(ctx context.Context, user *models.User) (*mode
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "authRepo.FindByIdentity.QueryRowxContext")
+	}
+	return foundUser, nil
+}
+
+func (r *authRepo) FindByUserAddress(ctx context.Context, user *models.User) (*models.User, error) {
+	foundUser := &models.User{}
+	err := r.db.QueryRowxContext(ctx, findUserByUserAddress, user.UserAddress).StructScan(foundUser)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "authRepo.FindByUserAddress.QueryRowxContext")
 	}
 	return foundUser, nil
 }

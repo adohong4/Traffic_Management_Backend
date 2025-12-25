@@ -7,5 +7,5 @@ import (
 )
 
 type UseCase interface {
-	CreateNotification(ctx context.Context, db *models.Notification) (*models.Notification, error)
+	CreateUser(ctx context.Context, db *models.User) (*models.User, error)
 }

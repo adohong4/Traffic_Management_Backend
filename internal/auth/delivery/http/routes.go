@@ -10,6 +10,7 @@ import (
 func MapAuthRoutes(authGroup *echo.Group, h auth.Handlers, mw *middleware.MiddlewareManager, cfg *config.Config, authUC auth.UseCase) {
 	authGroup.POST("/create", h.CreateUser())
 	authGroup.POST("/login", h.Login())
+	authGroup.POST("/connectWallet", h.ConnectWallet())
 	authGroup.POST("/logout", h.Logout())
 	authGroup.PUT("/update/:id", h.Update())
 	authGroup.GET("/find/", h.FindByIdentityNO())

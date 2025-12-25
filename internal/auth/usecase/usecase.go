@@ -49,7 +49,6 @@ func (u *authUC) CreateUser(ctx context.Context, user *models.User) (*models.Use
 	if err != nil {
 		return nil, err
 	}
-	createdUser.SanitizePassword()
 
 	token, err := utils.GenerateJWTToken(createdUser, u.cfg)
 	if err != nil {
@@ -72,8 +71,6 @@ func (u *authUC) Update(ctx context.Context, user *models.User) (*models.User, e
 	if err != nil {
 		return nil, err
 	}
-
-	updatedUser.SanitizePassword()
 	return updatedUser, nil
 }
 
@@ -92,8 +89,6 @@ func (u *authUC) GetByID(ctx context.Context, Id uuid.UUID) (*models.User, error
 	if err != nil {
 		return nil, err
 	}
-
-	user.SanitizePassword()
 
 	return user, nil
 }
@@ -115,15 +110,26 @@ func (u *authUC) Login(ctx context.Context, user *models.User) (*models.UserWith
 		return nil, err
 	}
 
-	if err = foundUser.ComparePasswords(user.Password); err != nil {
-		return nil, httpErrors.NewUnauthorizedError(errors.Wrap(err, "authUC.Login.ComparePasswords"))
-	}
-
-	foundUser.SanitizePassword()
-
 	token, err := utils.GenerateJWTToken(foundUser, u.cfg)
 	if err != nil {
 		return nil, httpErrors.NewInternalServerError(errors.Wrap(err, "authUC.Login.GenerateJWTToken"))
+	}
+
+	return &models.UserWithToken{
+		User:  foundUser,
+		Token: token,
+	}, nil
+}
+
+func (u *authUC) ConnectWallet(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
+	foundUser, err := u.authRepo.FindByUserAddress(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := utils.GenerateJWTTokenFromUserAddress(foundUser, u.cfg)
+	if err != nil {
+		return nil, httpErrors.NewInternalServerError(errors.Wrap(err, "authUC.ConnectWallet.GenerateJWTToken"))
 	}
 
 	return &models.UserWithToken{
