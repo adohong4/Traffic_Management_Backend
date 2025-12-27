@@ -2525,7 +2525,7 @@ paths:
       - JWT: []
       summary: List all vehicles owned by authenticated user
       tags:
-      - vehicle-registration
+      - User
   /vehicle/me/{id}:
     get:
       description: Retrieves a single vehicle registration that belongs to the current

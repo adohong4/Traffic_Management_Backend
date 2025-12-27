@@ -342,7 +342,7 @@ func (h vehicleRegHandlers) GetStatsByStatus() echo.HandlerFunc {
 
 // @Summary      List all vehicles owned by authenticated user
 // @Description  Returns paginated list of vehicle registrations where owner_id matches current user
-// @Tags         vehicle-registration
+// @Tags         User
 // @Produce      json
 // @Param        page  query     int  false  "Page number (default: 1)"
 // @Param        size  query     int  false  "Page size (default: 10)"

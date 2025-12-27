@@ -2742,7 +2742,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "vehicle-registration"
+                    "User"
                 ],
                 "summary": "List all vehicles owned by authenticated user",
                 "parameters": [
