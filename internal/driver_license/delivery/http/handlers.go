@@ -1,6 +1,8 @@
 package http
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/adohong4/driving-license/config"
@@ -435,4 +437,45 @@ type ConfirmBlockchainRequest struct {
 // Add Wallet Address into Record
 type AddWalletRequest struct {
 	WalletAddress string `json:"wallet_address" validate:"required"`
+}
+
+// @Summary Get my driving license
+// @Description Get detailed information of the driving license associated with the authenticated user (via wallet address)
+// @Tags DrivingLicense
+// @Produce json
+// @Success 200 {object} models.DrivingLicense
+// @Failure 401 {object} httpErrors.RestError
+// @Failure 404 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Security JWT
+// @Router /licenses/me [get]
+func (h *DriverLicenseHandlers) GetMyDrivingLicense() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+
+		user, err := utils.GetUserFromCtx(ctx)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(httpErrors.NewUnauthorizedError(err)))
+		}
+
+		if *user.UserAddress == "" {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"message": "Không tìm thấy wallet address liên kết với tài khoản",
+			})
+		}
+
+		dl, err := h.DriverLicenseUC.GetDriverLicenseByWalletAddress(ctx, *user.UserAddress)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return c.JSON(http.StatusNotFound, map[string]string{
+					"message": "Không tìm thấy bằng lái xe liên kết với tài khoản của bạn",
+				})
+			}
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, dl)
+	}
 }

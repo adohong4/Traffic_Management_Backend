@@ -268,3 +268,60 @@ func (r *vehicleDocRepo) GetRegistrationStatusStats(ctx context.Context) (*model
 
 	return (*models.StatusCounts)(&items), nil
 }
+
+func (r *vehicleDocRepo) GetVehiclesByOwnerID(ctx context.Context, ownerID uuid.UUID, pq *utils.PaginationQuery) (*models.VehicleRegistrationList, error) {
+	var totalCount int
+	if err := r.db.GetContext(ctx, &totalCount, getTotalCountByOwnerID, ownerID); err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetVehiclesByOwnerID.totalCount")
+	}
+
+	if totalCount == 0 {
+		return &models.VehicleRegistrationList{
+			TotalCount:      totalCount,
+			TotalPages:      utils.GetTotalPage(totalCount, pq.GetSize()),
+			Page:            pq.GetPage(),
+			Size:            pq.GetSize(),
+			HasMore:         utils.GetHasMore(pq.GetPage(), totalCount, pq.GetSize()),
+			VehicleDocument: make([]*models.VehicleRegistration, 0),
+		}, nil
+	}
+
+	var vehicles []*models.VehicleRegistration
+	rows, err := r.db.QueryxContext(ctx, getVehiclesByOwnerID, ownerID, pq.GetOffset(), pq.GetLimit())
+	if err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetVehiclesByOwnerID.QueryxContext")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		v := &models.VehicleRegistration{}
+		if err := rows.StructScan(v); err != nil {
+			return nil, errors.Wrap(err, "vehicleDocRepo.GetVehiclesByOwnerID.StructScan")
+		}
+		vehicles = append(vehicles, v)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetVehiclesByOwnerID.rows.Err")
+	}
+
+	return &models.VehicleRegistrationList{
+		TotalCount:      totalCount,
+		TotalPages:      utils.GetTotalPage(totalCount, pq.GetSize()),
+		Page:            pq.GetPage(),
+		Size:            pq.GetSize(),
+		HasMore:         utils.GetHasMore(pq.GetPage(), totalCount, pq.GetSize()),
+		VehicleDocument: vehicles,
+	}, nil
+}
+
+func (r *vehicleDocRepo) GetVehicleByIDAndOwnerID(ctx context.Context, vehicleID, ownerID uuid.UUID) (*models.VehicleRegistration, error) {
+	v := &models.VehicleRegistration{}
+	err := r.db.GetContext(ctx, v, getVehicleByIDAndOwner, vehicleID, ownerID)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetVehicleByIDAndOwnerID.GetContext")
+	}
+	return v, nil
+}

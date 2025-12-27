@@ -143,6 +143,27 @@ const (
     FROM vehicle_registration
     WHERE active = true
     `
+
+	// User - Owner ID
+	getVehiclesByOwnerID = `
+        SELECT *
+        FROM vehicle_registration
+        WHERE owner_id = $1 AND active = true
+        ORDER BY updated_at DESC, created_at DESC
+        OFFSET $2 LIMIT $3
+    `
+
+	getTotalCountByOwnerID = `
+        SELECT COUNT(*)
+        FROM vehicle_registration
+        WHERE owner_id = $1 AND active = true
+    `
+
+	getVehicleByIDAndOwner = `
+        SELECT *
+        FROM vehicle_registration
+        WHERE id = $1 AND owner_id = $2 AND active = true
+    `
 )
 
 var excludedVehicleTypes = []string{

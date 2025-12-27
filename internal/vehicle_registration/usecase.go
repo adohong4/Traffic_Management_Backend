@@ -19,4 +19,6 @@ type UseCase interface {
 	GetCountByType(ctx context.Context) (models.VehicleTypeCounts, error)
 	GetTopBrands(ctx context.Context) (models.BrandCounts, error)
 	GetCountByStatus(ctx context.Context) (models.StatusCounts, error)
+	GetMyVehicles(ctx context.Context, pq *utils.PaginationQuery) (*models.VehicleRegistrationList, error)
+	GetMyVehicleByID(ctx context.Context, vehicleID uuid.UUID) (*models.VehicleRegistration, error)
 }

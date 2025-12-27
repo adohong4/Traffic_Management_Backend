@@ -13,4 +13,6 @@ type Handlers interface {
 	GetStatsByType() echo.HandlerFunc
 	GetStatsByBrand() echo.HandlerFunc
 	GetStatsByStatus() echo.HandlerFunc
+	GetMyVehicles() echo.HandlerFunc
+	GetMyVehicleByID() echo.HandlerFunc
 }

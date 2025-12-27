@@ -20,4 +20,6 @@ type Repository interface {
 	GetCountByType(ctx context.Context) ([]*models.CountItem, error)
 	GetTopBrands(ctx context.Context) ([]*models.CountItem, error)
 	GetRegistrationStatusStats(ctx context.Context) (*models.StatusCounts, error)
+	GetVehiclesByOwnerID(ctx context.Context, ownerID uuid.UUID, pq *utils.PaginationQuery) (*models.VehicleRegistrationList, error)
+	GetVehicleByIDAndOwnerID(ctx context.Context, vehicleID, ownerID uuid.UUID) (*models.VehicleRegistration, error)
 }

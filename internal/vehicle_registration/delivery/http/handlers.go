@@ -339,3 +339,65 @@ func (h vehicleRegHandlers) GetStatsByStatus() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, stats)
 	}
 }
+
+// @Summary      List all vehicles owned by authenticated user
+// @Description  Returns paginated list of vehicle registrations where owner_id matches current user
+// @Tags         vehicle-registration
+// @Produce      json
+// @Param        page  query     int  false  "Page number (default: 1)"
+// @Param        size  query     int  false  "Page size (default: 10)"
+// @Success      200   {object}  models.VehicleRegistrationList
+// @Failure      400   {object}  httpErrors.RestError
+// @Failure      401   {object}  httpErrors.RestError
+// @Failure      500   {object}  httpErrors.RestError
+// @Security     JWT
+// @Router       /vehicle/my-vehicles [get]
+func (h vehicleRegHandlers) GetMyVehicles() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		pq, err := utils.GetPaginationFromCtx(c)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		list, err := h.vehicleRegUC.GetMyVehicles(ctx, pq)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, list)
+	}
+}
+
+// @Summary      Get detail of a vehicle owned by authenticated user
+// @Description  Retrieves a single vehicle registration that belongs to the current user
+// @Tags         vehicle-registration
+// @Produce      json
+// @Param        id    path      string  true  "Vehicle Registration ID (UUID)"
+// @Success      200   {object}  models.VehicleRegistration
+// @Failure      400   {object}  httpErrors.RestError
+// @Failure      401   {object}  httpErrors.RestError
+// @Failure      404   {object}  httpErrors.RestError
+// @Failure      500   {object}  httpErrors.RestError
+// @Security     JWT
+// @Router       /vehicle/my-vehicles/{id} [get]
+func (h vehicleRegHandlers) GetMyVehicleByID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		vehicleID, err := uuid.Parse(c.Param("id"))
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		vehicle, err := h.vehicleRegUC.GetMyVehicleByID(ctx, vehicleID)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, vehicle)
+	}
+}

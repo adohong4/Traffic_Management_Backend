@@ -162,3 +162,28 @@ func (v *vehicleRegUC) GetCountByStatus(ctx context.Context) (models.StatusCount
 	}
 	return *items, nil
 }
+
+func (v *vehicleRegUC) GetMyVehicles(ctx context.Context, pq *utils.PaginationQuery) (*models.VehicleRegistrationList, error) {
+	user, err := utils.GetUserFromCtx(ctx)
+	if err != nil {
+		return nil, httpErrors.NewUnauthorizedError(err)
+	}
+
+	return v.vehicleRegRepo.GetVehiclesByOwnerID(ctx, user.Id, pq)
+}
+
+func (v *vehicleRegUC) GetMyVehicleByID(ctx context.Context, vehicleID uuid.UUID) (*models.VehicleRegistration, error) {
+	user, err := utils.GetUserFromCtx(ctx)
+	if err != nil {
+		return nil, httpErrors.NewUnauthorizedError(err)
+	}
+
+	vehicle, err := v.vehicleRegRepo.GetVehicleByIDAndOwnerID(ctx, vehicleID, user.Id)
+	if err != nil {
+		return nil, err
+	}
+	if vehicle == nil {
+		return nil, httpErrors.NewRestError(http.StatusNotFound, "vehicle not found or not owned by you", nil)
+	}
+	return vehicle, nil
+}
