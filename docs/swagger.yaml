@@ -241,6 +241,57 @@ definitions:
       total_pages:
         type: integer
     type: object
+  models.Notification:
+    properties:
+      active:
+        type: boolean
+      code:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      creator_id:
+        type: string
+      id:
+        type: string
+      modifier_id:
+        type: string
+      status:
+        description: if user -> status = unread, if all --> status = success
+        type: string
+      target:
+        description: 'Đối tượng nhận (type: all/personal/group)'
+        type: string
+      target_user:
+        description: CCCD
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - id
+    type: object
+  models.NotificationList:
+    properties:
+      has_more:
+        type: boolean
+      notifications:
+        items:
+          $ref: '#/definitions/models.Notification'
+        type: array
+      page:
+        type: integer
+      size:
+        type: integer
+      total_count:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
   models.StatusDistributionItem:
     properties:
       count:
@@ -257,6 +308,98 @@ definitions:
       total:
         type: integer
     type: object
+  models.TrafficViolation:
+    properties:
+      active:
+        type: boolean
+      address:
+        type: string
+      created_at:
+        description: Thời gian tạo
+        type: string
+      creator_id:
+        description: ID của người tạo
+        type: string
+      date:
+        description: Ngày vi phạm
+        type: string
+      description:
+        description: Mô tả vi phạm
+        type: string
+      expiry_date:
+        type: string
+      fine_amount:
+        description: Số tiền phạt (VND)
+        type: integer
+      id:
+        type: string
+      modifier_id:
+        description: ID của người sửa
+        type: string
+      points:
+        description: Số điểm bị trừ
+        type: integer
+      status:
+        description: Trạng thái (đã xử lý/chưa xử lý/hủy vi phạm)
+        type: string
+      type:
+        description: Loại vi phạm
+        type: string
+      updated_at:
+        description: Thời gian cập nhật
+        type: string
+      vehicle_no:
+        description: Biển số xe
+        type: string
+      version:
+        description: Phiên bản, tự động tăng
+        type: integer
+    type: object
+  models.TrafficViolationList:
+    properties:
+      has_more:
+        type: boolean
+      page:
+        type: integer
+      size:
+        type: integer
+      total_count:
+        type: integer
+      total_pages:
+        type: integer
+      traffic_violation:
+        items:
+          $ref: '#/definitions/models.TrafficViolation'
+        type: array
+    type: object
+  models.TrafficViolationStats:
+    properties:
+      total_fine_amount:
+        type: integer
+      total_paid_fine_amount:
+        type: integer
+      total_unpaid_fine_amount:
+        type: integer
+      total_violations:
+        type: integer
+    type: object
+  models.TrafficViolationStatusStats:
+    properties:
+      not_overdue_amount:
+        type: integer
+      not_overdue_count:
+        type: integer
+      overdue_count:
+        type: integer
+      overdue_fine_amount:
+        type: integer
+      status:
+        type: string
+      total_count:
+        type: integer
+      total_fine_amount:
+        type: integer
+    type: object
   models.User:
     properties:
       active:
@@ -267,8 +410,6 @@ definitions:
       creator_id:
         description: ID của người tạo
         type: string
-      hash_password:
-        type: string
       id:
         type: string
       identity_no:
@@ -278,10 +419,6 @@ definitions:
       modifier_id:
         description: ID của người sửa
         type: string
-      password:
-        description: Mật khẩu truyền thống
-        minLength: 6
-        type: string
       role:
         description: Vai trò (admin, user, etc.)
         maxLength: 20
@@ -289,11 +426,12 @@ definitions:
       updated_at:
         description: Thời gian cập nhật
         type: string
+      user_address:
+        type: string
       version:
         description: Phiên bản, tự động tăng
         type: integer
     required:
-    - hash_password
     - id
     - identity_no
     type: object
@@ -1146,6 +1284,34 @@ paths:
       summary: Get all driving licenses
       tags:
       - DrivingLicense
+  /licenses/me:
+    get:
+      description: Get detailed information of the driving license associated with
+        the authenticated user (via wallet address)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DrivingLicense'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Get my driving license
+      tags:
+      - User
   /licenses/search:
     get:
       description: Search for driving licenses by license number with pagination
@@ -1406,6 +1572,700 @@ paths:
       summary: Update news by ID
       tags:
       - News
+  /noti/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Marks a notification as inactive (soft delete). Only admin/staff.
+      parameters:
+      - description: Notification ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Notification'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Soft delete a notification
+      tags:
+      - notification
+    get:
+      description: Retrieves a single notification by ID. Accessible to admin or if
+        user has permission.
+      parameters:
+      - description: Notification ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Notification'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get notification details by ID (admin view)
+      tags:
+      - notification
+    put:
+      consumes:
+      - application/json
+      description: Updates fields of a notification by ID. Only admin/staff can modify.
+      parameters:
+      - description: Notification ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated notification data
+        in: body
+        name: notification
+        required: true
+        schema:
+          $ref: '#/definitions/models.Notification'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Notification'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Notification not found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Update an existing notification
+      tags:
+      - notification
+  /noti/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new system notification. Only accessible by authenticated
+        admin/staff users.
+      parameters:
+      - description: Notification data
+        in: body
+        name: notification
+        required: true
+        schema:
+          $ref: '#/definitions/models.Notification'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Notification'
+        "400":
+          description: Invalid request body or validation error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Create a new notification
+      tags:
+      - notification
+  /noti/getAll:
+    get:
+      description: Returns all active notifications with pagination. Mainly for admin
+        dashboard.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get paginated list of all notifications (admin view)
+      tags:
+      - notification
+  /noti/me:
+    get:
+      description: Returns notifications where target = "all" or target = "personal"
+        with matching target_user (CCCD). Only shows notifications created after user
+        account creation.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Get list of notifications for authenticated user
+      tags:
+      - User
+  /noti/me/{id}:
+    get:
+      description: If the notification is personal and belongs to the user, it will
+        be marked as read.
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Notification'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Get detail of a notification for user
+      tags:
+      - User
+  /noti/search:
+    get:
+      description: Search active notifications containing the given title (case-insensitive
+        partial match).
+      parameters:
+      - description: Title keyword to search
+        in: query
+        name: title
+        required: true
+        type: string
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Search notifications by title (admin view)
+      tags:
+      - notification
+  /traffic-violation/stats/status:
+    get:
+      description: Returns breakdown by status including overdue/not overdue counts
+        and amounts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.TrafficViolationStatusStats'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get traffic violation statistics by status
+      tags:
+      - traffic-violation
+  /traffic/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Marks a traffic violation as inactive (soft delete). Used for correction
+        or cancellation.
+      parameters:
+      - description: Traffic Violation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TrafficViolation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Soft delete a traffic violation
+      tags:
+      - traffic-violation
+    get:
+      description: Retrieves a single traffic violation record (admin/officer view).
+      parameters:
+      - description: Traffic Violation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TrafficViolation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Violation not found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get traffic violation details by ID
+      tags:
+      - traffic-violation
+    put:
+      consumes:
+      - application/json
+      description: Updates details of a traffic violation by ID (e.g., status, fine
+        amount).
+      parameters:
+      - description: Traffic Violation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated violation data
+        in: body
+        name: violation
+        required: true
+        schema:
+          $ref: '#/definitions/models.TrafficViolation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TrafficViolation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Violation not found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Update an existing traffic violation
+      tags:
+      - traffic-violation
+  /traffic/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new traffic violation entry. Typically used by authorities/officers.
+      parameters:
+      - description: Traffic violation data
+        in: body
+        name: violation
+        required: true
+        schema:
+          $ref: '#/definitions/models.TrafficViolation'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.TrafficViolation'
+        "400":
+          description: Invalid request or validation error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Create a new traffic violation record
+      tags:
+      - traffic-violation
+  /traffic/getAll:
+    get:
+      description: Returns a paginated list of all active traffic violations (admin
+        view).
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TrafficViolationList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get all traffic violations (paginated)
+      tags:
+      - traffic-violation
+  /traffic/me:
+    get:
+      description: Returns paginated list of traffic violations on vehicles owned
+        by current user
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TrafficViolationList'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Get all traffic violations of authenticated user
+      tags:
+      - User
+  /traffic/me/{id}:
+    get:
+      description: Retrieves a single traffic violation if it belongs to a vehicle
+        owned by the current user
+      parameters:
+      - description: Traffic Violation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TrafficViolation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Get detail of a traffic violation related to user's vehicle
+      tags:
+      - User
+  /traffic/me/{vehicle_id}/vehicle:
+    get:
+      description: Returns violations for a vehicle that belongs to the current user
+      parameters:
+      - description: Vehicle Registration ID
+        in: path
+        name: vehicle_id
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TrafficViolationList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Get violations for a specific vehicle owned by user
+      tags:
+      - User
+  /traffic/search:
+    get:
+      description: Searches for violations containing the given plate number (partial,
+        case-insensitive).
+      parameters:
+      - description: Vehicle plate number (partial)
+        in: query
+        name: vehicle_no
+        required: true
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TrafficViolationList'
+        "400":
+          description: Missing vehicle_no
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Search traffic violations by vehicle plate number
+      tags:
+      - traffic-violation
+  /traffic/stats:
+    get:
+      description: Returns total violations, total fine amount, paid and unpaid amounts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TrafficViolationStats'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      summary: Get overall traffic violation statistics
+      tags:
+      - traffic-violation
+  /traffic/violation:
+    get:
+      description: Returns violations on vehicles owned by the person whose driving
+        license has the same wallet address
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TrafficViolationList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Get traffic violations related to user's driving license
+      tags:
+      - User
   /vehicle/{id}:
     delete:
       consumes:
@@ -1629,6 +2489,81 @@ paths:
       summary: List all vehicle registrations
       tags:
       - vehicle-registration
+  /vehicle/me:
+    get:
+      description: Returns paginated list of vehicle registrations where owner_id
+        matches current user
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.VehicleRegistrationList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: List all vehicles owned by authenticated user
+      tags:
+      - vehicle-registration
+  /vehicle/me/{id}:
+    get:
+      description: Retrieves a single vehicle registration that belongs to the current
+        user
+      parameters:
+      - description: Vehicle Registration ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.VehicleRegistration'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpErrors.RestError'
+      security:
+      - JWT: []
+      summary: Get detail of a vehicle owned by authenticated user
+      tags:
+      - User
   /vehicle/search:
     get:
       description: Searches for active vehicle registrations containing the given

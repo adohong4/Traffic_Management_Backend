@@ -929,6 +929,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/licenses/me": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Get detailed information of the driving license associated with the authenticated user (via wallet address)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get my driving license",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
         "/licenses/search": {
             "get": {
                 "description": "Search for driving licenses by license number with pagination",
@@ -1530,6 +1573,1060 @@ const docTemplate = `{
                 }
             }
         },
+        "/noti/create": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Creates a new system notification. Only accessible by authenticated admin/staff users.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Create a new notification",
+                "parameters": [
+                    {
+                        "description": "Notification data",
+                        "name": "notification",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Notification"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Notification"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/noti/getAll": {
+            "get": {
+                "description": "Returns all active notifications with pagination. Mainly for admin dashboard.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Get paginated list of all notifications (admin view)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default: 10)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/noti/me": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Returns notifications where target = \"all\" or target = \"personal\" with matching target_user (CCCD). Only shows notifications created after user account creation.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get list of notifications for authenticated user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default: 10)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/noti/me/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "If the notification is personal and belongs to the user, it will be marked as read.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get detail of a notification for user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Notification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Notification"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/noti/search": {
+            "get": {
+                "description": "Search active notifications containing the given title (case-insensitive partial match).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Search notifications by title (admin view)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Title keyword to search",
+                        "name": "title",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default: 10)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/noti/{id}": {
+            "get": {
+                "description": "Retrieves a single notification by ID. Accessible to admin or if user has permission.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Get notification details by ID (admin view)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Notification ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Notification"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Updates fields of a notification by ID. Only admin/staff can modify.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Update an existing notification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Notification ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated notification data",
+                        "name": "notification",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Notification"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Notification"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Notification not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Marks a notification as inactive (soft delete). Only admin/staff.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification"
+                ],
+                "summary": "Soft delete a notification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Notification ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Notification"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/traffic-violation/stats/status": {
+            "get": {
+                "description": "Returns breakdown by status including overdue/not overdue counts and amounts.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "traffic-violation"
+                ],
+                "summary": "Get traffic violation statistics by status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TrafficViolationStatusStats"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/traffic/create": {
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Creates a new traffic violation entry. Typically used by authorities/officers.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "traffic-violation"
+                ],
+                "summary": "Create a new traffic violation record",
+                "parameters": [
+                    {
+                        "description": "Traffic violation data",
+                        "name": "violation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolation"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolation"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/traffic/getAll": {
+            "get": {
+                "description": "Returns a paginated list of all active traffic violations (admin view).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "traffic-violation"
+                ],
+                "summary": "Get all traffic violations (paginated)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default: 10)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/traffic/me": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Returns paginated list of traffic violations on vehicles owned by current user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get all traffic violations of authenticated user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolationList"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/traffic/me/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Retrieves a single traffic violation if it belongs to a vehicle owned by the current user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get detail of a traffic violation related to user's vehicle",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Traffic Violation ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/traffic/me/{vehicle_id}/vehicle": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Returns violations for a vehicle that belongs to the current user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get violations for a specific vehicle owned by user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle Registration ID",
+                        "name": "vehicle_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/traffic/search": {
+            "get": {
+                "description": "Searches for violations containing the given plate number (partial, case-insensitive).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "traffic-violation"
+                ],
+                "summary": "Search traffic violations by vehicle plate number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle plate number (partial)",
+                        "name": "vehicle_no",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Missing vehicle_no",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/traffic/stats": {
+            "get": {
+                "description": "Returns total violations, total fine amount, paid and unpaid amounts.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "traffic-violation"
+                ],
+                "summary": "Get overall traffic violation statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolationStats"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/traffic/violation": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Returns violations on vehicles owned by the person whose driving license has the same wallet address",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get traffic violations related to user's driving license",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/traffic/{id}": {
+            "get": {
+                "description": "Retrieves a single traffic violation record (admin/officer view).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "traffic-violation"
+                ],
+                "summary": "Get traffic violation details by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Traffic Violation ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Violation not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Updates details of a traffic violation by ID (e.g., status, fine amount).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "traffic-violation"
+                ],
+                "summary": "Update an existing traffic violation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Traffic Violation ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated violation data",
+                        "name": "violation",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolation"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Violation not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Marks a traffic violation as inactive (soft delete). Used for correction or cancellation.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "traffic-violation"
+                ],
+                "summary": "Soft delete a traffic violation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Traffic Violation ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TrafficViolation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
         "/vehicle/create": {
             "post": {
                 "security": [
@@ -1620,6 +2717,121 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vehicle/me": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Returns paginated list of vehicle registrations where owner_id matches current user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle-registration"
+                ],
+                "summary": "List all vehicles owned by authenticated user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default: 10)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.VehicleRegistrationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vehicle/me/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Retrieves a single vehicle registration that belongs to the current user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get detail of a vehicle owned by authenticated user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle Registration ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.VehicleRegistration"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/httpErrors.RestError"
                         }
@@ -2371,6 +3583,82 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Notification": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "creator_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "modifier_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "if user -\u003e status = unread, if all --\u003e status = success",
+                    "type": "string"
+                },
+                "target": {
+                    "description": "Đối tượng nhận (type: all/personal/group)",
+                    "type": "string"
+                },
+                "target_user": {
+                    "description": "CCCD",
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NotificationList": {
+            "type": "object",
+            "properties": {
+                "has_more": {
+                    "type": "boolean"
+                },
+                "notifications": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Notification"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total_count": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.StatusDistributionItem": {
             "type": "object",
             "properties": {
@@ -2396,10 +3684,143 @@ const docTemplate = `{
                 }
             }
         },
+        "models.TrafficViolation": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "Thời gian tạo",
+                    "type": "string"
+                },
+                "creator_id": {
+                    "description": "ID của người tạo",
+                    "type": "string"
+                },
+                "date": {
+                    "description": "Ngày vi phạm",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Mô tả vi phạm",
+                    "type": "string"
+                },
+                "expiry_date": {
+                    "type": "string"
+                },
+                "fine_amount": {
+                    "description": "Số tiền phạt (VND)",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "modifier_id": {
+                    "description": "ID của người sửa",
+                    "type": "string"
+                },
+                "points": {
+                    "description": "Số điểm bị trừ",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "Trạng thái (đã xử lý/chưa xử lý/hủy vi phạm)",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Loại vi phạm",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "Thời gian cập nhật",
+                    "type": "string"
+                },
+                "vehicle_no": {
+                    "description": "Biển số xe",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "Phiên bản, tự động tăng",
+                    "type": "integer"
+                }
+            }
+        },
+        "models.TrafficViolationList": {
+            "type": "object",
+            "properties": {
+                "has_more": {
+                    "type": "boolean"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total_count": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                },
+                "traffic_violation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TrafficViolation"
+                    }
+                }
+            }
+        },
+        "models.TrafficViolationStats": {
+            "type": "object",
+            "properties": {
+                "total_fine_amount": {
+                    "type": "integer"
+                },
+                "total_paid_fine_amount": {
+                    "type": "integer"
+                },
+                "total_unpaid_fine_amount": {
+                    "type": "integer"
+                },
+                "total_violations": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.TrafficViolationStatusStats": {
+            "type": "object",
+            "properties": {
+                "not_overdue_amount": {
+                    "type": "integer"
+                },
+                "not_overdue_count": {
+                    "type": "integer"
+                },
+                "overdue_count": {
+                    "type": "integer"
+                },
+                "overdue_fine_amount": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total_count": {
+                    "type": "integer"
+                },
+                "total_fine_amount": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.User": {
             "type": "object",
             "required": [
-                "hash_password",
                 "id",
                 "identity_no"
             ],
@@ -2415,9 +3836,6 @@ const docTemplate = `{
                     "description": "ID của người tạo",
                     "type": "string"
                 },
-                "hash_password": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -2430,11 +3848,6 @@ const docTemplate = `{
                     "description": "ID của người sửa",
                     "type": "string"
                 },
-                "password": {
-                    "description": "Mật khẩu truyền thống",
-                    "type": "string",
-                    "minLength": 6
-                },
                 "role": {
                     "description": "Vai trò (admin, user, etc.)",
                     "type": "string",
@@ -2442,6 +3855,9 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "description": "Thời gian cập nhật",
+                    "type": "string"
+                },
+                "user_address": {
                     "type": "string"
                 },
                 "version": {
