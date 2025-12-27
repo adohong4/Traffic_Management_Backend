@@ -15,4 +15,8 @@ func MapNotificationRoutes(notificationGroup *echo.Group, h notification.Handler
 	notificationGroup.GET("/:id", h.GetNotificationById())
 	notificationGroup.GET("/getAll", h.GetNotification())
 	notificationGroup.GET("/search", h.SearchNotificationByTitle())
+
+	// === USER-SPECIFIC ROUTES ===
+	notificationGroup.GET("/me", h.GetMyNotifications(), mw.AuthJWTMiddleware(authUC, cfg))
+	notificationGroup.GET("/me/:id", h.GetMyNotificationByID(), mw.AuthJWTMiddleware(authUC, cfg))
 }

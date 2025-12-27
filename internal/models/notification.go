@@ -13,9 +13,9 @@ type Notification struct {
 	Title      string    `json:"title" db:"title"`
 	Content    string    `json:"content" db:"content"`
 	Type       string    `json:"type" db:"type"`
-	Target     string    `json:"target" db:"target"`           // Đối tượng nhận (tất cả/cá nhân/nhóm)
+	Target     string    `json:"target" db:"target"`           // Đối tượng nhận (type: all/personal/group)
 	TargetUser string    `json:"target_user" db:"target_user"` // CCCD
-	Status     string    `json:"status" db:"status"`
+	Status     string    `json:"status" db:"status"`           // if user -> status = unread, if all --> status = success
 
 	CreatorId  uuid.UUID  `json:"creator_id" db:"creator_id"`
 	ModifierID *uuid.UUID `json:"modifier_id" db:"modifier_id"`

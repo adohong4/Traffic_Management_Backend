@@ -441,7 +441,7 @@ type AddWalletRequest struct {
 
 // @Summary Get my driving license
 // @Description Get detailed information of the driving license associated with the authenticated user (via wallet address)
-// @Tags DrivingLicense
+// @Tags User
 // @Produce json
 // @Success 200 {object} models.DrivingLicense
 // @Failure 401 {object} httpErrors.RestError

@@ -9,4 +9,6 @@ type Handlers interface {
 	GetNotification() echo.HandlerFunc
 	GetNotificationById() echo.HandlerFunc
 	SearchNotificationByTitle() echo.HandlerFunc
+	GetMyNotifications() echo.HandlerFunc
+	GetMyNotificationByID() echo.HandlerFunc
 }

@@ -15,4 +15,6 @@ type UseCase interface {
 	GetNotification(ctx context.Context, pq *utils.PaginationQuery) (*models.NotificationList, error)
 	GetNotificationByID(ctx context.Context, Id uuid.UUID) (*models.Notification, error)
 	SearchNotificationByTitle(ctx context.Context, title string, pq *utils.PaginationQuery) (*models.NotificationList, error)
+	GetMyNotifications(ctx context.Context, pq *utils.PaginationQuery) (*models.NotificationList, error)
+	GetMyNotificationByID(ctx context.Context, notificationID uuid.UUID) (*models.Notification, error)
 }

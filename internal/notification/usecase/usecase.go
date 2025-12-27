@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/adohong4/driving-license/config"
@@ -102,4 +103,52 @@ func (n *notificationUC) GetNotificationByID(ctx context.Context, Id uuid.UUID) 
 
 func (n *notificationUC) SearchNotificationByTitle(ctx context.Context, title string, pq *utils.PaginationQuery) (*models.NotificationList, error) {
 	return n.notificationRepo.SearchNotificationByTitle(ctx, title, pq)
+}
+
+func (n *notificationUC) GetMyNotifications(ctx context.Context, pq *utils.PaginationQuery) (*models.NotificationList, error) {
+	user, err := utils.GetUserFromCtx(ctx)
+	if err != nil {
+		return nil, httpErrors.NewUnauthorizedError(err)
+	}
+
+	// Giả sử user có IdentityNo (CCCD)
+	if user.IdentityNo == "" {
+		return nil, httpErrors.NewBadRequestError(errors.New("user identity number is missing"))
+	}
+
+	return n.notificationRepo.GetNotificationsForUser(ctx, user.CreatedAt, user.IdentityNo, pq)
+}
+
+func (n *notificationUC) GetMyNotificationByID(ctx context.Context, notificationID uuid.UUID) (*models.Notification, error) {
+	user, err := utils.GetUserFromCtx(ctx)
+	if err != nil {
+		return nil, httpErrors.NewUnauthorizedError(err)
+	}
+
+	if user.IdentityNo == "" {
+		return nil, httpErrors.NewBadRequestError(errors.New("user identity number is missing"))
+	}
+
+	// Nếu là personal → đánh dấu đã đọc và trả về
+	updatedNoti, err := n.notificationRepo.MarkAsReadAndGet(ctx, notificationID, user.IdentityNo)
+	if err != nil {
+		return nil, err
+	}
+	if updatedNoti != nil {
+		return updatedNoti, nil
+	}
+
+	// Nếu không phải personal → chỉ lấy thông thường (nếu thuộc user hoặc all)
+	// Ta lấy thông báo nếu nó là 'all' hoặc 'personal' thuộc user
+	noti, err := n.notificationRepo.GetNotificationByID(ctx, notificationID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Kiểm tra quyền xem
+	if noti.Target == "personal" && noti.TargetUser != user.IdentityNo {
+		return nil, httpErrors.NewRestError(http.StatusForbidden, "you are not allowed to view this notification", nil)
+	}
+
+	return noti, nil
 }

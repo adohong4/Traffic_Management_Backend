@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/adohong4/driving-license/internal/models"
 	notification "github.com/adohong4/driving-license/internal/notification"
@@ -146,4 +148,61 @@ func (r *notificationRepo) SearchNotificationByTitle(ctx context.Context, title 
 		HasMore:      utils.GetHasMore(pq.GetPage(), totalCount, pq.GetSize()),
 		Notification: NewNotifications,
 	}, nil
+}
+
+func (r *notificationRepo) GetNotificationsForUser(ctx context.Context, userCreatedAt time.Time, identityNo string, pq *utils.PaginationQuery) (*models.NotificationList, error) {
+	var totalCount int
+	if err := r.db.GetContext(ctx, &totalCount, getTotalNotificationsForUserCount, userCreatedAt, identityNo); err != nil {
+		return nil, errors.Wrap(err, "notificationRepo.GetNotificationsForUser.totalCount")
+	}
+
+	if totalCount == 0 {
+		return &models.NotificationList{
+			TotalCount:   totalCount,
+			TotalPages:   utils.GetTotalPage(totalCount, pq.GetSize()),
+			Page:         pq.GetPage(),
+			Size:         pq.GetSize(),
+			HasMore:      utils.GetHasMore(pq.GetPage(), totalCount, pq.GetSize()),
+			Notification: make([]*models.Notification, 0),
+		}, nil
+	}
+
+	var notifications []*models.Notification
+	rows, err := r.db.QueryxContext(ctx, getNotificationsForUser, userCreatedAt, identityNo, pq.GetOffset(), pq.GetLimit())
+	if err != nil {
+		return nil, errors.Wrap(err, "notificationRepo.GetNotificationsForUser.QueryxContext")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		n := &models.Notification{}
+		if err := rows.StructScan(n); err != nil {
+			return nil, errors.Wrap(err, "notificationRepo.GetNotificationsForUser.StructScan")
+		}
+		notifications = append(notifications, n)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "notificationRepo.GetNotificationsForUser.rows.Err")
+	}
+
+	return &models.NotificationList{
+		TotalCount:   totalCount,
+		TotalPages:   utils.GetTotalPage(totalCount, pq.GetSize()),
+		Page:         pq.GetPage(),
+		Size:         pq.GetSize(),
+		HasMore:      utils.GetHasMore(pq.GetPage(), totalCount, pq.GetSize()),
+		Notification: notifications,
+	}, nil
+}
+
+func (r *notificationRepo) MarkAsReadAndGet(ctx context.Context, notificationID uuid.UUID, identityNo string) (*models.Notification, error) {
+	n := &models.Notification{}
+	err := r.db.QueryRowxContext(ctx, markNotificationAsReadQuery, notificationID, identityNo).StructScan(n)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "notificationRepo.MarkAsReadAndGet.QueryRowxContext")
+	}
+	return n, nil
 }

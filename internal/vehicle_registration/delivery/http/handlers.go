@@ -351,7 +351,7 @@ func (h vehicleRegHandlers) GetStatsByStatus() echo.HandlerFunc {
 // @Failure      401   {object}  httpErrors.RestError
 // @Failure      500   {object}  httpErrors.RestError
 // @Security     JWT
-// @Router       /vehicle/my-vehicles [get]
+// @Router       /vehicle/me [get]
 func (h vehicleRegHandlers) GetMyVehicles() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -373,7 +373,7 @@ func (h vehicleRegHandlers) GetMyVehicles() echo.HandlerFunc {
 
 // @Summary      Get detail of a vehicle owned by authenticated user
 // @Description  Retrieves a single vehicle registration that belongs to the current user
-// @Tags         vehicle-registration
+// @Tags         User
 // @Produce      json
 // @Param        id    path      string  true  "Vehicle Registration ID (UUID)"
 // @Success      200   {object}  models.VehicleRegistration
@@ -382,7 +382,7 @@ func (h vehicleRegHandlers) GetMyVehicles() echo.HandlerFunc {
 // @Failure      404   {object}  httpErrors.RestError
 // @Failure      500   {object}  httpErrors.RestError
 // @Security     JWT
-// @Router       /vehicle/my-vehicles/{id} [get]
+// @Router       /vehicle/me/{id} [get]
 func (h vehicleRegHandlers) GetMyVehicleByID() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()

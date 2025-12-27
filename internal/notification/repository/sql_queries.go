@@ -74,4 +74,39 @@ const (
 	WHERE active = true
 	ORDER BY updated_at, created_at OFFSET $1 LIMIT $2
 	`
+
+	getNotificationsForUser = `
+        SELECT id, code, title, content, type, target, target_user, status, creator_id, created_at, updated_at, active
+        FROM notifications
+        WHERE active = true
+          AND created_at > $1  -- sau thời điểm user tạo tài khoản
+          AND (
+            target = 'all' 
+            OR (target = 'personal' AND target_user = $2)
+          )
+        ORDER BY created_at DESC
+        OFFSET $3 LIMIT $4
+    `
+
+	getTotalNotificationsForUserCount = `
+        SELECT COUNT(*)
+        FROM notifications
+        WHERE active = true
+          AND created_at > $1
+          AND (
+            target = 'all' 
+            OR (target = 'personal' AND target_user = $2)
+          )
+    `
+
+	markNotificationAsReadQuery = `
+        UPDATE notifications
+        SET status = 'read',
+            updated_at = NOW()
+        WHERE id = $1 
+          AND target = 'personal' 
+          AND target_user = $2
+          AND active = true
+        RETURNING id, code, title, content, type, target, target_user, status, creator_id, created_at, updated_at, active
+    `
 )
