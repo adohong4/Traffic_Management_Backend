@@ -17,4 +17,8 @@ type UseCase interface {
 	SearchTrafficViolation(ctx context.Context, vpn string, query *utils.PaginationQuery) (*models.TrafficViolationList, error)
 	GetTrafficViolationStats(ctx context.Context) (*models.TrafficViolationStats, error)
 	GetTrafficViolationStatusStats(ctx context.Context) ([]*models.TrafficViolationStatusStats, error)
+	GetMyViolations(ctx context.Context, pq *utils.PaginationQuery) (*models.TrafficViolationList, error)
+	GetViolationsByMyVehicle(ctx context.Context, vehicleID uuid.UUID, pq *utils.PaginationQuery) (*models.TrafficViolationList, error)
+	GetMyTrafficViolationByID(ctx context.Context, violationID uuid.UUID) (*models.TrafficViolation, error)
+	GetViolationsByMyLicense(ctx context.Context, pq *utils.PaginationQuery) (*models.TrafficViolationList, error)
 }

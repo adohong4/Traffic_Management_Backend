@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/adohong4/driving-license/internal/models"
 	trafficviolation "github.com/adohong4/driving-license/internal/traffic_violation"
@@ -167,4 +168,142 @@ func (r *TrafficViolationRepo) GetTrafficViolationStatusStats(ctx context.Contex
 	}
 
 	return stats, nil
+}
+
+func (r *TrafficViolationRepo) GetViolationsByVehiclePlateNo(ctx context.Context, plateNo string, pq *utils.PaginationQuery) (*models.TrafficViolationList, error) {
+	var total int
+	if err := r.db.GetContext(ctx, &total, getTotalByPlateNo, plateNo); err != nil {
+		return nil, errors.Wrap(err, "GetViolationsByVehiclePlateNo.total")
+	}
+
+	list := &models.TrafficViolationList{
+		TotalCount:       total,
+		TotalPages:       utils.GetTotalPage(total, pq.GetSize()),
+		Page:             pq.GetPage(),
+		Size:             pq.GetSize(),
+		HasMore:          utils.GetHasMore(pq.GetPage(), total, pq.GetSize()),
+		TrafficViolation: []*models.TrafficViolation{},
+	}
+
+	if total == 0 {
+		return list, nil
+	}
+
+	var items []*models.TrafficViolation
+	if err := r.db.SelectContext(ctx, &items, getViolationsByPlateNo, plateNo, pq.GetOffset(), pq.GetLimit()); err != nil {
+		return nil, errors.Wrap(err, "GetViolationsByVehiclePlateNo.Select")
+	}
+
+	list.TrafficViolation = items
+	return list, nil
+}
+
+func (r *TrafficViolationRepo) GetMyViolationsByOwnerID(ctx context.Context, ownerID uuid.UUID, pq *utils.PaginationQuery) (*models.TrafficViolationList, error) {
+	var total int
+	if err := r.db.GetContext(ctx, &total, getTotalViolationsByOwnerID, ownerID); err != nil {
+		return nil, errors.Wrap(err, "GetMyViolationsByOwnerID.total")
+	}
+
+	list := &models.TrafficViolationList{
+		TotalCount:       total,
+		TotalPages:       utils.GetTotalPage(total, pq.GetSize()),
+		Page:             pq.GetPage(),
+		Size:             pq.GetSize(),
+		HasMore:          utils.GetHasMore(pq.GetPage(), total, pq.GetSize()),
+		TrafficViolation: []*models.TrafficViolation{},
+	}
+
+	if total == 0 {
+		return list, nil
+	}
+
+	var items []*models.TrafficViolation
+	if err := r.db.SelectContext(ctx, &items, getViolationsByOwnerID, ownerID, pq.GetOffset(), pq.GetLimit()); err != nil {
+		return nil, errors.Wrap(err, "GetMyViolationsByOwnerID.Select")
+	}
+
+	list.TrafficViolation = items
+	return list, nil
+}
+
+func (r *TrafficViolationRepo) GetMyViolationsByWallet(ctx context.Context, wallet string, pq *utils.PaginationQuery) (*models.TrafficViolationList, error) {
+	var total int
+	if err := r.db.GetContext(ctx, &total, getTotalViolationsByWallet, wallet); err != nil {
+		return nil, errors.Wrap(err, "GetMyViolationsByWallet.total")
+	}
+
+	list := &models.TrafficViolationList{
+		TotalCount:       total,
+		TotalPages:       utils.GetTotalPage(total, pq.GetSize()),
+		Page:             pq.GetPage(),
+		Size:             pq.GetSize(),
+		HasMore:          utils.GetHasMore(pq.GetPage(), total, pq.GetSize()),
+		TrafficViolation: []*models.TrafficViolation{},
+	}
+
+	if total == 0 {
+		return list, nil
+	}
+
+	var items []*models.TrafficViolation
+	if err := r.db.SelectContext(ctx, &items, getViolationsByWallet, wallet, pq.GetOffset(), pq.GetLimit()); err != nil {
+		return nil, errors.Wrap(err, "GetMyViolationsByWallet.Select")
+	}
+
+	list.TrafficViolation = items
+	return list, nil
+}
+
+func (r *TrafficViolationRepo) GetVehiclePlateNoIfOwned(ctx context.Context, vehicleID, ownerID uuid.UUID) (string, error) {
+	var plateNo string
+	err := r.db.GetContext(ctx, &plateNo,
+		`SELECT vehicle_no FROM vehicle_registration WHERE id = $1 AND owner_id = $2 AND active = true`,
+		vehicleID, ownerID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", sql.ErrNoRows
+		}
+		return "", errors.Wrap(err, "TrafficViolationRepo.GetVehiclePlateNoIfOwned")
+	}
+	return plateNo, nil
+}
+
+func (r *TrafficViolationRepo) GetTrafficViolationByIDAndOwnerID(ctx context.Context, violationID, ownerID uuid.UUID) (*models.TrafficViolation, error) {
+	v := &models.TrafficViolation{}
+	err := r.db.GetContext(ctx, v, getTrafficViolationByIDAndOwner, violationID, ownerID)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "TrafficViolationRepo.GetTrafficViolationByIDAndOwnerID.GetContext")
+	}
+	return v, nil
+}
+
+func (r *TrafficViolationRepo) GetViolationsByLicenseWallet(ctx context.Context, wallet string, pq *utils.PaginationQuery) (*models.TrafficViolationList, error) {
+	var total int
+	if err := r.db.GetContext(ctx, &total, getTotalViolationsByLicenseWallet, wallet); err != nil {
+		return nil, errors.Wrap(err, "GetViolationsByLicenseWallet.total")
+	}
+
+	list := &models.TrafficViolationList{
+		TotalCount:       total,
+		TotalPages:       utils.GetTotalPage(total, pq.GetSize()),
+		Page:             pq.GetPage(),
+		Size:             pq.GetSize(),
+		HasMore:          utils.GetHasMore(pq.GetPage(), total, pq.GetSize()),
+		TrafficViolation: []*models.TrafficViolation{},
+	}
+
+	if total == 0 {
+		return list, nil
+	}
+
+	var items []*models.TrafficViolation
+	if err := r.db.SelectContext(ctx, &items, getViolationsByLicenseWallet, wallet, pq.GetOffset(), pq.GetLimit()); err != nil {
+		return nil, errors.Wrap(err, "GetViolationsByLicenseWallet.Select")
+	}
+
+	list.TrafficViolation = items
+	return list, nil
 }

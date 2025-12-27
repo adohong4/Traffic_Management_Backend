@@ -177,3 +177,127 @@ func (h *TrafficViolationHandlers) GetTrafficViolationStatusStats() echo.Handler
 		return c.JSON(http.StatusOK, stats)
 	}
 }
+
+// @Summary      Get all traffic violations of authenticated user
+// @Description  Returns paginated list of traffic violations on vehicles owned by current user
+// @Tags         traffic-violation
+// @Produce      json
+// @Param        page  query     int  false  "Page number"
+// @Param        size  query     int  false  "Page size"
+// @Success      200   {object}  models.TrafficViolationList
+// @Failure      401   {object}  httpErrors.RestError
+// @Security     JWT
+// @Router       /traffic-violation/my-violations [get]
+func (h *TrafficViolationHandlers) GetMyViolations() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		pq, err := utils.GetPaginationFromCtx(c)
+		if err != nil {
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		list, err := h.TrafficViolationUC.GetMyViolations(ctx, pq)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, list)
+	}
+}
+
+// @Summary      Get violations for a specific vehicle owned by user
+// @Description  Returns violations for a vehicle that belongs to the current user
+// @Tags         traffic-violation
+// @Produce      json
+// @Param        vehicle_id  path  string  true  "Vehicle Registration ID"
+// @Param        page        query int     false "Page number"
+// @Param        size        query int     false "Page size"
+// @Success      200         {object}  models.TrafficViolationList
+// @Failure      400         {object}  httpErrors.RestError
+// @Failure      401         {object}  httpErrors.RestError
+// @Failure      404         {object}  httpErrors.RestError
+// @Security     JWT
+// @Router       /traffic-violation/my-vehicles/{vehicle_id}/violations [get]
+func (h *TrafficViolationHandlers) GetViolationsByMyVehicle() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		vehicleID, err := uuid.Parse(c.Param("vehicle_id"))
+		if err != nil {
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		pq, err := utils.GetPaginationFromCtx(c)
+		if err != nil {
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		list, err := h.TrafficViolationUC.GetViolationsByMyVehicle(ctx, vehicleID, pq)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, list)
+	}
+}
+
+// @Summary      Get detail of a traffic violation related to user's vehicle
+// @Description  Retrieves a single traffic violation if it belongs to a vehicle owned by the current user
+// @Tags         traffic-violation
+// @Produce      json
+// @Param        id    path      string  true  "Traffic Violation ID (UUID)"
+// @Success      200   {object}  models.TrafficViolation
+// @Failure      400   {object}  httpErrors.RestError
+// @Failure      401   {object}  httpErrors.RestError
+// @Failure      404   {object}  httpErrors.RestError
+// @Failure      500   {object}  httpErrors.RestError
+// @Security     JWT
+// @Router       /traffic-violation/my-violations/{id} [get]
+func (h *TrafficViolationHandlers) GetMyTrafficViolationByID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		violationID, err := uuid.Parse(c.Param("id"))
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		violation, err := h.TrafficViolationUC.GetMyTrafficViolationByID(ctx, violationID)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, violation)
+	}
+}
+
+// @Summary      Get traffic violations related to user's driving license
+// @Description  Returns violations on vehicles owned by the person whose driving license has the same wallet address
+// @Tags         traffic-violation
+// @Produce      json
+// @Param        page  query     int  false  "Page number"
+// @Param        size  query     int  false  "Page size"
+// @Success      200   {object}  models.TrafficViolationList
+// @Failure      400   {object}  httpErrors.RestError
+// @Failure      401   {object}  httpErrors.RestError
+// @Security     JWT
+// @Router       /traffic-violation/my-license-violations [get]
+func (h *TrafficViolationHandlers) GetViolationsByMyLicense() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		pq, err := utils.GetPaginationFromCtx(c)
+		if err != nil {
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		list, err := h.TrafficViolationUC.GetViolationsByMyLicense(ctx, pq)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, list)
+	}
+}

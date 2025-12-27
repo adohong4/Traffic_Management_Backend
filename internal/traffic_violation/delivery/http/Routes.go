@@ -17,4 +17,10 @@ func MapTrafficViolationRoutes(trafficViolationGroup *echo.Group, h trafficviola
 	trafficViolationGroup.GET("/search", h.SearchTrafficViolation())
 	trafficViolationGroup.GET("/stats", h.GetTrafficViolationStats())
 	trafficViolationGroup.GET("/stats/status", h.GetTrafficViolationStatusStats())
+
+	// === USER-SPECIFIC ROUTES (protected) ===
+	trafficViolationGroup.GET("/me", h.GetMyViolations(), mw.AuthJWTMiddleware(authUC, cfg))
+	trafficViolationGroup.GET("/me/:id", h.GetMyTrafficViolationByID(), mw.AuthJWTMiddleware(authUC, cfg))
+	trafficViolationGroup.GET("/me/:vehicle_id/vehicle", h.GetViolationsByMyVehicle(), mw.AuthJWTMiddleware(authUC, cfg))
+	trafficViolationGroup.GET("/me/license", h.GetViolationsByMyLicense(), mw.AuthJWTMiddleware(authUC, cfg))
 }

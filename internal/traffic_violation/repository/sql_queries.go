@@ -111,4 +111,99 @@ const (
         GROUP BY status
         ORDER BY status
     `
+
+	//-----USER-------------
+	getViolationsByPlateNo = `
+        SELECT *
+        FROM traffic_violations
+        WHERE vehicle_no = $1 AND active = true
+        ORDER BY date DESC
+        OFFSET $2 LIMIT $3
+    `
+
+	getTotalByPlateNo = `
+        SELECT COUNT(*)
+        FROM traffic_violations
+        WHERE vehicle_no = $1 AND active = true
+    `
+
+	getViolationsByOwnerID = `
+        SELECT tv.*
+        FROM traffic_violations tv
+        JOIN vehicle_registration vr ON tv.vehicle_no = vr.vehicle_no
+        WHERE vr.owner_id = $1 AND tv.active = true AND vr.active = true
+        ORDER BY tv.date DESC
+        OFFSET $2 LIMIT $3
+    `
+
+	getTotalViolationsByOwnerID = `
+        SELECT COUNT(*)
+        FROM traffic_violations tv
+        JOIN vehicle_registration vr ON tv.vehicle_no = vr.vehicle_no
+        WHERE vr.owner_id = $1 AND tv.active = true AND vr.active = true
+    `
+
+	getViolationsByWalletAddress = `
+        SELECT tv.*
+        FROM traffic_violations tv
+        JOIN vehicle_registration vr ON tv.vehicle_no = vr.vehicle_no
+        JOIN driver_licenses dl ON vr.owner_id = dl.creator_id OR dl.wallet_address = $1
+        WHERE (dl.wallet_address = $1 OR vr.owner_id IN (
+            SELECT id FROM users WHERE wallet_address = $1
+        )) AND tv.active = true AND vr.active = true AND dl.active = true
+        ORDER BY tv.date DESC
+        OFFSET $2 LIMIT $3
+    `
+
+	getViolationsByWallet = `
+        SELECT tv.*
+        FROM traffic_violations tv
+        JOIN vehicle_registration vr ON tv.vehicle_no = vr.vehicle_no
+        JOIN driver_licenses dl ON vr.owner_id = dl.creator_id
+        WHERE dl.wallet_address = $1 AND tv.active = true AND vr.active = true
+        ORDER BY tv.date DESC
+        OFFSET $2 LIMIT $3
+    `
+
+	getTotalViolationsByWallet = `
+        SELECT COUNT(*)
+        FROM traffic_violations tv
+        JOIN vehicle_registration vr ON tv.vehicle_no = vr.vehicle_no
+        JOIN driver_licenses dl ON vr.owner_id = dl.creator_id
+        WHERE dl.wallet_address = $1 AND tv.active = true AND vr.active = true
+    `
+
+	getTrafficViolationByIDAndOwner = `
+        SELECT tv.*
+        FROM traffic_violations tv
+        JOIN vehicle_registration vr ON tv.vehicle_no = vr.vehicle_no
+        WHERE tv.id = $1 
+          AND vr.owner_id = $2 
+          AND tv.active = true 
+          AND vr.active = true
+    `
+
+	getViolationsByLicenseWallet = `
+    SELECT tv.*
+    FROM traffic_violations tv
+    JOIN vehicle_registration vr ON tv.vehicle_no = vr.vehicle_no
+    JOIN driver_licenses dl ON vr.owner_id = dl.creator_id
+    WHERE dl.wallet_address = $1 
+      AND tv.active = true 
+      AND vr.active = true 
+      AND dl.active = true
+    ORDER BY tv.date DESC
+    OFFSET $2 LIMIT $3
+`
+
+	getTotalViolationsByLicenseWallet = `
+    SELECT COUNT(*)
+    FROM traffic_violations tv
+    JOIN vehicle_registration vr ON tv.vehicle_no = vr.vehicle_no
+    JOIN driver_licenses dl ON vr.owner_id = dl.creator_id
+    WHERE dl.wallet_address = $1 
+      AND tv.active = true 
+      AND vr.active = true 
+      AND dl.active = true
+`
 )

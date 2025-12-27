@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"database/sql"
+	"net/http"
 
 	"github.com/adohong4/driving-license/config"
 	"github.com/adohong4/driving-license/internal/models"
@@ -117,4 +119,64 @@ func (u *TrafficViolationUC) GetTrafficViolationStats(ctx context.Context) (*mod
 
 func (u *TrafficViolationUC) GetTrafficViolationStatusStats(ctx context.Context) ([]*models.TrafficViolationStatusStats, error) {
 	return u.TrafficViolationRepo.GetTrafficViolationStatusStats(ctx)
+}
+
+func (u *TrafficViolationUC) GetMyViolations(ctx context.Context, pq *utils.PaginationQuery) (*models.TrafficViolationList, error) {
+	user, err := utils.GetUserFromCtx(ctx)
+	if err != nil {
+		return nil, httpErrors.NewUnauthorizedError(err)
+	}
+
+	if *user.UserAddress != "" {
+		return u.TrafficViolationRepo.GetMyViolationsByWallet(ctx, *user.UserAddress, pq)
+	}
+
+	return u.TrafficViolationRepo.GetMyViolationsByOwnerID(ctx, user.Id, pq)
+}
+
+func (u *TrafficViolationUC) GetViolationsByMyVehicle(ctx context.Context, vehicleID uuid.UUID, pq *utils.PaginationQuery) (*models.TrafficViolationList, error) {
+	user, err := utils.GetUserFromCtx(ctx)
+	if err != nil {
+		return nil, httpErrors.NewUnauthorizedError(err)
+	}
+
+	plateNo, err := u.TrafficViolationRepo.GetVehiclePlateNoIfOwned(ctx, vehicleID, user.Id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, httpErrors.NewRestError(http.StatusNotFound, "vehicle not found or not owned by you", nil)
+		}
+		return nil, err
+	}
+
+	return u.TrafficViolationRepo.GetViolationsByVehiclePlateNo(ctx, plateNo, pq)
+}
+
+func (u *TrafficViolationUC) GetMyTrafficViolationByID(ctx context.Context, violationID uuid.UUID) (*models.TrafficViolation, error) {
+	user, err := utils.GetUserFromCtx(ctx)
+	if err != nil {
+		return nil, httpErrors.NewUnauthorizedError(err)
+	}
+
+	violation, err := u.TrafficViolationRepo.GetTrafficViolationByIDAndOwnerID(ctx, violationID, user.Id)
+	if err != nil {
+		return nil, err
+	}
+	if violation == nil {
+		return nil, httpErrors.NewRestError(http.StatusNotFound, "violation not found or not related to your vehicle", nil)
+	}
+	return violation, nil
+}
+
+func (u *TrafficViolationUC) GetViolationsByMyLicense(ctx context.Context, pq *utils.PaginationQuery) (*models.TrafficViolationList, error) {
+	user, err := utils.GetUserFromCtx(ctx)
+	if err != nil {
+		return nil, httpErrors.NewUnauthorizedError(err)
+	}
+
+	// Giả sử user có wallet_address trong context (từ JWT)
+	if *user.UserAddress == "" {
+		return nil, httpErrors.NewBadRequestError(errors.New("user has no linked wallet address"))
+	}
+
+	return u.TrafficViolationRepo.GetViolationsByLicenseWallet(ctx, *user.UserAddress, pq)
 }
