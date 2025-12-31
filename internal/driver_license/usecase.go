@@ -17,6 +17,7 @@ type UseCase interface {
 	GetDriverLicense(ctx context.Context, pq *utils.PaginationQuery) (*models.DrivingLicenseList, error)
 	GetDriverLicenseById(ctx context.Context, Id uuid.UUID) (*models.DrivingLicense, error)
 	GetDriverLicenseByWalletAddress(ctx context.Context, address string) (*models.DrivingLicense, error)
+	GetDriverLicenseByLicenseNO(ctx context.Context, address string) (*models.DrivingLicense, error)
 	SearchByLicenseNo(ctx context.Context, lno string, query *utils.PaginationQuery) (*models.DrivingLicenseList, error)
 	GetStatusDistribution(ctx context.Context) (*models.StatusDistributionResponse, error)
 	GetLicenseTypeDistribution(ctx context.Context) (*models.LicenseTypeDistributionResponse, error)

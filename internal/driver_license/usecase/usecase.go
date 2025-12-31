@@ -169,6 +169,14 @@ func (u *DriverLicenseUC) GetDriverLicenseByWalletAddress(ctx context.Context, a
 	return n, nil
 }
 
+func (u *DriverLicenseUC) GetDriverLicenseByLicenseNO(ctx context.Context, address string) (*models.DrivingLicense, error) {
+	n, err := u.DriverLicenseRepo.GetDriverLicenseByLicenseNO(ctx, address)
+	if err != nil {
+		return nil, err
+	}
+	return n, nil
+}
+
 func (u *DriverLicenseUC) SearchByLicenseNo(ctx context.Context, lno string, query *utils.PaginationQuery) (*models.DrivingLicenseList, error) {
 	return u.DriverLicenseRepo.SearchByLicenseNo(ctx, lno, query)
 }

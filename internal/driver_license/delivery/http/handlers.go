@@ -459,13 +459,13 @@ func (h *DriverLicenseHandlers) GetMyDrivingLicense() echo.HandlerFunc {
 			return c.JSON(httpErrors.ErrorResponse(httpErrors.NewUnauthorizedError(err)))
 		}
 
-		if *user.UserAddress == "" {
+		if user.IdentityNo == "" {
 			return c.JSON(http.StatusNotFound, map[string]string{
 				"message": "Không tìm thấy wallet address liên kết với tài khoản",
 			})
 		}
 
-		dl, err := h.DriverLicenseUC.GetDriverLicenseByWalletAddress(ctx, *user.UserAddress)
+		dl, err := h.DriverLicenseUC.GetDriverLicenseByLicenseNO(ctx, user.IdentityNo)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				return c.JSON(http.StatusNotFound, map[string]string{

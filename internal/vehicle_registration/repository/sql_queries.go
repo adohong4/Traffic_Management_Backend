@@ -92,13 +92,37 @@ const (
 	`
 
 	getVehicleDocuments = `
-	SELECT id, owner_id, brand, type_vehicle, vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,
-    	owner_name, issue_date, expiry_date, issuer, 
-    	status, version, creator_id, modifier_id, updated_at, created_at
-	FROM vehicle_registration
-	WHERE active = true
-	ORDER BY updated_at, created_at OFFSET $1 LIMIT $2
-	`
+    SELECT 
+        vr.id, 
+        vr.owner_id, 
+        vr.brand, 
+        vr.type_vehicle, 
+        vr.vehicle_no, 
+        vr.color_plate, 
+        vr.chassis_no, 
+        vr.engine_no, 
+        vr.color_vehicle,
+        COALESCE(dl.full_name, vr.owner_name) AS owner_name,
+        vr.seats,
+        vr.issue_date, 
+        vr.expiry_date, 
+        vr.issuer,
+        vr.registration_date,
+        vr.registration_place,
+        vr.status, 
+        vr.version, 
+        vr.creator_id, 
+        vr.modifier_id, 
+        vr.updated_at, 
+        vr.created_at,
+        vr.on_blockchain,
+        vr.blockchain_txhash
+    FROM vehicle_registration vr
+    LEFT JOIN driver_licenses dl ON vr.owner_id = dl.id AND dl.active = true
+    WHERE vr.active = true
+    ORDER BY vr.updated_at DESC, vr.created_at DESC
+    OFFSET $1 LIMIT $2
+    `
 
 	findVehiclePlateNO = `
 	SELECT *
@@ -146,17 +170,47 @@ const (
 
 	// User - Owner ID
 	getVehiclesByOwnerID = `
-        SELECT *
-        FROM vehicle_registration
-        WHERE owner_id = $1 AND active = true
-        ORDER BY updated_at DESC, created_at DESC
-        OFFSET $2 LIMIT $3
+    SELECT 
+        vr.id,
+        vr.owner_id,
+        vr.brand,
+        vr.type_vehicle,
+        vr.vehicle_no,
+        vr.color_plate,
+        vr.chassis_no,
+        vr.engine_no,
+        vr.color_vehicle,
+        COALESCE(dl.full_name, vr.owner_name) AS owner_name,
+        vr.seats,
+        vr.issue_date,
+        vr.expiry_date,
+        vr.issuer,
+        vr.registration_date,
+        vr.registration_place,
+        vr.status,
+        vr.version,
+        vr.creator_id,
+        vr.modifier_id,
+        vr.updated_at,
+        vr.created_at,
+        vr.on_blockchain,
+        vr.blockchain_txhash,
+        vr.active
+    FROM vehicle_registration vr
+    INNER JOIN driver_licenses dl ON vr.owner_id = dl.id AND dl.active = true
+    INNER JOIN users u ON dl.identity_no = u.identity_no AND u.active = true
+    WHERE u.id = $1
+      AND vr.active = true
+    ORDER BY vr.updated_at DESC, vr.created_at DESC
+    OFFSET $2 LIMIT $3
     `
 
 	getTotalCountByOwnerID = `
-        SELECT COUNT(*)
-        FROM vehicle_registration
-        WHERE owner_id = $1 AND active = true
+    SELECT COUNT(*)
+    FROM vehicle_registration vr
+    INNER JOIN driver_licenses dl ON vr.owner_id = dl.id AND dl.active = true
+    INNER JOIN users u ON dl.identity_no = u.identity_no AND u.active = true
+    WHERE u.id = $1 AND vr.active = true
     `
 
 	getVehicleByIDAndOwner = `

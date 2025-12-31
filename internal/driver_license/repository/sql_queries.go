@@ -79,6 +79,12 @@ const (
 	WHERE wallet_address = $1 AND active = true
 	`
 
+	getDriverLicenseByLicenseNOQuery = `
+	SELECT *
+	FROM driver_licenses
+	WHERE license_no = $1 AND active = true
+	`
+
 	getTotalCount = `
 	SELECT COUNT(id)
 	FROM driver_licenses
