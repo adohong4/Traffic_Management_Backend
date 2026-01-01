@@ -77,7 +77,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	e.Use(middleware.RequestID())
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:3000"}, // Chỉ cho phép origin của frontend. Có thể dùng "*" để cho phép tất cả (không khuyến khích cho production)
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001"}, // Chỉ cho phép origin của frontend. Có thể dùng "*" để cho phép tất cả (không khuyến khích cho production)
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions, http.MethodPatch, http.MethodHead},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization, "X-CSRF-Token"}, // Thêm "X-CSRF-Token" vì bạn có CSRF middleware
 		ExposeHeaders:    []string{"Content-Length", "X-CSRF-Token"},                                                                       // Nếu cần expose thêm header

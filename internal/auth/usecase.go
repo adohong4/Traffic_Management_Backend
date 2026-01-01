@@ -17,4 +17,8 @@ type UseCase interface {
 	GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*models.UsersList, error)
 	Login(ctx context.Context, user *models.User) (*models.UserWithToken, error)
 	ConnectWallet(ctx context.Context, user *models.User) (*models.UserWithToken, error)
+	GetIdentityAndNameByWallet(ctx context.Context, walletAddress string) (identityNo, fullName string, err error)
+	CheckWalletLinked(ctx context.Context, identityNo string) (bool, error)
+	LinkWallet(ctx context.Context, identityNo, walletAddress string) error
+	UnlinkWallet(ctx context.Context, identityNo string) error
 }

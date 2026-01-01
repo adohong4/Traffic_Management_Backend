@@ -138,6 +138,34 @@ func (u *authUC) ConnectWallet(ctx context.Context, user *models.User) (*models.
 	}, nil
 }
 
+func (u *authUC) GetIdentityAndNameByWallet(ctx context.Context, walletAddress string) (string, string, error) {
+	identityNo, fullName, err := u.authRepo.GetUserIdentityAndNameByAddress(ctx, walletAddress)
+	if err == sql.ErrNoRows {
+		return "", "", httpErrors.NewNotFoundError("User not found with this wallet address")
+	}
+	if err != nil {
+		return "", "", err
+	}
+	return identityNo, fullName, nil
+}
+
+func (u *authUC) CheckWalletLinked(ctx context.Context, identityNo string) (bool, error) {
+	linked, err := u.authRepo.IsUserAddressLinked(ctx, identityNo)
+	if err != nil {
+		return false, err
+	}
+	return linked, nil
+}
+
+func (u *authUC) LinkWallet(ctx context.Context, identityNo, walletAddress string) error {
+	// Optional: check if wallet already linked to another user?
+	return u.authRepo.LinkWalletAddress(ctx, identityNo, walletAddress)
+}
+
+func (u *authUC) UnlinkWallet(ctx context.Context, identityNo string) error {
+	return u.authRepo.UnlinkWalletAddress(ctx, identityNo)
+}
+
 // Generate User Key
 func (u *authUC) GenerateUserKey(Id string) string {
 	return fmt.Sprintf("%s: %s", basePrefix, Id)

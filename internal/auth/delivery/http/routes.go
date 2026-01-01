@@ -18,4 +18,9 @@ func MapAuthRoutes(authGroup *echo.Group, h auth.Handlers, mw *middleware.Middle
 	authGroup.GET("/all", h.GetUsers())
 	authGroup.GET("/:id", h.GetUserByID())
 	authGroup.GET("/me", h.GetMe(), mw.AuthJWTMiddleware(authUC, cfg))
+
+	authGroup.GET("/wallet-info", h.GetIdentityAndNameByWallet())
+	authGroup.GET("/check-wallet", h.CheckWalletLinked())
+	authGroup.POST("/link-wallet", h.LinkWallet(), mw.AuthJWTMiddleware(authUC, cfg))
+	authGroup.POST("/unlink-wallet", h.UnlinkWallet(), mw.AuthJWTMiddleware(authUC, cfg))
 }

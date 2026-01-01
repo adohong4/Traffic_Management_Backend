@@ -155,3 +155,47 @@ func (r *authRepo) FindByUserAddress(ctx context.Context, user *models.User) (*m
 	}
 	return foundUser, nil
 }
+
+func (r *authRepo) GetUserIdentityAndNameByAddress(ctx context.Context, userAddress string) (identityNo, fullName string, err error) {
+	err = r.db.QueryRowContext(ctx, getUserIdentityAndNameByAddress, userAddress).Scan(&identityNo, &fullName)
+	if err == sql.ErrNoRows {
+		return "", "", sql.ErrNoRows
+	}
+	if err != nil {
+		return "", "", errors.Wrap(err, "authRepo.GetUserIdentityAndNameByAddress")
+	}
+	return identityNo, fullName, nil
+}
+
+func (r *authRepo) IsUserAddressLinked(ctx context.Context, identityNo string) (bool, error) {
+	var exists bool
+	err := r.db.GetContext(ctx, &exists, checkUserAddressLinked, identityNo)
+	if err != nil {
+		return false, errors.Wrap(err, "authRepo.IsUserAddressLinked")
+	}
+	return exists, nil
+}
+
+func (r *authRepo) LinkWalletAddress(ctx context.Context, identityNo, walletAddress string) error {
+	result, err := r.db.ExecContext(ctx, linkWalletAddressQuery, walletAddress, identityNo)
+	if err != nil {
+		return errors.Wrap(err, "authRepo.LinkWalletAddress")
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
+func (r *authRepo) UnlinkWalletAddress(ctx context.Context, identityNo string) error {
+	result, err := r.db.ExecContext(ctx, unlinkWalletAddressQuery, identityNo)
+	if err != nil {
+		return errors.Wrap(err, "authRepo.UnlinkWalletAddress")
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}

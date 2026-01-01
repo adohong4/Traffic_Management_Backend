@@ -10,7 +10,7 @@ import (
 type User struct {
 	Id          uuid.UUID  `json:"id" db:"id" validate:"required"`
 	UserAddress *string    `json:"user_address" db:"user_address"`
-	IdentityNo  string     `json:"identity_no" db:"identity_no" validate:"required,lte=20"` // CCCD
+	IdentityNo  string     `json:"identity_no" db:"identity_no"` // CCCD
 	Active      bool       `json:"active" db:"active"`
 	Role        *string    `json:"role,omitempty" db:"role" validate:"omitempty,lte=20"` // Vai trò (admin, user, etc.)
 	Version     int        `json:"version" db:"version"`                                 // Phiên bản, tự động tăng

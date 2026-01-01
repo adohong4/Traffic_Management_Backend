@@ -17,4 +17,8 @@ type Repository interface {
 	GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*models.UsersList, error)
 	FindByIdentity(ctx context.Context, user *models.User) (*models.User, error)
 	FindByUserAddress(ctx context.Context, user *models.User) (*models.User, error)
+	GetUserIdentityAndNameByAddress(ctx context.Context, userAddress string) (identityNo, fullName string, err error)
+	IsUserAddressLinked(ctx context.Context, identityNo string) (bool, error)
+	LinkWalletAddress(ctx context.Context, identityNo, walletAddress string) error
+	UnlinkWalletAddress(ctx context.Context, identityNo string) error
 }

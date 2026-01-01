@@ -13,4 +13,8 @@ type Handlers interface {
 	FindByIdentityNO() echo.HandlerFunc
 	GetUsers() echo.HandlerFunc
 	GetMe() echo.HandlerFunc
+	GetIdentityAndNameByWallet() echo.HandlerFunc
+	CheckWalletLinked() echo.HandlerFunc
+	LinkWallet() echo.HandlerFunc
+	UnlinkWallet() echo.HandlerFunc
 }

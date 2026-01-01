@@ -373,3 +373,133 @@ func (h *authHandlers) GetMe() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, user)
 	}
 }
+
+// GetIdentityAndNameByWallet godoc
+// @Summary      Get user identity and name by wallet address
+// @Description  Retrieve the identity number (CCCD) and full name from driving license by user's wallet address
+// @Tags         Auth
+// @Produce      json
+// @Param        user_address  query     string  true  "Wallet address (Ethereum address)"
+// @Success      200  {object}  map[string]string  "identity_no and full_name"
+// @Failure      400  {object}  httpErrors.RestError  "Invalid wallet address"
+// @Failure      404  {object}  httpErrors.RestError  "User not found"
+// @Failure      500  {object}  httpErrors.RestError
+// @Router       /auth/wallet-info [get]
+func (h *authHandlers) GetIdentityAndNameByWallet() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		walletAddress := c.QueryParam("user_address")
+		if walletAddress == "" {
+			return c.JSON(http.StatusBadRequest, httpErrors.NewBadRequestError("user_address is required"))
+		}
+
+		ctx := c.Request().Context()
+		identityNo, fullName, err := h.authUC.GetIdentityAndNameByWallet(ctx, walletAddress)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{
+			"identity_no": identityNo,
+			"full_name":   fullName,
+		})
+	}
+}
+
+// CheckWalletLinked godoc
+// @Summary      Check if user has linked wallet
+// @Description  Check whether a user with given identity number already has a wallet address linked
+// @Tags         Auth
+// @Produce      json
+// @Param        identity_no  query     string  true  "Identity number (CCCD)"
+// @Success      200  {object}  map[string]bool  "linked: true/false"
+// @Failure      400  {object}  httpErrors.RestError
+// @Failure      500  {object}  httpErrors.RestError
+// @Router       /auth/check-wallet [get]
+func (h *authHandlers) CheckWalletLinked() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		identityNo := c.QueryParam("identity_no")
+		if identityNo == "" {
+			return c.JSON(http.StatusBadRequest, httpErrors.NewBadRequestError("identity_no is required"))
+		}
+
+		ctx := c.Request().Context()
+		linked, err := h.authUC.CheckWalletLinked(ctx, identityNo)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, map[string]bool{
+			"linked": linked,
+		})
+	}
+}
+
+// LinkWallet godoc
+// @Summary      Link wallet address to user
+// @Description  Associate a wallet address with a user by identity number
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        request  body      LinkWalletRequest  true  "Link wallet request"
+// @Success      200  {object}  map[string]string  "success message"
+// @Failure      400  {object}  httpErrors.RestError
+// @Failure      404  {object}  httpErrors.RestError  "User not found"
+// @Failure      500  {object}  httpErrors.RestError
+// @Router       /auth/link-wallet [post]
+// @Security     BearerAuth
+func (h *authHandlers) LinkWallet() echo.HandlerFunc {
+	type LinkWalletRequest struct {
+		IdentityNo    string `json:"identity_no" validate:"required"`
+		WalletAddress string `json:"wallet_address" validate:"required,eth_addr"`
+	}
+
+	return func(c echo.Context) error {
+		req := &LinkWalletRequest{}
+		if err := utils.ReadRequest(c, req); err != nil {
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		ctx := c.Request().Context()
+		if err := h.authUC.LinkWallet(ctx, req.IdentityNo, req.WalletAddress); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{
+			"message": "Wallet linked successfully",
+		})
+	}
+}
+
+// UnlinkWallet godoc
+// @Summary      Unlink wallet from user
+// @Description  Remove wallet address association from user by identity number
+// @Tags         Auth
+// @Produce      json
+// @Param        identity_no  query     string  true  "Identity number (CCCD)"
+// @Success      200  {object}  map[string]string  "success message"
+// @Failure      400  {object}  httpErrors.RestError
+// @Failure      404  {object}  httpErrors.RestError  "User not found or no wallet linked"
+// @Failure      500  {object}  httpErrors.RestError
+// @Router       /auth/unlink-wallet [post]
+// @Security     BearerAuth
+func (h *authHandlers) UnlinkWallet() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		identityNo := c.QueryParam("identity_no")
+		if identityNo == "" {
+			return c.JSON(http.StatusBadRequest, httpErrors.NewBadRequestError("identity_no is required"))
+		}
+
+		ctx := c.Request().Context()
+		if err := h.authUC.UnlinkWallet(ctx, identityNo); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{
+			"message": "Wallet unlinked successfully",
+		})
+	}
+}

@@ -74,4 +74,27 @@ const (
         SELECT id, identity_no, user_address, active, role, version, creator_id, modifier_id, created_at, updated_at
         FROM users
         WHERE user_address = $1 AND active = true`
+
+	getUserIdentityAndNameByAddress = `
+        SELECT u.identity_no, dl.full_name
+        FROM users u
+        LEFT JOIN driver_licenses dl ON u.identity_no = dl.identity_no AND dl.active = true
+        WHERE u.user_address = $1 AND u.active = true
+        LIMIT 1`
+
+	checkUserAddressLinked = `
+        SELECT EXISTS(
+            SELECT 1 FROM users 
+            WHERE identity_no = $1 AND user_address IS NOT NULL AND active = true
+        )`
+
+	linkWalletAddressQuery = `
+        UPDATE users 
+        SET user_address = $1, updated_at = now(), version = version + 1
+        WHERE identity_no = $2 AND active = true`
+
+	unlinkWalletAddressQuery = `
+        UPDATE users 
+        SET user_address = NULL, updated_at = now(), version = version + 1
+        WHERE identity_no = $1 AND active = true`
 )
