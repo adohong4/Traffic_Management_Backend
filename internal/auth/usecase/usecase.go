@@ -158,8 +158,25 @@ func (u *authUC) CheckWalletLinked(ctx context.Context, identityNo string) (bool
 }
 
 func (u *authUC) LinkWallet(ctx context.Context, identityNo, walletAddress string) error {
-	// Optional: check if wallet already linked to another user?
-	return u.authRepo.LinkWalletAddress(ctx, identityNo, walletAddress)
+	existingUser, err := u.authRepo.FindByUserAddress(ctx, &models.User{
+		UserAddress: &walletAddress,
+	})
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return errors.Wrap(err, "authUC.LinkWallet.FindByUserAddress")
+	}
+
+	if existingUser != nil {
+		return httpErrors.NewBadRequestError("Wallet address is already linked to another user")
+	}
+
+	if err := u.authRepo.LinkWalletAddress(ctx, identityNo, walletAddress); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return httpErrors.NewNotFoundError("User with given identity number not found or already has a wallet")
+		}
+		return errors.Wrap(err, "authUC.LinkWallet.LinkWalletAddress")
+	}
+
+	return nil
 }
 
 func (u *authUC) UnlinkWallet(ctx context.Context, identityNo string) error {

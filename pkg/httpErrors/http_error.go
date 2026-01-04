@@ -11,16 +11,18 @@ import (
 )
 
 const (
-	ErrBadRequest            = "Bad request"
-	ErrIdentityAlreadyExists = "User with given identity already exists"
-	ErrVehicleAlreadyExists  = "Vehicle Palte NO already exists"
-	ErrLicenseAlreadyExists  = "License NO already exists"
-	ErrNoSuchUser            = "User not found"
-	ErrWrongCredentials      = "Wrong Credentials"
-	ErrNotFound              = "Not Found"
-	ErrUnauthorized          = "Unauthorized"
-	ErrForbidden             = "Forbidden"
-	ErrBadQueryParams        = "Invalid query params"
+	ErrBadRequest               = "Bad request"
+	ErrIdentityAlreadyExists    = "User with given identity already exists"
+	ErrUserAddressAlreadyExists = "User with given user address already exists"
+	ErrUserAddressLinked        = "User Address has linked"
+	ErrVehicleAlreadyExists     = "Vehicle Palte NO already exists"
+	ErrLicenseAlreadyExists     = "License NO already exists"
+	ErrNoSuchUser               = "User not found"
+	ErrWrongCredentials         = "Wrong Credentials"
+	ErrNotFound                 = "Not Found"
+	ErrUnauthorized             = "Unauthorized"
+	ErrForbidden                = "Forbidden"
+	ErrBadQueryParams           = "Invalid query params"
 )
 
 var (

@@ -84,14 +84,20 @@ const (
 
 	checkUserAddressLinked = `
         SELECT EXISTS(
-            SELECT 1 FROM users 
-            WHERE identity_no = $1 AND user_address IS NOT NULL AND active = true
+        SELECT 1 
+        FROM users 
+        WHERE identity_no = $1 
+          AND TRIM(user_address) <> '' 
+          AND active = true
         )`
 
 	linkWalletAddressQuery = `
         UPDATE users 
         SET user_address = $1, updated_at = now(), version = version + 1
-        WHERE identity_no = $2 AND active = true`
+        WHERE identity_no = $2
+        AND active = true
+        AND (user_address IS NULL OR TRIM(user_address) = '')
+        RETURNING id`
 
 	unlinkWalletAddressQuery = `
         UPDATE users 
