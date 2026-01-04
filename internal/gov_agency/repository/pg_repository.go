@@ -23,7 +23,7 @@ func NewGovAgencyRepo(db *sqlx.DB) govagency.Repository {
 func (r *GovAgencyRepo) CreateGovAgency(ctx context.Context, gov *models.GovAgency) (*models.GovAgency, error) {
 	g := &models.GovAgency{}
 	if err := r.db.QueryRowxContext(ctx, createGovAgencyQuery,
-		gov.Id, gov.Name, gov.Address, gov.City, gov.Type, gov.Phone, gov.Email, gov.Status,
+		gov.Id, gov.Name, gov.UserAddress, gov.Address, gov.City, gov.Type, gov.Phone, gov.Email, gov.Status,
 		gov.Version, gov.CreatedAt, gov.UpdatedAt, gov.Active,
 	).StructScan(g); err != nil {
 		return nil, errors.Wrap(err, "GovAgencyRepo.CreateGovAgency.StructScan")
@@ -34,7 +34,7 @@ func (r *GovAgencyRepo) CreateGovAgency(ctx context.Context, gov *models.GovAgen
 func (r *GovAgencyRepo) UpdateGovAgency(ctx context.Context, gov *models.GovAgency) (*models.GovAgency, error) {
 	g := &models.GovAgency{}
 	if err := r.db.QueryRowxContext(ctx, updateGovAgencyQuery,
-		gov.Name, gov.Address, gov.City, gov.Type, gov.Phone, gov.Email, gov.Status, gov.UpdatedAt, gov.Id,
+		gov.Name, gov.UserAddress, gov.Address, gov.City, gov.Type, gov.Phone, gov.Email, gov.Status, gov.UpdatedAt, gov.Id,
 	).StructScan(g); err != nil {
 		return nil, errors.Wrap(err, "GovAgencyRepo.UpdateGovAgency.StructScan")
 	}

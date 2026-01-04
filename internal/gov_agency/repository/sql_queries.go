@@ -3,13 +3,12 @@ package repository
 const (
 	createGovAgencyQuery = `
 	INSERT INTO gov_agencies (
-		id, name, address, city, type, phone, email, status, 
+		id, name, user_address, address, city, type, phone, email, status, 
 		version, created_at, updated_at, active
 	) VALUES (
-		$1, $2, $3, $4, $5, $6, $7, $8, 
-		$9, $10, $11, $12
+		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
 	) RETURNING 
-		id, name, address, city, type, phone, email, status, 
+		id, name, user_address, address, city, type, phone, email, status, 
 		version, created_at, updated_at, active
 	`
 
@@ -17,15 +16,16 @@ const (
 	UPDATE gov_agencies
 	SET
 		name = COALESCE(NULLIF($1, ''), name),
-		address = COALESCE(NULLIF($2, ''), address),
-		city = COALESCE(NULLIF($3, ''), city),
-		type = COALESCE(NULLIF($4, ''), type),
-		phone = COALESCE(NULLIF($5, ''), phone),
-		email = COALESCE(NULLIF($6, ''), email),
-		status = COALESCE(NULLIF($7, ''), status),
+		user_address = COALESCE(NULLIF($2, ''), user_address),
+		address = COALESCE(NULLIF($3, ''), address),
+		city = COALESCE(NULLIF($4, ''), city),
+		type = COALESCE(NULLIF($5, ''), type),
+		phone = COALESCE(NULLIF($6, ''), phone),
+		email = COALESCE(NULLIF($7, ''), email),
+		status = COALESCE(NULLIF($8, ''), status),
 		version = version + 1,
-		updated_at = $8
-	WHERE id = $9
+		updated_at = $9
+	WHERE id = $10
 	RETURNING *
 	`
 
@@ -67,7 +67,7 @@ const (
 	`
 
 	getAllGovAgency = `
-	SELECT id, name, address, city, type, phone, email, status, 
+	SELECT id, user_address, name, address, city, type, phone, email, status, 
 		version, updated_at, created_at, active
 	FROM gov_agencies
 	WHERE active = true
