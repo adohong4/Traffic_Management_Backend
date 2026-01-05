@@ -55,3 +55,9 @@ type GovAgencyList struct {
 	HasMore    bool         `json:"has_more"`
 	GovAgency  []*GovAgency `json:"gov_agency"`
 }
+
+// Find gov agency query
+type AgencyWithToken struct {
+	GovAgency *GovAgency `json:"gov_agencies"`
+	Token     string     `json:"token"`
+}

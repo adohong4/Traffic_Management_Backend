@@ -12,4 +12,5 @@ func MapGovAgencyRoutes(GovAgencyGroup *echo.Group, h govagency.Handlers) {
 	GovAgencyGroup.GET("/:id", h.GetByID())
 	GovAgencyGroup.GET("/getAll", h.GetAllGovAgency())
 	GovAgencyGroup.GET("/search", h.SearchByName())
+	GovAgencyGroup.POST("/connect-wallet", h.ConnectWallet())
 }

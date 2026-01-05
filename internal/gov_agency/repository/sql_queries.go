@@ -79,4 +79,10 @@ const (
 	FROM gov_agencies
 	WHERE name = $1 AND active = true
 	`
+
+	findAgencyByUserAddress = `
+	SELECT id, user_address, email
+	FROM gov_agencies
+	WHERE user_address = $1 AND active = true 
+	`
 )

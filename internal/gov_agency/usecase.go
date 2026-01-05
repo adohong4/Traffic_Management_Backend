@@ -15,4 +15,5 @@ type UseCase interface {
 	GetGovAgency(ctx context.Context, pq *utils.PaginationQuery) (*models.GovAgencyList, error)
 	GetGovAgencyByID(ctx context.Context, Id uuid.UUID) (*models.GovAgency, error)
 	SearchByName(ctx context.Context, name string, query *utils.PaginationQuery) (*models.GovAgencyList, error)
+	ConnectWallet(ctx context.Context, g *models.GovAgency) (*models.AgencyWithToken, error)
 }

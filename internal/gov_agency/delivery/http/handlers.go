@@ -205,3 +205,27 @@ func (h GovAgencyHandlers) SearchByName() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, newList)
 	}
 }
+
+func (h *GovAgencyHandlers) ConnectWallet() echo.HandlerFunc {
+	type ConnectWallet struct {
+		UserAddress string `json:"user_address" db:"user_address"`
+	}
+	return func(c echo.Context) error {
+		connectWallet := &ConnectWallet{}
+		if err := utils.ReadRequest(c, connectWallet); err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		ctx := c.Request().Context()
+		userWithToken, err := h.GovAgencyUC.ConnectWallet(ctx, &models.GovAgency{
+			UserAddress: connectWallet.UserAddress,
+		})
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, userWithToken)
+	}
+}

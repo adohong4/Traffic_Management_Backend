@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	govagency "github.com/adohong4/driving-license/internal/gov_agency"
 	"github.com/adohong4/driving-license/internal/models"
@@ -147,4 +148,16 @@ func (r *GovAgencyRepo) SearchByName(ctx context.Context, name string, query *ut
 		HasMore:    utils.GetHasMore(query.GetPage(), totalCount, query.GetSize()),
 		GovAgency:  NewGovAgency,
 	}, nil
+}
+
+func (r *GovAgencyRepo) FindAgencyByUserAddress(ctx context.Context, g *models.GovAgency) (*models.GovAgency, error) {
+	foundAgency := &models.GovAgency{}
+	err := r.db.QueryRowxContext(ctx, findAgencyByUserAddress, g.UserAddress).StructScan(foundAgency)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "agencyRepo.FindAgencyByUserAddress.QueryRowxContext")
+	}
+	return foundAgency, nil
 }

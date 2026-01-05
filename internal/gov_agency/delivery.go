@@ -9,4 +9,5 @@ type Handlers interface {
 	GetByID() echo.HandlerFunc
 	GetAllGovAgency() echo.HandlerFunc
 	SearchByName() echo.HandlerFunc
+	ConnectWallet() echo.HandlerFunc
 }

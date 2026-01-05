@@ -26,6 +26,11 @@ type ClaimsUserAddress struct {
 	jwt.StandardClaims
 }
 
+type ClaimsGovAgencyAddress struct {
+	UserAddress string `json:"user_address"`
+	jwt.StandardClaims
+}
+
 // Generate new JWT Token
 func GenerateJWTToken(user *models.User, config *config.Config) (string, error) {
 	// Register the JWT claims, which includes the username and expiry time
@@ -56,6 +61,26 @@ func GenerateJWTTokenFromUserAddress(user *models.User, config *config.Config) (
 		UserAddress: *user.UserAddress,
 		IdentityNO:  user.IdentityNo,
 		ID:          user.Id.String(),
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Minute * 60).Unix(),
+		},
+	}
+
+	// Declare the token with the algorithm used for signing, and the claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// register the JWT string
+	tokenString, err := token.SignedString([]byte(config.Server.JwtSecretKey))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+func GenerateJWTTokenFromAgencyAddress(agency *models.GovAgency, config *config.Config) (string, error) {
+	claims := &ClaimsGovAgencyAddress{
+		UserAddress: agency.UserAddress,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Minute * 60).Unix(),
 		},

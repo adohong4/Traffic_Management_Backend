@@ -88,3 +88,20 @@ func (u *GovAgencyUC) GetGovAgencyByID(ctx context.Context, Id uuid.UUID) (*mode
 func (u *GovAgencyUC) SearchByName(ctx context.Context, name string, query *utils.PaginationQuery) (*models.GovAgencyList, error) {
 	return u.GovAgencyRepo.SearchByName(ctx, name, query)
 }
+
+func (u *GovAgencyUC) ConnectWallet(ctx context.Context, g *models.GovAgency) (*models.AgencyWithToken, error) {
+	foundAgency, err := u.GovAgencyRepo.FindAgencyByUserAddress(ctx, g)
+	if err != nil {
+		return nil, err
+	}
+	token, err := utils.GenerateJWTTokenFromAgencyAddress(foundAgency, u.cfg)
+	if err != nil {
+		return nil, httpErrors.NewInternalServerError(errors.Wrap(err, "authUC.ConnectWallet.GenerateJWTToken"))
+	}
+
+	return &models.AgencyWithToken{
+		GovAgency: foundAgency,
+		Token:     token,
+	}, nil
+
+}
