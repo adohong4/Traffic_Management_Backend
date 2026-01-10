@@ -196,3 +196,29 @@ func (u *DriverLicenseUC) GetLicenseTypeStatusDistribution(ctx context.Context) 
 func (u *DriverLicenseUC) GetCityStatusDistribution(ctx context.Context) (*models.CityDetailDistributionResponse, error) {
 	return u.DriverLicenseRepo.GetCityStatusDistribution(ctx)
 }
+
+func (u *DriverLicenseUC) GetMyDrivingLicenses(ctx context.Context, identityNo string, pq *utils.PaginationQuery) (*models.DrivingLicenseList, error) {
+	return u.DriverLicenseRepo.GetDrivingLicensesByIdentityNo(ctx, identityNo, pq)
+}
+
+func (u *DriverLicenseUC) GetMyDrivingLicenseById(ctx context.Context, identityNo string, id uuid.UUID) (*models.DrivingLicense, error) {
+	dl, err := u.DriverLicenseRepo.GetDriverLicenseById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if dl == nil || dl.IdentityNo != identityNo {
+		return nil, nil
+	}
+	return dl, nil
+}
+
+func (u *DriverLicenseUC) GetMyDrivingLicenseByLicenseNo(ctx context.Context, identityNo, licenseNo string) (*models.DrivingLicense, error) {
+	dl, err := u.DriverLicenseRepo.GetDriverLicenseByLicenseNO(ctx, licenseNo)
+	if err != nil {
+		return nil, err
+	}
+	if dl == nil || dl.IdentityNo != identityNo {
+		return nil, nil
+	}
+	return dl, nil
+}

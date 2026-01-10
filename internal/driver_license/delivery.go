@@ -17,5 +17,6 @@ type Handlers interface {
 	GetLicenseTypeStatusDistribution() echo.HandlerFunc
 	GetCityStatusDistribution() echo.HandlerFunc
 
-	GetMyDrivingLicense() echo.HandlerFunc
+	GetMyDrivingLicenses() echo.HandlerFunc
+	GetMyDrivingLicenseDetail() echo.HandlerFunc
 }

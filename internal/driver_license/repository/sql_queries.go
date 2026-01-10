@@ -164,4 +164,22 @@ const (
         GROUP BY owner_city, status
         ORDER BY count DESC, owner_city, status
     `
+
+	getDrivingLicensesByIdentityNo = `
+        SELECT 
+            id, full_name, avatar, dob, identity_no, owner_address, owner_city, license_no, 
+            issue_date, expiry_date, status, license_type, authority_id, issuing_authority,
+            nationality, point, wallet_address, on_blockchain, blockchain_txhash, 
+            version, creator_id, modifier_id, created_at, updated_at, active
+        FROM driver_licenses
+        WHERE identity_no = $1 AND active = true
+        ORDER BY updated_at DESC, created_at DESC
+        OFFSET $2 LIMIT $3
+    `
+
+	getTotalCountByIdentityNo = `
+        SELECT COUNT(*)
+        FROM driver_licenses
+        WHERE identity_no = $1 AND active = true
+    `
 )

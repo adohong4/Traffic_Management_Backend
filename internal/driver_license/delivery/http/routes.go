@@ -23,6 +23,6 @@ func MapDriverLicenseRoutes(driverLicenseGroup *echo.Group, h driverlicense.Hand
 	driverLicenseGroup.GET("/stats/license-type-detail", h.GetLicenseTypeStatusDistribution())
 	driverLicenseGroup.GET("/stats/city-detail", h.GetCityStatusDistribution())
 
-	// === NEW: Protected route for user to view their own license ===
-	driverLicenseGroup.GET("/me", h.GetMyDrivingLicense(), mw.AuthJWTMiddleware(authUC, cfg))
+	driverLicenseGroup.GET("/me", h.GetMyDrivingLicenses(), mw.AuthJWTMiddleware(authUC, cfg))
+	driverLicenseGroup.GET("/me/detail", h.GetMyDrivingLicenseDetail(), mw.AuthJWTMiddleware(authUC, cfg))
 }

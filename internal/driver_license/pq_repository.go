@@ -24,4 +24,6 @@ type Repository interface {
 	GetLicenseTypeDistribution(ctx context.Context) (*models.LicenseTypeDistributionResponse, error)
 	GetLicenseTypeStatusDistribution(ctx context.Context) (*models.LicenseTypeDetailDistributionResponse, error)
 	GetCityStatusDistribution(ctx context.Context) (*models.CityDetailDistributionResponse, error)
+
+	GetDrivingLicensesByIdentityNo(ctx context.Context, identityNo string, pq *utils.PaginationQuery) (*models.DrivingLicenseList, error)
 }

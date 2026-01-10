@@ -23,4 +23,8 @@ type UseCase interface {
 	GetLicenseTypeDistribution(ctx context.Context) (*models.LicenseTypeDistributionResponse, error)
 	GetLicenseTypeStatusDistribution(ctx context.Context) (*models.LicenseTypeDetailDistributionResponse, error)
 	GetCityStatusDistribution(ctx context.Context) (*models.CityDetailDistributionResponse, error)
+
+	GetMyDrivingLicenses(ctx context.Context, identityNo string, pq *utils.PaginationQuery) (*models.DrivingLicenseList, error)
+	GetMyDrivingLicenseById(ctx context.Context, identityNo string, id uuid.UUID) (*models.DrivingLicense, error)
+	GetMyDrivingLicenseByLicenseNo(ctx context.Context, identityNo, licenseNo string) (*models.DrivingLicense, error)
 }

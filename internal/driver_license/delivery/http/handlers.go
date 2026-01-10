@@ -1,8 +1,6 @@
 package http
 
 import (
-	"database/sql"
-	"errors"
 	"net/http"
 
 	"github.com/adohong4/driving-license/config"
@@ -428,28 +426,19 @@ func (h *DriverLicenseHandlers) GetCityStatusDistribution() echo.HandlerFunc {
 	}
 }
 
-// Confirm Blockchain Request
-type ConfirmBlockchainRequest struct {
-	BlockchainTxHash string `json:"blockchain_txhash" validate:"required"`
-	OnBlockchain     bool   `json:"on_blockchain"`
-}
-
-// Add Wallet Address into Record
-type AddWalletRequest struct {
-	WalletAddress string `json:"wallet_address" validate:"required"`
-}
-
-// @Summary Get my driving license
-// @Description Get detailed information of the driving license associated with the authenticated user (via wallet address)
-// @Tags User
+// @Summary Get my driving licenses
+// @Description Get list of driving licenses belonging to the current authenticated user (by identity_no)
+// @Tags DrivingLicense, Me
 // @Produce json
-// @Success 200 {object} models.DrivingLicense
+// @Param page query int false "Page number" default(1)
+// @Param size query int false "Page size" default(10)
+// @Success 200 {object} models.DrivingLicenseList
+// @Failure 400 {object} httpErrors.RestError
 // @Failure 401 {object} httpErrors.RestError
-// @Failure 404 {object} httpErrors.RestError
 // @Failure 500 {object} httpErrors.RestError
 // @Security JWT
-// @Router /licenses/me [get]
-func (h *DriverLicenseHandlers) GetMyDrivingLicense() echo.HandlerFunc {
+// @Router /licenses/me/licenses [get]
+func (h *DriverLicenseHandlers) GetMyDrivingLicenses() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 
@@ -459,23 +448,89 @@ func (h *DriverLicenseHandlers) GetMyDrivingLicense() echo.HandlerFunc {
 			return c.JSON(httpErrors.ErrorResponse(httpErrors.NewUnauthorizedError(err)))
 		}
 
-		if user.IdentityNo == "" {
-			return c.JSON(http.StatusNotFound, map[string]string{
-				"message": "Không tìm thấy wallet address liên kết với tài khoản",
-			})
-		}
-
-		dl, err := h.DriverLicenseUC.GetDriverLicenseByLicenseNO(ctx, user.IdentityNo)
+		pq, err := utils.GetPaginationFromCtx(c)
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return c.JSON(http.StatusNotFound, map[string]string{
-					"message": "Không tìm thấy bằng lái xe liên kết với tài khoản của bạn",
-				})
-			}
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
+		list, err := h.DriverLicenseUC.GetMyDrivingLicenses(ctx, user.IdentityNo, pq)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, list)
+	}
+}
+
+// @Summary Get my driving license detail
+// @Description Get detailed information of a specific driving license belonging to the current user
+// @Tags DrivingLicense, Me
+// @Produce json
+// @Param license_no query string false "License number"
+// @Param id query string false "License ID (UUID)"
+// @Success 200 {object} models.DrivingLicense
+// @Failure 400 {object} httpErrors.RestError
+// @Failure 401 {object} httpErrors.RestError
+// @Failure 404 {object} httpErrors.RestError
+// @Failure 500 {object} httpErrors.RestError
+// @Security JWT
+// @Router /licenses/me/licenses/detail [get]
+func (h *DriverLicenseHandlers) GetMyDrivingLicenseDetail() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+
+		user, err := utils.GetUserFromCtx(ctx)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(httpErrors.NewUnauthorizedError(err)))
+		}
+
+		licenseNo := c.QueryParam("license_no")
+		idStr := c.QueryParam("id")
+
+		if licenseNo == "" && idStr == "" {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error": "either license_no or id is required",
+			})
+		}
+
+		var dl *models.DrivingLicense
+		// var err error
+
+		if idStr != "" {
+			id, parseErr := uuid.Parse(idStr)
+			if parseErr != nil {
+				return c.JSON(httpErrors.ErrorResponse(httpErrors.NewBadRequestError(parseErr)))
+			}
+			dl, err = h.DriverLicenseUC.GetMyDrivingLicenseById(ctx, user.IdentityNo, id)
+		} else {
+			dl, err = h.DriverLicenseUC.GetMyDrivingLicenseByLicenseNo(ctx, user.IdentityNo, licenseNo)
+		}
+
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		if dl == nil {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"error": "driving license not found or does not belong to you",
+			})
+		}
+
 		return c.JSON(http.StatusOK, dl)
 	}
+}
+
+// Confirm Blockchain Request
+type ConfirmBlockchainRequest struct {
+	BlockchainTxHash string `json:"blockchain_txhash" validate:"required"`
+	OnBlockchain     bool   `json:"on_blockchain"`
+}
+
+// Add Wallet Address into Record
+type AddWalletRequest struct {
+	WalletAddress string `json:"wallet_address" validate:"required"`
 }

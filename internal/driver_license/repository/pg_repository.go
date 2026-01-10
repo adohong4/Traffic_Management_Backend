@@ -355,3 +355,49 @@ func (r *DriverLicenseRepo) GetCityStatusDistribution(ctx context.Context) (*mod
 		GrandTotal:   grandTotal,
 	}, nil
 }
+
+func (r *DriverLicenseRepo) GetDrivingLicensesByIdentityNo(ctx context.Context, identityNo string, pq *utils.PaginationQuery) (*models.DrivingLicenseList, error) {
+	var totalCount int
+	if err := r.db.GetContext(ctx, &totalCount, getTotalCountByIdentityNo, identityNo); err != nil {
+		return nil, errors.Wrap(err, "DriverLicenseRepo.GetDrivingLicensesByIdentityNo.totalCount")
+	}
+
+	if totalCount == 0 {
+		return &models.DrivingLicenseList{
+			TotalCount:     0,
+			TotalPages:     0,
+			Page:           pq.GetPage(),
+			Size:           pq.GetSize(),
+			HasMore:        false,
+			DrivingLicense: []*models.DrivingLicense{},
+		}, nil
+	}
+
+	var licenses []*models.DrivingLicense
+	rows, err := r.db.QueryxContext(ctx, getDrivingLicensesByIdentityNo, identityNo, pq.GetOffset(), pq.GetLimit())
+	if err != nil {
+		return nil, errors.Wrap(err, "DriverLicenseRepo.GetDrivingLicensesByIdentityNo.query")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		dl := &models.DrivingLicense{}
+		if err := rows.StructScan(dl); err != nil {
+			return nil, errors.Wrap(err, "DriverLicenseRepo.GetDrivingLicensesByIdentityNo.scan")
+		}
+		licenses = append(licenses, dl)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "DriverLicenseRepo.GetDrivingLicensesByIdentityNo.rows")
+	}
+
+	return &models.DrivingLicenseList{
+		TotalCount:     totalCount,
+		TotalPages:     utils.GetTotalPage(totalCount, pq.GetSize()),
+		Page:           pq.GetPage(),
+		Size:           pq.GetSize(),
+		HasMore:        utils.GetHasMore(pq.GetPage(), totalCount, pq.GetSize()),
+		DrivingLicense: licenses,
+	}, nil
+}
