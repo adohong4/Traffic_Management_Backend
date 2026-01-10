@@ -8,16 +8,23 @@ import (
 )
 
 type User struct {
-	Id          uuid.UUID  `json:"id" db:"id" validate:"required"`
-	UserAddress *string    `json:"user_address" db:"user_address"`
-	IdentityNo  string     `json:"identity_no" db:"identity_no"` // CCCD
-	Active      bool       `json:"active" db:"active"`
-	Role        *string    `json:"role,omitempty" db:"role" validate:"omitempty,lte=20"` // Vai trò (admin, user, etc.)
-	Version     int        `json:"version" db:"version"`                                 // Phiên bản, tự động tăng
-	CreatorId   *uuid.UUID `json:"creator_id" db:"creator_id"`                           // ID của người tạo
-	ModifierId  *uuid.UUID `json:"modifier_id" db:"modifier_id"`                         // ID của người sửa
-	CreatedAt   time.Time  `json:"created_at" db:"created_at"`                           // Thời gian tạo
-	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`                           // Thời gian cập nhật
+	Id               uuid.UUID `json:"id" db:"id" validate:"required"`
+	UserAddress      *string   `json:"user_address" db:"user_address"`
+	IdentityNo       string    `json:"identity_no" db:"identity_no"` // CCCD
+	FullName         string    `json:"full_name" db:"full_name"`
+	DateOfBirth      string    `json:"date_of_birth" db:"date_of_birth"`
+	Gender           string    `json:"gender" db:"gender"`
+	Nationality      string    `json:"nationality" db:"nationality"`
+	PlaceOfOrigin    string    `json:"place_of_origin" db:"place_of_origin"`
+	PlaceOfResidence string    `json:"place_of_residence" db:"place_of_residence"`
+
+	Active     bool       `json:"active" db:"active"`
+	Role       *string    `json:"role,omitempty" db:"role" validate:"omitempty,lte=20"` // Vai trò (admin, user, etc.)
+	Version    int        `json:"version" db:"version"`                                 // Phiên bản, tự động tăng
+	CreatorId  *uuid.UUID `json:"creator_id" db:"creator_id"`                           // ID của người tạo
+	ModifierId *uuid.UUID `json:"modifier_id" db:"modifier_id"`                         // ID của người sửa
+	CreatedAt  time.Time  `json:"created_at" db:"created_at"`                           // Thời gian tạo
+	UpdatedAt  time.Time  `json:"updated_at" db:"updated_at"`                           // Thời gian cập nhật
 }
 
 // Prepare user for register

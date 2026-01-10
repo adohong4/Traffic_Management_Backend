@@ -26,7 +26,9 @@ func NewAuthRepository(db *sqlx.DB) auth.Repository {
 func (r *authRepo) CreateUser(ctx context.Context, user *models.User) (*models.User, error) {
 	u := &models.User{}
 	if err := r.db.QueryRowxContext(ctx, createUserQuery,
-		user.Id, user.UserAddress, user.IdentityNo, user.Active, user.Role,
+		user.Id, user.UserAddress, user.IdentityNo,
+		user.FullName, user.DateOfBirth, user.Gender, user.Nationality, user.PlaceOfOrigin, user.PlaceOfResidence,
+		user.Active, user.Role,
 		user.Version, user.CreatorId, user.ModifierId, user.CreatedAt, user.UpdatedAt,
 	).StructScan(u); err != nil {
 		return nil, errors.Wrap(err, "authRepo.CreateUser.StructScan")
@@ -37,7 +39,9 @@ func (r *authRepo) CreateUser(ctx context.Context, user *models.User) (*models.U
 func (r *authRepo) Update(ctx context.Context, user *models.User) (*models.User, error) {
 	u := &models.User{}
 	if err := r.db.QueryRowxContext(ctx, updateUserQuery,
-		user.UserAddress, user.IdentityNo, user.Active, user.Role,
+		user.UserAddress, user.IdentityNo,
+		user.FullName, user.DateOfBirth, user.Gender, user.Nationality, user.PlaceOfOrigin, user.PlaceOfResidence,
+		user.Active, user.Role,
 		user.CreatorId, user.ModifierId, user.Id, user.Version,
 	).StructScan(u); err != nil {
 		return nil, errors.Wrap(err, "authRepo.Update.QueryRowxContext")
