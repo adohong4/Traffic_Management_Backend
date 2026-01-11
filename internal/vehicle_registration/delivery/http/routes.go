@@ -23,4 +23,6 @@ func MapVehicleRegistrationRoutes(vehicleRegGroup *echo.Group, h vehicleRegistra
 	// User
 	vehicleRegGroup.GET("/me", h.GetMyVehicles(), mw.AuthJWTMiddleware(authUC, cfg))
 	vehicleRegGroup.GET("/me/:id", h.GetMyVehicleByID(), mw.AuthJWTMiddleware(authUC, cfg))
+	vehicleRegGroup.GET("/inspections", h.GetInspections())
+	vehicleRegGroup.GET("/inspections/:code", h.GetInspectionByCode())
 }

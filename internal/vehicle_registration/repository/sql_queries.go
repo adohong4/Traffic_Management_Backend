@@ -4,13 +4,13 @@ const (
 	createLicenseQuery = `
 	INSERT INTO vehicle_registration (
 		id, owner_id, brand, type_vehicle, vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,
-		owner_name, seats, issue_date, issuer, registration_date, expiry_date, registration_place, on_blockchain, blockchain_txhash, status, 
+		owner_name, seats, issue_date, issuer, registration_code, registration_date, expiry_date, registration_place, on_blockchain, blockchain_txhash, status, 
 		version, creator_id, modifier_id, created_at, updated_at
 	)VALUES(
-		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24
+		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25
 	)RETURNING 
 		id, owner_id, brand, type_vehicle, vehicle_no, color_plate, chassis_no, engine_no, color_vehicle,
-		owner_name,seats, issue_date,issuer, registration_date, expiry_date, registration_place, on_blockchain, blockchain_txhash,
+		owner_name,seats, issue_date,issuer, registration_code, registration_date, expiry_date, registration_place, on_blockchain, blockchain_txhash,
 		status, version, creator_id, modifier_id, created_at, updated_at
 	`
 
@@ -29,15 +29,16 @@ const (
         seats = COALESCE($10, seats),
         issue_date = COALESCE($11, issue_date),
 		issuer = COALESCE(NULLIF($12, ''), issuer),
-		registration_date = COALESCE($13, registration_date),
-        expiry_date = COALESCE($14, expiry_date),
-		registration_place = COALESCE($15, registration_place),
-        status = COALESCE(NULLIF($16, ''), status),
-        modifier_id = COALESCE($17, modifier_id),
+        registration_code = COALESCE($13, registration_code),
+		registration_date = COALESCE($14, registration_date),
+        expiry_date = COALESCE($15, expiry_date),
+		registration_place = COALESCE($16, registration_place),
+        status = COALESCE(NULLIF($17, ''), status),
+        modifier_id = COALESCE($18, modifier_id),
         version = version + 1,
         updated_at = now(),
-        active = COALESCE($18, active)
-    WHERE id = $19
+        active = COALESCE($19, active)
+    WHERE id = $20
     RETURNING *
 	`
 
@@ -185,6 +186,7 @@ const (
         vr.issue_date,
         vr.expiry_date,
         vr.issuer,
+        vr.registration_code,
         vr.registration_date,
         vr.registration_place,
         vr.status,
@@ -217,6 +219,78 @@ const (
         SELECT *
         FROM vehicle_registration
         WHERE id = $1 AND owner_id = $2 AND active = true
+    `
+
+	getInspections = `
+    SELECT 
+        vr.id, 
+        vr.owner_id, 
+        vr.brand, 
+        vr.type_vehicle, 
+        vr.vehicle_no, 
+        vr.color_plate, 
+        vr.chassis_no, 
+        vr.engine_no, 
+        vr.color_vehicle,
+        COALESCE(dl.full_name, vr.owner_name) AS owner_name,
+        vr.seats,
+        vr.issue_date, 
+        vr.expiry_date, 
+        vr.issuer,
+        vr.registration_code,
+        vr.registration_date,
+        vr.registration_place,
+        vr.status, 
+        vr.version, 
+        vr.creator_id, 
+        vr.modifier_id, 
+        vr.updated_at, 
+        vr.created_at,
+        vr.on_blockchain,
+        vr.blockchain_txhash
+    FROM vehicle_registration vr
+    LEFT JOIN driver_licenses dl ON vr.owner_id = dl.id AND dl.active = true
+    WHERE vr.registration_code IS NOT NULL AND vr.active = true
+    ORDER BY vr.updated_at DESC, vr.created_at DESC
+    OFFSET $1 LIMIT $2
+    `
+
+	getInspectionsCount = `
+    SELECT COUNT(*)
+    FROM vehicle_registration vr
+    WHERE vr.registration_code IS NOT NULL AND vr.active = true
+    `
+
+	getByRegistrationCode = `
+    SELECT 
+        vr.id, 
+        vr.owner_id, 
+        vr.brand, 
+        vr.type_vehicle, 
+        vr.vehicle_no, 
+        vr.color_plate, 
+        vr.chassis_no, 
+        vr.engine_no, 
+        vr.color_vehicle,
+        COALESCE(dl.full_name, vr.owner_name) AS owner_name,
+        vr.seats,
+        vr.issue_date, 
+        vr.expiry_date, 
+        vr.issuer,
+        vr.registration_code,
+        vr.registration_date,
+        vr.registration_place,
+        vr.status, 
+        vr.version, 
+        vr.creator_id, 
+        vr.modifier_id, 
+        vr.updated_at, 
+        vr.created_at,
+        vr.on_blockchain,
+        vr.blockchain_txhash
+    FROM vehicle_registration vr
+    LEFT JOIN driver_licenses dl ON vr.owner_id = dl.id AND dl.active = true
+    WHERE vr.registration_code = $1 AND vr.active = true
     `
 )
 

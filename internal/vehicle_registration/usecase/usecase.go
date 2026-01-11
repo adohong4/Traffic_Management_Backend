@@ -187,3 +187,18 @@ func (v *vehicleRegUC) GetMyVehicleByID(ctx context.Context, vehicleID uuid.UUID
 	}
 	return vehicle, nil
 }
+
+func (v *vehicleRegUC) GetInspections(ctx context.Context, pq *utils.PaginationQuery) (*models.VehicleRegistrationList, error) {
+	return v.vehicleRegRepo.GetInspections(ctx, pq)
+}
+
+func (v *vehicleRegUC) GetInspectionByCode(ctx context.Context, code string) (*models.VehicleRegistration, error) {
+	inspection, err := v.vehicleRegRepo.GetByRegistrationCode(ctx, code)
+	if err != nil {
+		return nil, err
+	}
+	if inspection == nil {
+		return nil, httpErrors.NewRestError(http.StatusNotFound, "Inspection not found", nil)
+	}
+	return inspection, nil
+}

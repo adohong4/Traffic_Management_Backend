@@ -21,6 +21,7 @@ type VehicleRegistration struct {
 	Seats             *int       `json:"seats,omitempty" db:"seats"`                 // Số chỗ ngồi
 	IssueDate         string     `json:"issue_date" db:"issue_date"`                 // Ngày cấp
 	Issuer            string     `json:"issuer" db:"issuer"`                         // Nơi cấp
+	RegistrationCode  *string    `json:"registration_code" db:"registration_code"`   // Mã tem
 	RegistrationDate  *string    `json:"registration_date" db:"registration_date"`   // Ngay dang kiem
 	ExpiryDate        *string    `json:"expiry_date" db:"expiry_date"`               // Ngày hết hạn dang kiem
 	RegistrationPlace *string    `json:"registration_place" db:"registration_place"` // nơi đăng kiểm

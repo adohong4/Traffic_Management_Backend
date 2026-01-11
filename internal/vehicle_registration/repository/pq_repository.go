@@ -26,7 +26,7 @@ func (r *vehicleDocRepo) CreateVehicleDoc(ctx context.Context, veDoc *models.Veh
 	v := &models.VehicleRegistration{}
 	if err := r.db.QueryRowxContext(ctx, createLicenseQuery,
 		veDoc.ID, veDoc.OwnerID, veDoc.Brand, veDoc.TypeVehicle, veDoc.VehiclePlateNo, veDoc.ColorPlate, veDoc.ChassisNo, veDoc.EngineNo, veDoc.ColorVehicle,
-		veDoc.OwnerName, veDoc.Seats, veDoc.IssueDate, veDoc.Issuer, veDoc.RegistrationDate, veDoc.ExpiryDate, veDoc.RegistrationPlace, veDoc.OnBlockchain, veDoc.BlockchainTxHash,
+		veDoc.OwnerName, veDoc.Seats, veDoc.IssueDate, veDoc.Issuer, veDoc.RegistrationCode, veDoc.RegistrationDate, veDoc.ExpiryDate, veDoc.RegistrationPlace, veDoc.OnBlockchain, veDoc.BlockchainTxHash,
 		veDoc.Status, veDoc.Version, veDoc.CreatorId, veDoc.ModifierId, veDoc.CreatedAt, veDoc.UpdatedAt,
 	).StructScan(v); err != nil {
 		return nil, errors.Wrap(err, "vehicleDocRepo.CreateVehicleDoc.StructScan")
@@ -38,7 +38,7 @@ func (r *vehicleDocRepo) UpdateVehicleDoc(ctx context.Context, veDoc *models.Veh
 	v := &models.VehicleRegistration{}
 	if err := r.db.QueryRowxContext(ctx, updateLicenseQuery,
 		veDoc.OwnerID, veDoc.Brand, veDoc.TypeVehicle, veDoc.VehiclePlateNo, veDoc.ColorPlate, veDoc.ChassisNo, veDoc.EngineNo,
-		veDoc.ColorVehicle, veDoc.OwnerName, veDoc.Seats, veDoc.IssueDate, veDoc.Issuer, veDoc.RegistrationDate, veDoc.ExpiryDate, veDoc.RegistrationPlace,
+		veDoc.ColorVehicle, veDoc.OwnerName, veDoc.Seats, veDoc.IssueDate, veDoc.Issuer, veDoc.RegistrationCode, veDoc.RegistrationDate, veDoc.ExpiryDate, veDoc.RegistrationPlace,
 		veDoc.Status, veDoc.ModifierId, veDoc.Active, veDoc.ID, veDoc.Version,
 	).StructScan(v); err != nil {
 		return nil, errors.Wrap(err, "vehicleDocRepo.UpdateVehicleDoc.StructScan")
@@ -322,6 +322,62 @@ func (r *vehicleDocRepo) GetVehicleByIDAndOwnerID(ctx context.Context, vehicleID
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "vehicleDocRepo.GetVehicleByIDAndOwnerID.GetContext")
+	}
+	return v, nil
+}
+
+func (r *vehicleDocRepo) GetInspections(ctx context.Context, pq *utils.PaginationQuery) (*models.VehicleRegistrationList, error) {
+	var totalCount int
+	if err := r.db.GetContext(ctx, &totalCount, getInspectionsCount); err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetInspections.totalCount")
+	}
+
+	if totalCount == 0 {
+		return &models.VehicleRegistrationList{
+			TotalCount:      totalCount,
+			TotalPages:      utils.GetTotalPage(totalCount, pq.GetSize()),
+			Page:            pq.GetPage(),
+			Size:            pq.GetSize(),
+			HasMore:         utils.GetHasMore(pq.GetPage(), totalCount, pq.GetSize()),
+			VehicleDocument: make([]*models.VehicleRegistration, 0),
+		}, nil
+	}
+
+	var inspections = make([]*models.VehicleRegistration, 0, pq.GetSize())
+	rows, err := r.db.QueryxContext(ctx, getInspections, pq.GetOffset(), pq.GetLimit())
+	if err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetInspections.QueryxContext")
+	}
+	defer rows.Close()
+	for rows.Next() {
+		n := &models.VehicleRegistration{}
+		if err = rows.StructScan(n); err != nil {
+			return nil, errors.Wrap(err, "vehicleDocRepo.GetInspections.StructScan")
+		}
+		inspections = append(inspections, n)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetInspections.rows.Err")
+	}
+	return &models.VehicleRegistrationList{
+		TotalCount:      totalCount,
+		TotalPages:      utils.GetTotalPage(totalCount, pq.GetSize()),
+		Page:            pq.GetPage(),
+		Size:            pq.GetSize(),
+		HasMore:         utils.GetHasMore(pq.GetPage(), totalCount, pq.GetSize()),
+		VehicleDocument: inspections,
+	}, nil
+}
+
+func (r *vehicleDocRepo) GetByRegistrationCode(ctx context.Context, code string) (*models.VehicleRegistration, error) {
+	v := &models.VehicleRegistration{}
+	err := r.db.QueryRowxContext(ctx, getByRegistrationCode, code).StructScan(v)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "vehicleDocRepo.GetByRegistrationCode.QueryRowxContext")
 	}
 	return v, nil
 }

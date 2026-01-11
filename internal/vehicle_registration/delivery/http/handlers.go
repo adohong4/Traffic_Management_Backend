@@ -401,3 +401,62 @@ func (h vehicleRegHandlers) GetMyVehicleByID() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, vehicle)
 	}
 }
+
+// GetInspections godoc
+// @Summary      List all vehicle inspections
+// @Description  Returns a paginated list of active vehicle registrations that have been inspected (registration_code is not null).
+// @Tags         vehicle-registration
+// @Produce      json
+// @Param        page   query     int  false  "Page number (default: 1)"
+// @Param        size   query     int  false  "Page size (default: 10)"
+// @Success      200    {object}  models.VehicleRegistrationList
+// @Failure      400    {object}  httpErrors.RestError
+// @Failure      500    {object}  httpErrors.RestError
+// @Router       /vehicle/inspections [get]
+func (h vehicleRegHandlers) GetInspections() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		pq, err := utils.GetPaginationFromCtx(c)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		list, err := h.vehicleRegUC.GetInspections(ctx, pq)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, list)
+	}
+}
+
+// GetInspectionByCode godoc
+// @Summary      Get vehicle inspection by registration code
+// @Description  Retrieves a single active vehicle inspection record by its registration code (mã tem đăng kiểm).
+// @Tags         vehicle-registration
+// @Produce      json
+// @Param        code   path      string  true  "Registration Code"
+// @Success      200    {object}  models.VehicleRegistration
+// @Failure      400    {object}  httpErrors.RestError
+// @Failure      404    {object}  httpErrors.RestError
+// @Failure      500    {object}  httpErrors.RestError
+// @Router       /vehicle/inspections/{code} [get]
+func (h vehicleRegHandlers) GetInspectionByCode() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		code := c.Param("code")
+		if code == "" {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "registration_code is required"})
+		}
+
+		inspection, err := h.vehicleRegUC.GetInspectionByCode(ctx, code)
+		if err != nil {
+			utils.LogResponseError(c, h.logger, err)
+			return c.JSON(httpErrors.ErrorResponse(err))
+		}
+
+		return c.JSON(http.StatusOK, inspection)
+	}
+}

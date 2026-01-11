@@ -22,4 +22,7 @@ type Repository interface {
 	GetRegistrationStatusStats(ctx context.Context) (*models.StatusCounts, error)
 	GetVehiclesByOwnerID(ctx context.Context, ownerID uuid.UUID, pq *utils.PaginationQuery) (*models.VehicleRegistrationList, error)
 	GetVehicleByIDAndOwnerID(ctx context.Context, vehicleID, ownerID uuid.UUID) (*models.VehicleRegistration, error)
+
+	GetInspections(ctx context.Context, pq *utils.PaginationQuery) (*models.VehicleRegistrationList, error)
+	GetByRegistrationCode(ctx context.Context, code string) (*models.VehicleRegistration, error)
 }
