@@ -142,7 +142,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "NGoverment Agency"
+                    "Goverment Agency"
                 ],
                 "summary": "Get by Goverment Agency ID",
                 "parameters": [
@@ -289,6 +289,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/check-wallet": {
+            "get": {
+                "description": "Check whether a user with given identity number already has a wallet address linked",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Check if user has linked wallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Identity number (CCCD)",
+                        "name": "identity_no",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "linked: true/false",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/create": {
             "post": {
                 "security": [
@@ -393,6 +437,66 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/link-wallet": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Associate a wallet address with a user by identity number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Link wallet address to user",
+                "parameters": [
+                    {
+                        "description": "Link wallet request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success message",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
                         "schema": {
                             "$ref": "#/definitions/httpErrors.RestError"
                         }
@@ -516,6 +620,111 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/unlink-wallet": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove wallet address association from user by identity number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Unlink wallet from user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Identity number (CCCD)",
+                        "name": "identity_no",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success message",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found or no wallet linked",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/wallet-info": {
+            "get": {
+                "description": "Retrieve the identity number (CCCD) and full name from driving license by user's wallet address",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get user identity and name by wallet address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet address (Ethereum address)",
+                        "name": "user_address",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "identity_no and full_name",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid wallet address",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
                         "schema": {
                             "$ref": "#/definitions/httpErrors.RestError"
                         }
@@ -929,26 +1138,107 @@ const docTemplate = `{
                 }
             }
         },
-        "/licenses/me": {
+        "/licenses/me/licenses": {
             "get": {
                 "security": [
                     {
                         "JWT": []
                     }
                 ],
-                "description": "Get detailed information of the driving license associated with the authenticated user (via wallet address)",
+                "description": "Get list of driving licenses belonging to the current authenticated user (by identity_no)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "DrivingLicense",
+                    "Me"
                 ],
-                "summary": "Get my driving license",
+                "summary": "Get my driving licenses",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.DrivingLicenseList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/licenses/me/licenses/detail": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Get detailed information of a specific driving license belonging to the current user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "DrivingLicense",
+                    "Me"
+                ],
+                "summary": "Get my driving license detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "License number",
+                        "name": "license_no",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "License ID (UUID)",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.DrivingLicense"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
                         }
                     },
                     "401": {
@@ -2730,6 +3020,99 @@ const docTemplate = `{
                 }
             }
         },
+        "/vehicle/inspections": {
+            "get": {
+                "description": "Returns a paginated list of active vehicle registrations that have been inspected (registration_code is not null).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle-registration"
+                ],
+                "summary": "List all vehicle inspections",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default: 10)",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.VehicleRegistrationList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vehicle/inspections/{code}": {
+            "get": {
+                "description": "Retrieves a single active vehicle inspection record by its registration code (mã tem đăng kiểm).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle-registration"
+                ],
+                "summary": "Get vehicle inspection by registration code",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Registration Code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.VehicleRegistration"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpErrors.RestError"
+                        }
+                    }
+                }
+            }
+        },
         "/vehicle/me": {
             "get": {
                 "security": [
@@ -3493,6 +3876,9 @@ const docTemplate = `{
                 "updated_at": {
                     "type": "string"
                 },
+                "user_address": {
+                    "type": "string"
+                },
                 "version": {
                     "type": "integer"
                 }
@@ -3821,8 +4207,7 @@ const docTemplate = `{
         "models.User": {
             "type": "object",
             "required": [
-                "id",
-                "identity_no"
+                "id"
             ],
             "properties": {
                 "active": {
@@ -3836,16 +4221,33 @@ const docTemplate = `{
                     "description": "ID của người tạo",
                     "type": "string"
                 },
+                "date_of_birth": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "identity_no": {
                     "description": "CCCD",
-                    "type": "string",
-                    "maxLength": 20
+                    "type": "string"
                 },
                 "modifier_id": {
                     "description": "ID của người sửa",
+                    "type": "string"
+                },
+                "nationality": {
+                    "type": "string"
+                },
+                "place_of_origin": {
+                    "type": "string"
+                },
+                "place_of_residence": {
                     "type": "string"
                 },
                 "role": {
@@ -3973,6 +4375,10 @@ const docTemplate = `{
                 },
                 "owner_name": {
                     "description": "Chủ xe",
+                    "type": "string"
+                },
+                "registration_code": {
+                    "description": "Mã tem",
                     "type": "string"
                 },
                 "registration_date": {

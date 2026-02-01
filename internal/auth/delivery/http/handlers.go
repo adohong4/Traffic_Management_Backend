@@ -442,7 +442,7 @@ func (h *authHandlers) CheckWalletLinked() echo.HandlerFunc {
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        request  body      LinkWalletRequest  true  "Link wallet request"
+// @Param        request  body      models.User  true  "Link wallet request"
 // @Success      200  {object}  map[string]string  "success message"
 // @Failure      400  {object}  httpErrors.RestError
 // @Failure      404  {object}  httpErrors.RestError  "User not found"
