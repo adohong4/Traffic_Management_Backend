@@ -17,22 +17,28 @@ const (
 	`
 
 	updateDriverLicenseQuery = `
-	UPDATE driver_licenses 
-	SET
-		full_name = COALESCE(NULLIF($1, ''), full_name),
-		dob = COALESCE(NULLIF($2, '')::DATE, dob),
-		owner_address = COALESCE(NULLIF($3, ''), owner_address),
-		owner_city = COALESCE(NULLIF($4, ''), owner_city),
-		expiry_date = COALESCE($5, expiry_date),
-		status = COALESCE(NULLIF($6, ''), status),
-		nationality = COALESCE(NULLIF($7, ''), nationality),
-		point = COALESCE($8, point),
-		modifier_id = COALESCE($9, modifier_id),
-        version = version + 1,
-        updated_at = $10
-	WHERE id = $11
-	RETURNING *
+		UPDATE driver_licenses
+		SET
+    		full_name           = COALESCE(NULLIF($1, ''), full_name),
+    		avatar              = COALESCE(NULLIF($2, ''), avatar),
+    		dob                 = COALESCE(NULLIF($3, '')::DATE, dob),
+    		identity_no         = COALESCE(NULLIF($4, ''), identity_no),
+    		owner_address       = COALESCE(NULLIF($5, ''), owner_address),
+    		owner_city          = COALESCE(NULLIF($6, ''), owner_city),
+    		license_no          = COALESCE(NULLIF($7, ''), license_no),
+    		issue_date          = COALESCE(NULLIF($8, '')::DATE, issue_date),
+    		expiry_date         = COALESCE(NULLIF($9, '')::DATE, expiry_date),
+    		status              = COALESCE(NULLIF($10, ''), status),
+    		license_type        = COALESCE(NULLIF($11, ''), license_type),
+    		nationality         = COALESCE(NULLIF($12, ''), nationality),
+    		point               = COALESCE($13, point),
+    		modifier_id         = COALESCE($14, modifier_id),
+    		version             = version + 1,
+    		updated_at          = $15
+		WHERE id = $16
+		RETURNING *
 	`
+
 	updateBlockchainConfirmationQuery = `
     UPDATE driver_licenses 
     SET

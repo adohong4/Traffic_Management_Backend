@@ -121,7 +121,7 @@ func (h GovAgencyHandlers) DeleteGovAgency() echo.HandlerFunc {
 // GetByID godoc
 // @Summary Get by Goverment Agency ID
 // @Description Get by Goverment Agency handler
-// @Tags NGoverment Agency
+// @Tags Goverment Agency
 // @Accept json
 // @Produce json
 // @Param id path int true "id"
